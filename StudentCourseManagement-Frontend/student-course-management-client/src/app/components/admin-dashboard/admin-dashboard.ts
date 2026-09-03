@@ -244,6 +244,10 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  cleanReason(reason: string): string {
+    if (!reason) return 'Requested account verification.';
+    return reason.replace(/^ACCOUNT_CREATION_REQUEST:\s*/i, '').trim() || 'Requested account verification.';
+  }
   onLogout(): void {
     localStorage.clear();
     this.router.navigate(['/login']);

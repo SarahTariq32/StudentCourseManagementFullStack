@@ -580,16 +580,35 @@ public class CourseRepository : ICourseRepository
 
     public async Task<List<EnrollmentRequestResponseDto>> GetPendingEnrollmentRequestsAsync()
     {
-        return await _context.EnrollmentRequests
+        var requests = await _context.EnrollmentRequests
             .AsNoTracking()
             .Include(r => r.Student)
             .Include(r => r.Course)
             .Where(r => r.Status == "Pending")
-            .Select(r => new EnrollmentRequestResponseDto
+            .ToListAsync();
+
+        var result = new List<EnrollmentRequestResponseDto>();
+
+        foreach (var r in requests)
+        {
+            string studentName;
+            if (r.Student != null)
+            {
+                studentName = r.Student.Name;
+            }
+            else
+            {
+                var user = await _context.UsersData.FirstOrDefaultAsync(u => u.Id == r.StudentId);
+                studentName = user != null && !string.IsNullOrWhiteSpace(user.FullName)
+                    ? user.FullName
+                    : (user?.Username ?? "Unknown Student");
+            }
+
+            result.Add(new EnrollmentRequestResponseDto
             {
                 RequestId = r.Id,
                 StudentId = r.StudentId,
-                StudentName = r.Student != null ? r.Student.Name : "Unknown Student",
+                StudentName = studentName,
                 CourseId = r.CourseId,
                 CourseName = r.Course != null ? r.Course.Name : "N/A (Account Verification)",
                 RequestType = (r.CourseId <= 0 || (r.Reason != null && r.Reason.Contains("ACCOUNT_CREATION_REQUEST")))
@@ -598,7 +617,10 @@ public class CourseRepository : ICourseRepository
                 Reason = r.Reason ?? string.Empty,
                 Status = r.Status,
                 RequestedOn = r.RequestedOn
-            }).ToListAsync();
+            });
+        }
+
+        return result;
     }
 
     public async Task<(bool Success, string Message)> ProcessEnrollmentRequestAsync(int requestId, bool approve)

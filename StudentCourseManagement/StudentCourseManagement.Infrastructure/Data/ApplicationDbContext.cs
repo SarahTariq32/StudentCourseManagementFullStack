@@ -86,11 +86,13 @@ public partial class ApplicationDbContext : DbContext
 
             entity.HasOne(d => d.Student).WithMany()
                 .HasForeignKey(d => d.StudentId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Course).WithMany()
                 .HasForeignKey(d => d.CourseId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
         OnModelCreatingPartial(modelBuilder);
     }

@@ -2,8 +2,11 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AdminService } from '../../services/admin';
+import { AuthService } from '../../services/auth';
 import { PendingRequest } from '../../models/admin.model';
+import { extractErrorMessage } from '../../utils/http-error.util';
 
 type AdminView = 
   | 'overview' 
@@ -45,6 +48,7 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
+    private authService: AuthService,
     private fb: FormBuilder,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -81,9 +85,9 @@ export class AdminDashboardComponent implements OnInit {
         this.students = raw.slice().sort((a: any, b: any) => (a.id || 0) - (b.id || 0));
         this.cdr.detectChanges(); 
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error('Students fetch error:', err);
-        this.errorMessage = 'Failed to load student directory.';
+        this.errorMessage = extractErrorMessage(err, 'Failed to load student directory.');
       }
     });
 
@@ -94,9 +98,9 @@ export class AdminDashboardComponent implements OnInit {
         this.courses = raw.slice().sort((a: any, b: any) => (a.id || 0) - (b.id || 0));
         this.cdr.detectChanges(); 
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error('Courses fetch error:', err);
-        this.errorMessage = 'Failed to load course catalog.';
+        this.errorMessage = extractErrorMessage(err, 'Failed to load course catalog.');
       }
     });
 
@@ -117,8 +121,13 @@ export class AdminDashboardComponent implements OnInit {
 
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Requests fetch error:', err)
+      error: (err: HttpErrorResponse) => console.error('Requests fetch error:', err)
     });
+  }
+
+  cleanReason(reason: string): string {
+    if (!reason) return 'Requested account verification.';
+    return reason.replace(/^ACCOUNT_CREATION_REQUEST:\s*/i, '').trim() || 'Requested account verification.';
   }
 
   // --- COURSE ACTIONS ---
@@ -132,9 +141,9 @@ export class AdminDashboardComponent implements OnInit {
         this.errorMessage = '';
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.searchedCourse = null;
-        this.errorMessage = `Course ID #${id} not found.`;
+        this.errorMessage = extractErrorMessage(err, `Course ID #${id} not found.`);
         this.cdr.detectChanges();
       }
     });
@@ -159,7 +168,7 @@ export class AdminDashboardComponent implements OnInit {
           this.refreshAllData();
           this.setView('courses-list');
         },
-        error: (err) => this.errorMessage = err.error?.message || 'Update failed.'
+        error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Update failed.')
       });
     } else {
       this.adminService.createCourse(this.courseForm.value).subscribe({
@@ -168,7 +177,7 @@ export class AdminDashboardComponent implements OnInit {
           this.refreshAllData();
           this.setView('courses-list');
         },
-        error: (err) => this.errorMessage = err.error?.message || 'Creation failed.'
+        error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Creation failed.')
       });
     }
   }
@@ -182,7 +191,7 @@ export class AdminDashboardComponent implements OnInit {
         this.searchedCourse = null;
         this.refreshAllData();
       },
-      error: (err) => this.errorMessage = err.error?.message || 'Delete operation failed.'
+      error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Delete operation failed.')
     });
   }
 
@@ -197,9 +206,9 @@ export class AdminDashboardComponent implements OnInit {
         this.errorMessage = '';
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.searchedStudent = null;
-        this.errorMessage = `Student ID #${id} not found.`;
+        this.errorMessage = extractErrorMessage(err, `Student ID #${id} not found.`);
         this.cdr.detectChanges();
       }
     });
@@ -223,7 +232,7 @@ export class AdminDashboardComponent implements OnInit {
         this.refreshAllData();
         this.setView('students-list');
       },
-      error: (err) => this.errorMessage = err.error?.message || 'Update failed.'
+      error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Update failed.')
     });
   }
 
@@ -236,7 +245,7 @@ export class AdminDashboardComponent implements OnInit {
         this.searchedStudent = null;
         this.refreshAllData();
       },
-      error: (err) => this.errorMessage = err.error?.message || 'Delete operation failed.'
+      error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Delete operation failed.')
     });
   }
 
@@ -247,16 +256,12 @@ export class AdminDashboardComponent implements OnInit {
         this.statusMessage = res.message || (approve ? 'Approved successfully.' : 'Rejected.');
         this.refreshAllData();
       },
-      error: (err) => this.errorMessage = err.error?.message || 'Processing failed.'
+      error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Processing failed.')
     });
   }
 
-  cleanReason(reason: string): string {
-    if (!reason) return 'Requested account verification.';
-    return reason.replace(/^ACCOUNT_CREATION_REQUEST:\s*/i, '').trim() || 'Requested account verification.';
-  }
   onLogout(): void {
-    localStorage.clear();
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 }

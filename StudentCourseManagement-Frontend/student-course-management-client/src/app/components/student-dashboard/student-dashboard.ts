@@ -2,10 +2,13 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CourseService } from '../../services/course';
 import { StudentService } from '../../services/student';
+import { AuthService } from '../../services/auth';
 import { StudentProfile } from '../../models/student.model';
 import { Course } from '../../models/course.model';
+import { extractErrorMessage } from '../../utils/http-error.util';
 
 type StudentView = 'overview' | 'my-courses' | 'available-courses' | 'profile';
 
@@ -47,6 +50,7 @@ export class StudentDashboardComponent implements OnInit {
   constructor(
     private courseService: CourseService,
     private studentService: StudentService,
+    private authService: AuthService,
     private fb: FormBuilder,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -113,9 +117,9 @@ export class StudentDashboardComponent implements OnInit {
           }
         });
       },
-      error: (err: any) => {
+      error: (err: HttpErrorResponse) => {
         console.error('Course fetch error:', err);
-        this.errorMessage = 'Failed to load course list.';
+        this.errorMessage = extractErrorMessage(err, 'Failed to load course list.');
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -153,8 +157,8 @@ export class StudentDashboardComponent implements OnInit {
         this.isEditingProfile = false;
         this.checkVerificationAndLoadData();
       },
-      error: (err: any) => {
-        this.errorMessage = err.error?.message || 'Failed to update profile details.';
+      error: (err: HttpErrorResponse) => {
+        this.errorMessage = extractErrorMessage(err, 'Failed to update profile details.');
       }
     });
   }
@@ -174,8 +178,8 @@ export class StudentDashboardComponent implements OnInit {
         this.statusMessage = res.message || 'Successfully enrolled in course!';
         this.checkVerificationAndLoadData();
       },
-      error: (err: any) => {
-        this.errorMessage = err.error?.message || err.error || 'Enrollment failed.';
+      error: (err: HttpErrorResponse) => {
+        this.errorMessage = extractErrorMessage(err, 'Enrollment failed.');
       }
     });
   }
@@ -198,8 +202,8 @@ export class StudentDashboardComponent implements OnInit {
         this.statusMessage = res?.message || 'Enrollment request submitted to Admin for approval.';
         this.enrollmentReasonMap[courseId] = '';
       },
-      error: (err: any) => {
-        this.errorMessage = typeof err.error === 'string' ? err.error : (err.error?.message || 'Failed to submit enrollment request.');
+      error: (err: HttpErrorResponse) => {
+        this.errorMessage = extractErrorMessage(err, 'Failed to submit enrollment request.');
       }
     });
   }
@@ -218,15 +222,9 @@ export class StudentDashboardComponent implements OnInit {
         this.unenrollmentReasonMap[courseName] = '';
         this.checkVerificationAndLoadData();
       },
-      error: (err: any) => {
+      error: (err: HttpErrorResponse) => {
         console.error('Unenrollment request failed:', err);
-        if (typeof err.error === 'string') {
-          this.errorMessage = err.error;
-        } else if (err.error?.message) {
-          this.errorMessage = err.error.message;
-        } else {
-          this.errorMessage = 'Failed to submit unenrollment request.';
-        }
+        this.errorMessage = extractErrorMessage(err, 'Failed to submit unenrollment request.');
       }
     });
   }
@@ -241,14 +239,14 @@ export class StudentDashboardComponent implements OnInit {
         this.statusMessage = res?.message || 'Student registration request submitted to Admin successfully!';
         this.accountRequestReason = '';
       },
-      error: (err: any) => {
-        this.errorMessage = typeof err.error === 'string' ? err.error : (err.error?.message || 'Failed to submit registration request.');
+      error: (err: HttpErrorResponse) => {
+        this.errorMessage = extractErrorMessage(err, 'Failed to submit registration request.');
       }
     });
   }
 
   onLogout(): void {
-    localStorage.clear();
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 }

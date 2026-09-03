@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { HttpErrorResponse } from '@angular/common/http';
+import { extractErrorMessage } from '../../utils/http-error.util';
 
 @Component({
   selector: 'app-login',
@@ -57,9 +59,9 @@ export class LoginComponent implements OnInit {
           this.router.navigate(['/student-dashboard']);
         }
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.isLoading = false;
-        this.errorMessage = err.error?.message || err.error || 'Invalid username or password.';
+        this.errorMessage = extractErrorMessage(err, 'Invalid username or password.');
       }
     });
   }

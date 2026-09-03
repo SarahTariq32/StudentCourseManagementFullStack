@@ -1,0 +1,33 @@
+<div class="dashboard-container">
+  <header>
+    <h1>Student Course Management</h1>
+    <button (click)="onLogout()" class="logout-btn">Logout</button>
+  </header>
+
+  <main>
+    <h2>Available Courses</h2>
+
+    <!-- State 1: Loading -->
+    <div *ngIf="isLoading">
+      <p>Loading courses...</p>
+    </div>
+
+    <!-- State 2: Error -->
+    <div *ngIf="!isLoading && errorMessage">
+      <p class="error-text">{{ errorMessage }}</p>
+    </div>
+
+    <!-- State 3: Display Data -->
+    <div *ngIf="!isLoading && !errorMessage" class="course-grid">
+      <div *ngFor="let course of courses" class="course-card">
+        <h3>{{ course.name }}</h3>
+        <div class="course-badges">
+          <span class="badge credits-badge">{{ course.credits }} Credits</span>
+          <span class="badge enrolled-badge">{{ course.enrolledStudentsCount }} Enrolled</span>
+        </div>
+      </div>
+
+      <p *ngIf="courses.length === 0">No courses available at this time.</p>
+    </div>
+  </main>
+</div>

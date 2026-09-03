@@ -1,0 +1,16 @@
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\bin\Debug\net8.0\StudentCourseManagement.Application.deps.json
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\bin\Debug\net8.0\StudentCourseManagement.Application.dll
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\bin\Debug\net8.0\StudentCourseManagement.Application.pdb
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\bin\Debug\net8.0\StudentCourseManagement.Domain.dll
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\bin\Debug\net8.0\StudentCourseManagement.Domain.pdb
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentCourseManagement.Application.csproj.AssemblyReference.cache
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentCourseManagement.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentCourseManagement.Application.AssemblyInfoInputs.cache
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentCourseManagement.Application.AssemblyInfo.cs
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentCourseManagement.Application.csproj.CoreCompileInputs.cache
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentC.8CAC5615.Up2Date
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentCourseManagement.Application.dll
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\refint\StudentCourseManagement.Application.dll
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentCourseManagement.Application.pdb
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\ref\StudentCourseManagement.Application.dll
+C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Application\obj\Debug\net8.0\StudentCourseManagement.Application.sourcelink.json

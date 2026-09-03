@@ -1,0 +1,231 @@
+<div class="admin-shell">
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="brand">
+      <h2>Admin Control</h2>
+    </div>
+    
+    <nav class="menu">
+      <button [class.active]="activeView === 'overview'" (click)="setView('overview')">
+        Dashboard Overview
+      </button>
+
+      <div class="menu-label">Students</div>
+      <button [class.active]="activeView === 'students-list'" (click)="setView('students-list')">
+        View All Students
+      </button>
+      <button [class.active]="activeView === 'student-search'" (click)="setView('student-search')">
+        Find / Update / Delete Student
+      </button>
+
+      <div class="menu-label">Courses</div>
+      <button [class.active]="activeView === 'courses-list'" (click)="setView('courses-list')">
+        View All Courses
+      </button>
+      <button [class.active]="activeView === 'course-search'" (click)="setView('course-search')">
+        Find / Update / Delete Course
+      </button>
+
+      <div class="menu-label">Pending Approvals</div>
+      <button [class.active]="activeView === 'registration-requests'" (click)="setView('registration-requests')">
+        Student Registrations ({{ registrationRequests.length }})
+      </button>
+      <button [class.active]="activeView === 'course-requests'" (click)="setView('course-requests')">
+        Enrollment Requests ({{ courseRequests.length }})
+      </button>
+    </nav>
+
+    <button (click)="onLogout()" class="logout-btn">Logout</button>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="content">
+    <div *ngIf="statusMessage" class="alert alert-success">{{ statusMessage }}</div>
+    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+    <!-- 1. DASHBOARD OVERVIEW -->
+    <section *ngIf="activeView === 'overview'" class="hub-grid">
+      <div class="card stat-card" (click)="setView('students-list')">
+        <h3>Total Students</h3>
+        <p class="stat-number">{{ students?.length || 0 }}</p>
+        <span>Manage directory →</span>
+      </div>
+      <div class="card stat-card" (click)="setView('courses-list')">
+        <h3>Total Courses</h3>
+        <p class="stat-number">{{ courses?.length || 0 }}</p>
+        <span>Manage catalog →</span>
+      </div>
+      <div class="card stat-card" (click)="setView('registration-requests')">
+        <h3>Registration Requests</h3>
+        <p class="stat-number warning">{{ registrationRequests.length }}</p>
+        <span>Approve accounts →</span>
+      </div>
+      <div class="card stat-card" (click)="setView('course-requests')">
+        <h3>Enrollment Requests</h3>
+        <p class="stat-number warning">{{ courseRequests.length }}</p>
+        <span>Review course changes →</span>
+      </div>
+    </section>
+
+    <!-- 2. VIEW ALL STUDENTS -->
+    <section *ngIf="activeView === 'students-list'" class="card">
+      <div class="card-header">
+        <h3>Student Directory</h3>
+      </div>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Name</th><th>Email</th><th>Age</th><th>Enrolled Courses</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of students">
+            <td>{{ s.id }}</td>
+            <td><strong>{{ s.name }}</strong></td>
+            <td>{{ s.email }}</td>
+            <td>{{ s.age }}</td>
+            <td>{{ s.enrolledCourses?.join(', ') || 'None' }}</td>
+            <td class="actions-cell">
+              <button class="btn btn-sm btn-outline" (click)="openEditStudent(s)">Update</button>
+              <button class="btn btn-sm btn-danger" (click)="onDeleteStudent(s.id)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="!students || students.length === 0">
+            <td colspan="6" style="text-align: center; padding: 1.5rem;">No student records found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3. FIND / UPDATE / DELETE STUDENT BY ID -->
+    <section *ngIf="activeView === 'student-search'" class="card">
+      <h3>Lookup Student Profile</h3>
+      <div class="search-box">
+        <input #sIdInput type="number" placeholder="Enter Student ID (e.g. 1006)..." />
+        <button class="btn btn-primary" (click)="onSearchStudent(sIdInput.value)">Search Student</button>
+      </div>
+
+      <div *ngIf="searchedStudent" class="result-box">
+        <h4>{{ searchedStudent.name }} (Student ID: #{{ searchedStudent.id }})</h4>
+        <p><strong>Email:</strong> {{ searchedStudent.email }}</p>
+        <p><strong>Age:</strong> {{ searchedStudent.age }}</p>
+        <p><strong>Enrolled Courses:</strong> {{ searchedStudent.enrolledCourses?.join(', ') || 'None' }}</p>
+        
+        <div class="form-actions" style="margin-top: 1rem;">
+          <button class="btn btn-sm btn-outline" (click)="openEditStudent(searchedStudent)">Update Profile</button>
+          <button class="btn btn-sm btn-danger" (click)="onDeleteStudent(searchedStudent.id)">Delete Student</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. EDIT STUDENT FORM -->
+    <section *ngIf="activeView === 'student-edit'" class="card form-card">
+      <h3>Update Student Profile (ID: #{{ selectedStudentId }})</h3>
+      <form [formGroup]="studentEditForm" (ngSubmit)="onUpdateStudent()">
+        <div class="form-group"><label>Full Name</label><input type="text" formControlName="name" /></div>
+        <div class="form-group"><label>Email</label><input type="email" formControlName="email" /></div>
+        <div class="form-group"><label>Age</label><input type="number" formControlName="age" /></div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="studentEditForm.invalid">Save Changes</button>
+          <button type="button" class="btn btn-secondary" (click)="setView('students-list')">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 5. VIEW ALL COURSES -->
+    <section *ngIf="activeView === 'courses-list'" class="card">
+      <div class="card-header">
+        <h3>Course Catalog</h3>
+        <button class="btn btn-primary" (click)="setView('course-form')">+ Add New Course</button>
+      </div>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Course Name</th><th>Credits</th><th>Capacity</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of courses">
+            <td>{{ c.id }}</td>
+            <td><strong>{{ c.name }}</strong></td>
+            <td>{{ c.credits }} Credits</td>
+            <td>{{ c.enrolledStudentsCount ?? 0 }}/50</td>
+            <td class="actions-cell">
+              <button class="btn btn-sm btn-outline" (click)="openEditCourse(c)">Update</button>
+              <button class="btn btn-sm btn-danger" (click)="onDeleteCourse(c.id)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="!courses || courses.length === 0">
+            <td colspan="5" style="text-align: center; padding: 1.5rem;">No courses found in catalog.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6. FIND / UPDATE / DELETE COURSE BY ID -->
+    <section *ngIf="activeView === 'course-search'" class="card">
+      <h3>Lookup Course by ID</h3>
+      <div class="search-box">
+        <input #cIdInput type="number" placeholder="Enter Course ID..." />
+        <button class="btn btn-primary" (click)="onSearchCourse(cIdInput.value)">Get Course</button>
+      </div>
+
+      <div *ngIf="searchedCourse" class="result-box">
+        <h4>{{ searchedCourse.name }} (Course ID: #{{ searchedCourse.id }})</h4>
+        <p><strong>Credits:</strong> {{ searchedCourse.credits }}</p>
+        <p><strong>Enrolled Students:</strong> {{ searchedCourse.enrolledStudentsCount ?? 0 }}/50</p>
+        
+        <div class="form-actions" style="margin-top: 1rem;">
+          <button class="btn btn-sm btn-outline" (click)="openEditCourse(searchedCourse)">Update Course</button>
+          <button class="btn btn-sm btn-danger" (click)="onDeleteCourse(searchedCourse.id)">Delete Course</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. ADD / EDIT COURSE FORM -->
+    <section *ngIf="activeView === 'course-form'" class="card form-card">
+      <h3>{{ selectedCourseId ? 'Update Course #' + selectedCourseId : 'Create New Course' }}</h3>
+      <form [formGroup]="courseForm" (ngSubmit)="onSaveCourse()">
+        <div class="form-group"><label>Course Name</label><input type="text" formControlName="name" /></div>
+        <div class="form-group"><label>Credits (1-6)</label><input type="number" formControlName="credits" /></div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="courseForm.invalid">Save Course</button>
+          <button type="button" class="btn btn-secondary" (click)="setView('courses-list')">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 8. STUDENT REGISTRATION REQUESTS -->
+    <section *ngIf="activeView === 'registration-requests'" class="card">
+      <h3>Pending Student Account Registration Requests</h3>
+      <div *ngFor="let req of registrationRequests" class="request-row">
+        <div>
+          <h4>{{ req.studentName }}</h4>
+          <p class="reason-text"><strong>Details:</strong> {{ req.reason || 'Requested account verification.' }}</p>
+        </div>
+        <div class="actions-cell">
+          <button class="btn btn-sm btn-success" (click)="onProcessRequest(req.id, true)">Approve Student</button>
+          <button class="btn btn-sm btn-danger" (click)="onProcessRequest(req.id, false)">Reject Request</button>
+        </div>
+      </div>
+      <p *ngIf="registrationRequests.length === 0">No pending student registration requests.</p>
+    </section>
+
+    <!-- 9. COURSE ENROLLMENT / UNENROLLMENT REQUESTS -->
+    <section *ngIf="activeView === 'course-requests'" class="card">
+      <h3>Pending Course Enrollment & Unenrollment Requests</h3>
+      <div *ngFor="let req of courseRequests" class="request-row">
+        <div>
+          <h4>{{ req.studentName }} — <em>{{ req.requestType }} Request</em></h4>
+          <p><strong>Course:</strong> {{ req.courseName }}</p>
+          <p class="reason-text"><strong>Reason:</strong> {{ req.reason || 'No reason specified.' }}</p>
+        </div>
+        <div class="actions-cell">
+          <button class="btn btn-sm btn-success" (click)="onProcessRequest(req.id, true)">Approve</button>
+          <button class="btn btn-sm btn-danger" (click)="onProcessRequest(req.id, false)">Reject</button>
+        </div>
+      </div>
+      <p *ngIf="courseRequests.length === 0">No pending enrollment or unenrollment requests.</p>
+    </section>
+  </main>
+</div>

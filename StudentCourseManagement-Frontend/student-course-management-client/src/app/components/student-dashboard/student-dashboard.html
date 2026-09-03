@@ -1,0 +1,225 @@
+<div class="student-shell">
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="brand">
+      <h2>Student Portal</h2>
+      <p *ngIf="studentProfile" class="user-greeting">Welcome, <strong>{{ studentProfile.name }}</strong></p>
+    </div>
+    
+    <nav class="menu">
+      <button [class.active]="activeView === 'overview'" (click)="setView('overview')">
+        Dashboard Overview
+      </button>
+
+      <div class="menu-label">My Academics</div>
+      <button 
+        [class.active]="activeView === 'my-courses'" 
+        [disabled]="!isVerified" 
+        (click)="setView('my-courses')"
+      >
+        My Active Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)
+      </button>
+
+      <button [class.active]="activeView === 'available-courses'" (click)="setView('available-courses')">
+        Browse Available Courses
+      </button>
+
+      <div class="menu-label">Account</div>
+      <button [class.active]="activeView === 'profile'" [disabled]="!isVerified" (click)="setView('profile')">
+        My Profile {{ !isVerified ? '(Locked)' : '' }}
+      </button>
+    </nav>
+
+    <button (click)="onLogout()" class="logout-btn">Logout</button>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="content">
+    <div *ngIf="!isLoading && !isVerified" class="alert alert-warning">
+      <h3>⚠️ Unverified Account Link</h3>
+      <p>Your login is registered, but you aren't linked to an active student record yet. Send a request to the Admin below:</p>
+      <div class="request-box">
+        <input type="text" [(ngModel)]="accountRequestReason" placeholder="Reason or Student ID details..." />
+        <button class="btn btn-primary btn-sm" (click)="onRequestAccountCreation()">Send Request to Admin</button>
+      </div>
+    </div>
+
+    <div *ngIf="statusMessage" class="alert alert-success">{{ statusMessage }}</div>
+    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+    <p *ngIf="isLoading" class="loading-spinner">Loading student portal...</p>
+
+    <!-- 1. OVERVIEW -->
+    <section *ngIf="!isLoading && activeView === 'overview'" class="hub-grid">
+      <div class="card stat-card" (click)="setView('my-courses')">
+        <h3>Enrolled Courses</h3>
+        <p class="stat-number">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="max-cap">/ 7 Max</span></p>
+        <span>View active classes →</span>
+      </div>
+      <div class="card stat-card" (click)="setView('available-courses')">
+        <h3>Available Catalog Courses</h3>
+        <p class="stat-number">{{ courses.length }}</p>
+        <span>Explore course catalog →</span>
+      </div>
+      <div class="card stat-card" (click)="setView('profile')">
+        <h3>Account Status</h3>
+        <p class="stat-number" [class.success-text]="isVerified" [class.warning-text]="!isVerified">
+          {{ isVerified ? 'Verified' : 'Pending' }}
+        </p>
+        <span>View profile details →</span>
+      </div>
+    </section>
+
+    <!-- 2. MY ACTIVE COURSES WITH UNENROLLMENT CONTROL -->
+    <section *ngIf="!isLoading && activeView === 'my-courses'" class="card">
+      <div class="card-header">
+        <h3>My Enrolled Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</h3>
+      </div>
+
+      <div *ngIf="studentProfile?.enrolledCourses?.length" class="enrolled-list">
+        <div *ngFor="let courseName of studentProfile?.enrolledCourses" class="enrolled-item">
+          <div class="course-info">
+            <h4>{{ courseName }}</h4>
+            <span class="badge badge-active">Active Registration</span>
+          </div>
+
+          <div class="unenroll-inline-box">
+            <input 
+              type="text" 
+              [(ngModel)]="unenrollmentReasonMap[courseName]" 
+              placeholder="Reason for dropping..." 
+            />
+            <button class="btn btn-sm btn-danger" (click)="onRequestUnenrollment(courseName)">
+              Request Unenrollment
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p *ngIf="!studentProfile?.enrolledCourses?.length">You are not currently enrolled in any courses.</p>
+    </section>
+
+    <!-- 3. AVAILABLE COURSES CATALOG -->
+    <section *ngIf="!isLoading && activeView === 'available-courses'" class="course-catalog">
+      <h3>Course Catalog</h3>
+      <div class="course-grid">
+        <div 
+          *ngFor="let c of courses" 
+          class="card course-card" 
+          [class.disabled-card]="c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
+        >
+          <div class="card-header">
+            <h4>{{ c.name }}</h4>
+            <span class="badge credits-badge">{{ c.credits }} Credits</span>
+          </div>
+
+          <div class="badge-status-container">
+            <span *ngIf="isAlreadyEnrolled(c.name)" class="badge badge-enrolled">
+              ✓ Currently Enrolled
+            </span>
+            <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount < 50" class="badge badge-available">
+              Available to Enroll
+            </span>
+            <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount >= 50" class="badge badge-full">
+              Course Full (50/50)
+            </span>
+          </div>
+
+          <p class="capacity-info">
+            <strong>Capacity:</strong> 
+            <span [class.text-danger]="c.enrolledStudentsCount >= 50">
+              {{ c.enrolledStudentsCount ?? 0 }}/50 Enrolled
+            </span>
+          </p>
+
+          <div class="card-actions">
+            <!-- DIRECT ENROLL -->
+            <button 
+              class="btn btn-success"
+              [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name) || (studentProfile?.enrolledCourses?.length ?? 0) >= 7"
+              (click)="onEnrollDirectly(c.id)"
+            >
+              {{ isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : 'Enroll Now') }}
+            </button>
+
+            <!-- SPECIAL REQUEST -->
+            <div class="request-inline-box">
+              <input 
+                type="text" 
+                [(ngModel)]="enrollmentReasonMap[c.id]" 
+                placeholder="Reason for special request..." 
+                [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
+              />
+              <button 
+                class="btn btn-sm btn-outline" 
+                [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
+                (click)="onRequestEnrollment(c.id)"
+              >
+                Request Enrollment
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p *ngIf="!courses || courses.length === 0">No courses available in catalog.</p>
+      </div>
+    </section>
+
+    <!-- 4. PROFILE VIEW & STYLED EDIT FORM -->
+    <section *ngIf="!isLoading && activeView === 'profile' && studentProfile" class="card profile-card">
+      <div class="card-header">
+        <h3>Academic Profile Details</h3>
+        <button class="btn btn-outline btn-sm" (click)="toggleEditProfile()">
+          {{ isEditingProfile ? 'Cancel' : 'Edit Profile' }}
+        </button>
+      </div>
+
+      <!-- READ-ONLY VIEW -->
+      <div *ngIf="!isEditingProfile" class="profile-details">
+        <div class="detail-row">
+          <span class="detail-label">Student Name:</span>
+          <span class="detail-value"><strong>{{ studentProfile.name }}</strong></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Email Address:</span>
+          <span class="detail-value">{{ studentProfile.email }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Student Age:</span>
+          <span class="detail-value">{{ studentProfile.age }}</span>
+        </div>
+
+        <div class="courses-summary">
+          <h4>Active Course Registrations ({{ studentProfile.enrolledCourses.length }}/7 Max)</h4>
+          <ul class="enrolled-bullets">
+            <li *ngFor="let c of studentProfile.enrolledCourses">{{ c }}</li>
+            <li *ngIf="studentProfile.enrolledCourses.length === 0">No enrolled courses.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STYLED EDIT PROFILE FORM -->
+      <form *ngIf="isEditingProfile" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="styled-edit-form">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" formControlName="name" placeholder="Enter full name" />
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" formControlName="email" placeholder="student@university.edu" />
+        </div>
+
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" formControlName="age" />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid">Save Changes</button>
+          <button type="button" class="btn btn-secondary" (click)="toggleEditProfile()">Cancel</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>

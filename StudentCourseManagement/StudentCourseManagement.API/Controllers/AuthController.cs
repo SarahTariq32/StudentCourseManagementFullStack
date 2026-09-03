@@ -20,7 +20,7 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.RegisterAsync(dto);
         if (!result)
-            return BadRequest(new { message = "Username already exists." });
+            return BadRequest(new { message = "Error occured" });
         return Ok(new { message = "User registered successfully." });
     }
 

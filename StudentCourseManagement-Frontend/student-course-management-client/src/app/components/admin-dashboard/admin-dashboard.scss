@@ -169,9 +169,21 @@
       display: flex;
       flex-direction: column;
       label { font-size: 0.85rem; color: #4a5568; font-weight: 600; margin-bottom: 0.4rem; }
-      input { padding: 0.65rem 0.8rem; border: 1px solid #cbd5e0; border-radius: 6px; }
-    }
+      input {
+        padding: 0.65rem 0.8rem;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
 
+        &.is-invalid {
+          border-color: #e53e3e;
+        }
+      }
+      .field-error {
+        color: #e53e3e;
+        font-size: 0.78rem;
+        margin-top: 0.35rem;
+      }
+    }
     .form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
 
     .request-row {
@@ -197,5 +209,8 @@
       &.btn-outline { background: transparent; border: 1px solid #cbd5e0; color: #4a5568; }
       &.btn-sm { padding: 0.35rem 0.7rem; font-size: 0.8rem; }
     }
+
+
+    
   }
 }

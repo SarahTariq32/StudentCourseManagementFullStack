@@ -1,34 +1,63 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../environments/environment';
 import { LoginRequest, RegisterRequest, AuthResponse } from '../models/auth.model';
+import { getTokenRole, isTokenExpired } from '../utils/jwt-utils';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // 1. Centralized API endpoint property
   private apiUrl = `${environment.apiUrl}/Auth`;
 
-  // 2. Constructor Injection of Angular's HttpClient
+  private isLoggedInSubject = new BehaviorSubject<boolean>(this.hasValidToken());
+  isLoggedIn$ = this.isLoggedInSubject.asObservable();
+
   constructor(private http: HttpClient) {}
 
-  /**
-   * 3. Login HTTP Call
-   */
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
+      tap(res => this.setSession(res))
+    );
   }
 
-  /**
-   * 4. Register HTTP Call
-   */
-  register(data: any): Observable<any> {
-  return this.http.post(`${environment.apiUrl}/Auth/register`, data);
-}
+  register(data: RegisterRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, data);
+  }
 
-refreshToken(accessToken: string, refreshToken: string): Observable<any> {
-  return this.http.post(`${environment.apiUrl}/Auth/refresh-token`, { accessToken, refreshToken });
-}
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = localStorage.getItem('refreshToken') || '';
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { refreshToken }).pipe(
+      tap(res => this.setSession(res))
+    );
+  }
+
+  setSession(res: AuthResponse): void {
+    localStorage.setItem('token', res.token);
+    if (res.refreshToken) {
+      localStorage.setItem('refreshToken', res.refreshToken);
+    }
+    this.isLoggedInSubject.next(true);
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    this.isLoggedInSubject.next(false);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  getRole(): string | null {
+    const token = this.getToken();
+    return token ? getTokenRole(token) : null;
+  }
+
+  hasValidToken(): boolean {
+    const token = this.getToken();
+    return !!token && !isTokenExpired(token);
+  }
 }

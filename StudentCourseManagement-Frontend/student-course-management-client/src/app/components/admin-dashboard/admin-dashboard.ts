@@ -2,7 +2,8 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AdminService, PendingRequest } from '../../services/admin';
+import { AdminService } from '../../services/admin';
+import { PendingRequest } from '../../models/admin.model';
 
 type AdminView = 
   | 'overview' 
@@ -146,7 +147,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   onSaveCourse(): void {
-    if (this.courseForm.invalid) return;
+    if (this.courseForm.invalid) {
+      this.courseForm.markAllAsTouched();
+      return;
+    }
 
     if (this.selectedCourseId) {
       this.adminService.updateCourse(this.selectedCourseId, this.courseForm.value).subscribe({
@@ -208,7 +212,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   onUpdateStudent(): void {
-    if (this.studentEditForm.invalid || !this.selectedStudentId) return;
+    if (this.studentEditForm.invalid || !this.selectedStudentId) {
+      this.studentEditForm.markAllAsTouched();
+      return;
+    }
 
     this.adminService.updateStudent(this.selectedStudentId, this.studentEditForm.value).subscribe({
       next: () => {

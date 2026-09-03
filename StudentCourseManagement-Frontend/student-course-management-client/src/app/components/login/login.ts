@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -11,7 +11,7 @@ import { AuthService } from '../../services/auth';
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string = '';
   isLoading: boolean = false;
@@ -19,12 +19,19 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+  }
+
+  ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('sessionExpired') === 'true') {
+      this.errorMessage = 'Your session has expired. Please log in again.';
+    }
   }
 
   get f() {
@@ -41,33 +48,12 @@ export class LoginComponent {
     this.errorMessage = '';
 
     this.authService.login(this.loginForm.value).subscribe({
-      next: (res) => {
-        try {
-          localStorage.setItem('token', res.token);
-          if (res.refreshToken) {
-            localStorage.setItem('refreshToken', res.refreshToken);
-          }
-
-          // Safely extract role from JWT payload
-          const payloadBase64 = res.token.split('.')[1];
-          const payload = JSON.parse(atob(payloadBase64));
-
-          // .NET JWT Claim Keys mapping
-          const role = payload['role'] || 
-                       payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 
-                       '';
-
-          this.isLoading = false;
-
-          if (role.toString().toLowerCase() === 'admin') {
-            this.router.navigate(['/admin-dashboard']);
-          } else {
-            this.router.navigate(['/student-dashboard']);
-          }
-        } catch (e) {
-          console.error('Error decoding token:', e);
-          this.isLoading = false;
-          // Fallback route if role parsing fails
+      next: () => {
+        this.isLoading = false;
+        const role = this.authService.getRole();
+        if (role?.toLowerCase() === 'admin') {
+          this.router.navigate(['/admin-dashboard']);
+        } else {
           this.router.navigate(['/student-dashboard']);
         }
       },

@@ -205,21 +205,39 @@
       <form *ngIf="isEditingProfile" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="styled-edit-form">
         <div class="form-group">
           <label>Full Name</label>
-          <input type="text" formControlName="name" placeholder="Enter full name" />
+          <input type="text" formControlName="name" placeholder="Enter full name"
+                [class.is-invalid]="profileForm.get('name')?.touched && profileForm.get('name')?.invalid" />
+          <div class="field-error" *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.errors?.['required']">
+            Full name is required.
+          </div>
         </div>
 
         <div class="form-group">
           <label>Email Address</label>
-          <input type="email" formControlName="email" placeholder="student@university.edu" />
+          <input type="email" formControlName="email" placeholder="student@university.edu"
+                [class.is-invalid]="profileForm.get('email')?.touched && profileForm.get('email')?.invalid" />
+          <div class="field-error" *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.errors?.['required']">
+            Email is required.
+          </div>
+          <div class="field-error" *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.errors?.['email']">
+            Please enter a valid email address.
+          </div>
         </div>
 
         <div class="form-group">
           <label>Age</label>
-          <input type="number" formControlName="age" />
+          <input type="number" formControlName="age"
+                [class.is-invalid]="profileForm.get('age')?.touched && profileForm.get('age')?.invalid" />
+          <div class="field-error" *ngIf="profileForm.get('age')?.touched && profileForm.get('age')?.errors?.['required']">
+            Age is required.
+          </div>
+          <div class="field-error" *ngIf="profileForm.get('age')?.touched && profileForm.get('age')?.errors?.['min']">
+            Age must be at least 16.
+          </div>
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid">Save Changes</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
           <button type="button" class="btn btn-secondary" (click)="toggleEditProfile()">Cancel</button>
         </div>
       </form>

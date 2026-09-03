@@ -1,18 +1,3 @@
-// export interface Course {
-//   id: number;
-//   title: string;
-//   code: string;
-//   description: string;
-// }
-
-// // Matches backend GetPagedAsync response wrapper
-// export interface PagedResult<T> {
-//   items: T[];
-//   totalCount: number;
-//   pageNumber: number;
-//   pageSize: number;
-// }
-
 export interface Course {
   id: number;
   name: string;

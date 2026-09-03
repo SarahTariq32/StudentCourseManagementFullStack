@@ -2,16 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-
-export interface PendingRequest {
-  requestId: number;
-  studentId: number;
-  studentName: string;
-  courseId: number;
-  courseName: string;
-  requestType: string; // 'Registration', 'Enroll', or 'Unenroll'
-  reason: string;
-}
+import { PendingRequest } from '../models/admin.model';
+import { PagedResult, Course } from '../models/course.model';
+import { StudentProfile } from '../models/student.model';
 
 @Injectable({
   providedIn: 'root'
@@ -21,13 +14,12 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  // STUDENT CRUD
-  getStudents(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/Students?pageIndex=1&pageSize=100`);
+  getStudents(): Observable<PagedResult<StudentProfile>> {
+    return this.http.get<PagedResult<StudentProfile>>(`${this.apiUrl}/Students?pageIndex=1&pageSize=100`);
   }
 
-  getStudentById(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/Students/${id}`);
+  getStudentById(id: number): Observable<StudentProfile> {
+    return this.http.get<StudentProfile>(`${this.apiUrl}/Students/${id}`);
   }
 
   updateStudent(id: number, data: { name: string; email: string; age: number }): Observable<any> {
@@ -38,13 +30,12 @@ export class AdminService {
     return this.http.delete(`${this.apiUrl}/Students/${id}`);
   }
 
-  // COURSE CRUD (Search, Add, Update, Delete)
-  getCourses(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/Courses`);
+  getCourses(): Observable<PagedResult<Course> | Course[]> {
+    return this.http.get<PagedResult<Course> | Course[]>(`${this.apiUrl}/Courses`);
   }
 
-  getCourseById(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/Courses/${id}`);
+  getCourseById(id: number): Observable<Course> {
+    return this.http.get<Course>(`${this.apiUrl}/Courses/${id}`);
   }
 
   createCourse(data: { name: string; credits: number }): Observable<any> {
@@ -59,7 +50,6 @@ export class AdminService {
     return this.http.delete(`${this.apiUrl}/Courses/${id}`);
   }
 
-  // REQUEST MANAGEMENT
   getPendingRequests(): Observable<PendingRequest[]> {
     return this.http.get<PendingRequest[]>(`${this.apiUrl}/Courses/pending-requests`);
   }

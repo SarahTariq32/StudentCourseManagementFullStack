@@ -1,28 +1,20 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
+import { getTokenRole, isTokenExpired } from '../utils/jwt-utils';
 
 export const roleGuard = (expectedRole: string): CanActivateFn => {
   return () => {
     const router = inject(Router);
     const token = localStorage.getItem('token');
 
-    if (!token) {
-      router.navigate(['/login']);
+    if (!token || isTokenExpired(token)) {
+      router.navigate(['/login'], { queryParams: { sessionExpired: 'true' } });
       return false;
     }
 
-    try {
-      const payloadBase64 = token.split('.')[1];
-      const decodedPayload = JSON.parse(atob(payloadBase64));
-      
-      const userRole = decodedPayload['role'] || 
-                       decodedPayload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-
-      if (userRole && userRole.toLowerCase() === expectedRole.toLowerCase()) {
-        return true;
-      }
-    } catch (e) {
-      console.error('Invalid token payload:', e);
+    const userRole = getTokenRole(token);
+    if (userRole && userRole.toLowerCase() === expectedRole.toLowerCase()) {
+      return true;
     }
 
     router.navigate(['/login']);

@@ -377,6 +377,16 @@
           border: 1px solid #cbd5e0;
           border-radius: 6px;
           font-size: 0.9rem;
+
+          &.is-invalid {
+            border-color: #e53e3e;
+          }
+        }
+
+        .field-error {
+          color: #e53e3e;
+          font-size: 0.78rem;
+          margin-top: 0.35rem;
         }
       }
 

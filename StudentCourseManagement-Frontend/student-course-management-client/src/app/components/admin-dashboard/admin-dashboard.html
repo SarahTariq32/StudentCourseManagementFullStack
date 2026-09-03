@@ -122,11 +122,35 @@
     <section *ngIf="activeView === 'student-edit'" class="card form-card">
       <h3>Update Student Profile (ID: #{{ selectedStudentId }})</h3>
       <form [formGroup]="studentEditForm" (ngSubmit)="onUpdateStudent()">
-        <div class="form-group"><label>Full Name</label><input type="text" formControlName="name" /></div>
-        <div class="form-group"><label>Email</label><input type="email" formControlName="email" /></div>
-        <div class="form-group"><label>Age</label><input type="number" formControlName="age" /></div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" formControlName="name" [class.is-invalid]="studentEditForm.get('name')?.touched && studentEditForm.get('name')?.invalid" />
+          <div class="field-error" *ngIf="studentEditForm.get('name')?.touched && studentEditForm.get('name')?.errors?.['required']">
+            Full name is required.
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" formControlName="email" [class.is-invalid]="studentEditForm.get('email')?.touched && studentEditForm.get('email')?.invalid" />
+          <div class="field-error" *ngIf="studentEditForm.get('email')?.touched && studentEditForm.get('email')?.errors?.['required']">
+            Email is required.
+          </div>
+          <div class="field-error" *ngIf="studentEditForm.get('email')?.touched && studentEditForm.get('email')?.errors?.['email']">
+            Please enter a valid email address.
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" formControlName="age" [class.is-invalid]="studentEditForm.get('age')?.touched && studentEditForm.get('age')?.invalid" />
+          <div class="field-error" *ngIf="studentEditForm.get('age')?.touched && studentEditForm.get('age')?.errors?.['required']">
+            Age is required.
+          </div>
+          <div class="field-error" *ngIf="studentEditForm.get('age')?.touched && studentEditForm.get('age')?.errors?.['min']">
+            Student must be at least 16 years old.
+          </div>
+        </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="studentEditForm.invalid">Save Changes</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
           <button type="button" class="btn btn-secondary" (click)="setView('students-list')">Cancel</button>
         </div>
       </form>
@@ -186,10 +210,25 @@
     <section *ngIf="activeView === 'course-form'" class="card form-card">
       <h3>{{ selectedCourseId ? 'Update Course #' + selectedCourseId : 'Create New Course' }}</h3>
       <form [formGroup]="courseForm" (ngSubmit)="onSaveCourse()">
-        <div class="form-group"><label>Course Name</label><input type="text" formControlName="name" /></div>
-        <div class="form-group"><label>Credits (1-6)</label><input type="number" formControlName="credits" /></div>
+        <div class="form-group">
+          <label>Course Name</label>
+          <input type="text" formControlName="name" [class.is-invalid]="courseForm.get('name')?.touched && courseForm.get('name')?.invalid" />
+          <div class="field-error" *ngIf="courseForm.get('name')?.touched && courseForm.get('name')?.errors?.['required']">
+            Course name is required.
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Credits (1-6)</label>
+          <input type="number" formControlName="credits" [class.is-invalid]="courseForm.get('credits')?.touched && courseForm.get('credits')?.invalid" />
+          <div class="field-error" *ngIf="courseForm.get('credits')?.touched && courseForm.get('credits')?.errors?.['required']">
+            Credits are required.
+          </div>
+          <div class="field-error" *ngIf="courseForm.get('credits')?.touched && (courseForm.get('credits')?.errors?.['min'] || courseForm.get('credits')?.errors?.['max'])">
+            Credits must be between 1 and 6.
+          </div>
+        </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="courseForm.invalid">Save Course</button>
+          <button type="submit" class="btn btn-primary">Save Course</button>
           <button type="button" class="btn btn-secondary" (click)="setView('courses-list')">Cancel</button>
         </div>
       </form>

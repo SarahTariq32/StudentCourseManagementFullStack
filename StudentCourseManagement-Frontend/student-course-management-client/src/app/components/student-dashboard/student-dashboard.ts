@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CourseService } from '../../services/course';
-import { StudentService, StudentProfile } from '../../services/student';
+import { StudentService } from '../../services/student';
+import { StudentProfile } from '../../models/student.model';
 import { Course } from '../../models/course.model';
 
 type StudentView = 'overview' | 'my-courses' | 'available-courses' | 'profile';
@@ -141,7 +142,10 @@ export class StudentDashboardComponent implements OnInit {
   }
 
   onSaveProfile(): void {
-    if (this.profileForm.invalid) return;
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      return;
+    }
 
     this.studentService.updateMyProfile(this.profileForm.value).subscribe({
       next: () => {

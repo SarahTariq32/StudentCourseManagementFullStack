@@ -2,20 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-
-export interface StudentProfile {
-  id: number;
-  name: string;
-  email: string;
-  age: number;
-  enrolledCourses: string[];
-}
-
-export interface VerificationResponse {
-  isVerified: boolean;
-  message?: string;
-  student?: StudentProfile;
-}
+import { StudentProfile, VerificationResponse, UpdateStudentProfileRequest } from '../models/student.model';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +16,7 @@ export class StudentService {
     return this.http.get<VerificationResponse>(`${this.apiUrl}/me`);
   }
 
-  updateMyProfile(data: { name: string; email: string; age: number }): Observable<any> {
+  updateMyProfile(data: UpdateStudentProfileRequest): Observable<any> {
     return this.http.put(`${this.apiUrl}/me`, data);
   }
 

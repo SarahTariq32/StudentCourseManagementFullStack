@@ -166,8 +166,6 @@ public class StudentRepository : IStudentRepository
             .FirstOrDefaultAsync(s => s.Name.ToLower() == trimmedName || s.Email.ToLower() == trimmedName);
 
         if (entity == null) return null;
-
-        // Maps Infrastructure entity to Domain entity
         return entity.ToDomain();
     }
 }

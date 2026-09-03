@@ -1,16 +1,15 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { isTokenExpired } from '../utils/jwt-utils';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
   const token = localStorage.getItem('token');
 
-  // If a valid JWT token exists, grant access
-  if (token) {
+  if (token && !isTokenExpired(token)) {
     return true;
   }
 
-  // Otherwise, redirect unauthorized users back to login
-  router.navigate(['/login']);
+  router.navigate(['/login'], { queryParams: { sessionExpired: 'true' } });
   return false;
 };

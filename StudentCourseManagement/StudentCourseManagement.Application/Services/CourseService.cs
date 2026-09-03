@@ -1,4 +1,4 @@
-﻿using StudentCourseManagement.Application.DTOs;
+using StudentCourseManagement.Application.DTOs;
 using StudentCourseManagement.Application.Interfaces;
 using StudentCourseManagement.Domain.Entities;
 
@@ -40,18 +40,24 @@ public class CourseService : ICourseService
         }
     }
 
-    public async Task<List<CourseDto>> GetAvailableCoursesForStudentsAsync()
+    public async Task<List<CourseDto>> GetAvailableCoursesForStudentsAsync(int? studentId = null)
     {
         try
         {
-            var availableCourses = await _repository.GetAvailableCoursesForStudentsAsync();
-            return availableCourses.Select(c => new CourseDto
+            var availableCourses = await _repository.GetAvailableCoursesForStudentsAsync(studentId);
+            var dtos = new List<CourseDto>();
+            foreach (var c in availableCourses)
             {
-                Id = c.Id,
-                Name = c.Name,
-                Credits = c.Credits,
-                EnrolledStudentsCount = c.StudentCourses?.Count ?? 0
-            }).ToList();
+                int enrolledCount = await _repository.GetEnrolledStudentCountAsync(c.Id);
+                dtos.Add(new CourseDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Credits = c.Credits,
+                    EnrolledStudentsCount = enrolledCount
+                });
+            }
+            return dtos;
         }
         catch (Exception ex)
         {
@@ -162,7 +168,7 @@ public class CourseService : ICourseService
 
         int studentCourseCount = await _repository.GetStudentEnrolledCoursesCountAsync(studentId);
         if (studentCourseCount >= 7)
-            return (false, "Enrollment failed: A student cannot enroll in more than 7 courses simultaneously.");
+            return (false, "You cannot enroll in more than 7 courses simultaneously.");
 
         int courseStudentCount = await _repository.GetEnrolledStudentCountAsync(courseId);
         if (courseStudentCount >= 50)
@@ -200,13 +206,18 @@ public class CourseService : ICourseService
     {
         var pagedResult = await _repository.GetPagedAsync(queryParams);
 
-        var dtos = pagedResult.Items.Select(c => new CourseDto
+        var dtos = new List<CourseDto>();
+        foreach (var c in pagedResult.Items)
         {
-            Id = c.Id,
-            Name = c.Name,
-            Credits = c.Credits,
-            EnrolledStudentsCount = c.StudentCourses?.Count ?? 0
-        }).ToList();
+            int enrolledCount = await _repository.GetEnrolledStudentCountAsync(c.Id);
+            dtos.Add(new CourseDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Credits = c.Credits,
+                EnrolledStudentsCount = enrolledCount
+            });
+        }
 
         return new PagedResultDto<CourseDto>
         {

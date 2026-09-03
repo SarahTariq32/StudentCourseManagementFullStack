@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using StudentCourseManagement.Application.DTOs;
 using StudentCourseManagement.Application.Interfaces;
 using StudentCourseManagement.Domain.Entities;
@@ -26,6 +26,7 @@ public class StudentRepository : IStudentRepository
                 .AsNoTracking()
                 .Include(s => s.StudentCourses)
                     .ThenInclude(sc => sc.Course)
+                .OrderBy(s => s.Id)
                 .ToListAsync();
 
             return students.Select(s => s.ToDomain()).ToList();
@@ -137,8 +138,8 @@ public class StudentRepository : IStudentRepository
         {
             "email" => queryParams.IsDescending ? query.OrderByDescending(s => s.Email) : query.OrderBy(s => s.Email),
             "age" => queryParams.IsDescending ? query.OrderByDescending(s => s.Age) : query.OrderBy(s => s.Age),
-            "id" => queryParams.IsDescending ? query.OrderByDescending(s => s.Id) : query.OrderBy(s => s.Id),
-            _ => queryParams.IsDescending ? query.OrderByDescending(s => s.Name) : query.OrderBy(s => s.Name)
+            "name" => queryParams.IsDescending ? query.OrderByDescending(s => s.Name) : query.OrderBy(s => s.Name),
+            _ => queryParams.IsDescending ? query.OrderByDescending(s => s.Id) : query.OrderBy(s => s.Id)
         };
 
         int totalCount = await query.CountAsync();
@@ -158,11 +159,11 @@ public class StudentRepository : IStudentRepository
     }
     public async Task<StudentCourseManagement.Domain.Entities.Student?> GetByNameAsync(string name)
     {
-        var trimmedName = name.Trim();
+        var trimmedName = name.Trim().ToLower();
         var entity = await _context.Students
             .Include(s => s.StudentCourses)
                 .ThenInclude(sc => sc.Course)
-            .FirstOrDefaultAsync(s => s.Name.ToLower() == trimmedName.ToLower());
+            .FirstOrDefaultAsync(s => s.Name.ToLower() == trimmedName || s.Email.ToLower() == trimmedName);
 
         if (entity == null) return null;
 

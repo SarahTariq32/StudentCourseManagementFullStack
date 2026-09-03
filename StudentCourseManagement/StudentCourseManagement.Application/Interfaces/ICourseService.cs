@@ -1,4 +1,4 @@
-﻿using StudentCourseManagement.Application.DTOs;
+using StudentCourseManagement.Application.DTOs;
 using StudentCourseManagement.Domain.Entities;
 
 namespace StudentCourseManagement.Application.Interfaces;
@@ -6,7 +6,7 @@ namespace StudentCourseManagement.Application.Interfaces;
 public interface ICourseService
 {
     Task<List<CourseDto>> GetAllAsync();
-    Task<List<CourseDto>> GetAvailableCoursesForStudentsAsync();
+    Task<List<CourseDto>> GetAvailableCoursesForStudentsAsync(int? studentId = null);
     Task<CourseDto?> GetByIdAsync(int id);
     Task<CourseDto> CreateAsync(CreateCourseDto dto);
     Task<bool> UpdateAsync(int id, UpdateCourseDto dto);

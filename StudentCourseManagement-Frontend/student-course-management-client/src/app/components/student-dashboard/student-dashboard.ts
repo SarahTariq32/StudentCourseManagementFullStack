@@ -19,6 +19,7 @@ export class StudentDashboardComponent implements OnInit {
   activeView: StudentView = 'overview';
   
   courses: Course[] = [];
+  allSystemCourses: Course[] = []; // Stores all system courses to look up enrolled course IDs
   studentProfile: StudentProfile | null = null;
   isVerified: boolean = false;
   isLoading: boolean = true;
@@ -32,6 +33,15 @@ export class StudentDashboardComponent implements OnInit {
 
   statusMessage: string = '';
   errorMessage: string = '';
+  showMaxCoursesBanner: boolean = false; // Triggered only on attempt
+
+  get enrolledCount(): number {
+    return this.studentProfile?.enrolledCourses?.length || 0;
+  }
+
+  get maxCoursesReached(): boolean {
+    return this.enrolledCount >= 7;
+  }
 
   constructor(
     private courseService: CourseService,
@@ -55,6 +65,7 @@ export class StudentDashboardComponent implements OnInit {
     this.activeView = view;
     this.statusMessage = '';
     this.errorMessage = '';
+    this.showMaxCoursesBanner = false;
     this.isEditingProfile = false;
   }
 
@@ -82,11 +93,24 @@ export class StudentDashboardComponent implements OnInit {
   }
 
   loadCourses(): void {
+    // Load available courses
     this.courseService.getCourses().subscribe({
       next: (data: any) => {
         this.courses = Array.isArray(data) ? data : (data?.items || []);
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        
+        // Also fetch all system courses to resolve enrolled course IDs
+        this.courseService.getAllCourses().subscribe({
+          next: (allData: any) => {
+            this.allSystemCourses = Array.isArray(allData) ? allData : (allData?.items || []);
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.allSystemCourses = this.courses;
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          }
+        });
       },
       error: (err: any) => {
         console.error('Course fetch error:', err);
@@ -136,6 +160,11 @@ export class StudentDashboardComponent implements OnInit {
     this.statusMessage = '';
     this.errorMessage = '';
 
+    if (this.maxCoursesReached) {
+      this.showMaxCoursesBanner = true;
+      return;
+    }
+
     this.studentService.enrollDirectly(courseId).subscribe({
       next: (res: any) => {
         this.statusMessage = res.message || 'Successfully enrolled in course!';
@@ -148,55 +177,68 @@ export class StudentDashboardComponent implements OnInit {
   }
 
   onRequestEnrollment(courseId: number): void {
-    const reason = this.enrollmentReasonMap[courseId] || 'Special enrollment permission requested';
     this.statusMessage = '';
     this.errorMessage = '';
 
-    this.studentService.requestEnrollment(courseId, reason).subscribe({
-      next: () => {
-        this.statusMessage = 'Enrollment request submitted to Admin for approval.';
+    if (this.maxCoursesReached) {
+      this.showMaxCoursesBanner = true;
+      return;
+    }
+
+    const matchedCourse = this.courses.find(c => c.id === courseId);
+    const courseName = matchedCourse ? matchedCourse.name : '';
+    const reason = this.enrollmentReasonMap[courseId] || 'Special enrollment permission requested';
+
+    this.studentService.requestEnrollment(courseId, reason, this.studentProfile?.id, courseName).subscribe({
+      next: (res: any) => {
+        this.statusMessage = res?.message || 'Enrollment request submitted to Admin for approval.';
         this.enrollmentReasonMap[courseId] = '';
       },
       error: (err: any) => {
-        this.errorMessage = err.error?.message || 'Failed to submit enrollment request.';
+        this.errorMessage = typeof err.error === 'string' ? err.error : (err.error?.message || 'Failed to submit enrollment request.');
       }
     });
   }
 
   onRequestUnenrollment(courseName: string): void {
-  const matchedCourse = this.courses.find(
-    c => c.name.toLowerCase().trim() === courseName.toLowerCase().trim()
-  );
-  const courseId = matchedCourse ? matchedCourse.id : 0;
-  const reason = this.unenrollmentReasonMap[courseName] || 'Student requested drop/unenrollment';
+    this.statusMessage = '';
+    this.errorMessage = '';
+    this.showMaxCoursesBanner = false;
 
-  this.statusMessage = '';
-  this.errorMessage = '';
+    const reason = this.unenrollmentReasonMap[courseName] || 'Student requested unenrollment';
 
-  this.studentService.requestUnenrollment(courseId, reason).subscribe({
-    next: () => {
-      this.statusMessage = `Unenrollment request for "${courseName}" sent to Admin!`;
-      this.unenrollmentReasonMap[courseName] = '';
-    },
-    error: (err: any) => {
-      this.errorMessage = typeof err.error === 'string' 
-        ? err.error 
-        : (err.error?.message || 'Failed to request unenrollment.');
-    }
-  });
-}
+    // Pass courseName cleanly
+    this.studentService.requestUnenrollment(0, reason, this.studentProfile?.id, courseName.trim()).subscribe({
+      next: (res: any) => {
+        this.statusMessage = res?.message || `Unenrollment request for "${courseName}" sent to Admin!`;
+        this.unenrollmentReasonMap[courseName] = '';
+        this.checkVerificationAndLoadData();
+      },
+      error: (err: any) => {
+        console.error('Unenrollment request failed:', err);
+        if (typeof err.error === 'string') {
+          this.errorMessage = err.error;
+        } else if (err.error?.message) {
+          this.errorMessage = err.error.message;
+        } else {
+          this.errorMessage = 'Failed to submit unenrollment request.';
+        }
+      }
+    });
+  }
+
   onRequestAccountCreation(): void {
-    if (!this.accountRequestReason) return;
+    const reason = this.accountRequestReason || 'Student requested account verification/registration';
     this.statusMessage = '';
     this.errorMessage = '';
 
-    this.studentService.requestAccountCreation(this.accountRequestReason).subscribe({
-      next: () => {
-        this.statusMessage = 'Account link request submitted to Admin successfully!';
+    this.studentService.requestAccountCreation(reason).subscribe({
+      next: (res: any) => {
+        this.statusMessage = res?.message || 'Student registration request submitted to Admin successfully!';
         this.accountRequestReason = '';
       },
       error: (err: any) => {
-        this.errorMessage = err.error?.message || 'Failed to submit request.';
+        this.errorMessage = typeof err.error === 'string' ? err.error : (err.error?.message || 'Failed to submit registration request.');
       }
     });
   }

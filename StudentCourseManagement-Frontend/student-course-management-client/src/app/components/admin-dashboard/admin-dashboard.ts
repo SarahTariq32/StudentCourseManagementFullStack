@@ -73,10 +73,11 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   refreshAllData(): void {
-    // 1. Fetch Students (Handles both direct array or paged wrapper payload)
+    // 1. Fetch Students (Handles both direct array or paged wrapper payload, sorted by ID ascending)
     this.adminService.getStudents().subscribe({
       next: (res: any) => { 
-        this.students = Array.isArray(res) ? res : (res?.items || []); 
+        const raw = Array.isArray(res) ? res : (res?.items || []); 
+        this.students = raw.slice().sort((a: any, b: any) => (a.id || 0) - (b.id || 0));
         this.cdr.detectChanges(); 
       },
       error: (err) => {
@@ -85,10 +86,11 @@ export class AdminDashboardComponent implements OnInit {
       }
     });
 
-    // 2. Fetch Courses (Handles array or wrapped payload)
+    // 2. Fetch Courses (Handles array or wrapped payload, sorted by ID ascending)
     this.adminService.getCourses().subscribe({
       next: (res: any) => { 
-        this.courses = Array.isArray(res) ? res : (res?.items || []); 
+        const raw = Array.isArray(res) ? res : (res?.items || []); 
+        this.courses = raw.slice().sort((a: any, b: any) => (a.id || 0) - (b.id || 0));
         this.cdr.detectChanges(); 
       },
       error: (err) => {

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "NPtDjaKGIYo=",
+  "dgSpecHash": "15W0cFXhsqM=",
   "success": true,
-  "projectFilePath": "C:\\Users\\sarah\\OneDrive\\Desktop\\Internship 2\\StudentCourseManagement\\StudentCourseManagement.API\\StudentCourseManagement.API.csproj",
+  "projectFilePath": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\StudentCourseManagement.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\sarah\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\sarah\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

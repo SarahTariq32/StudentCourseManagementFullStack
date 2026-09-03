@@ -204,8 +204,8 @@
           <p class="reason-text"><strong>Details:</strong> {{ req.reason || 'Requested account verification.' }}</p>
         </div>
         <div class="actions-cell">
-          <button class="btn btn-sm btn-success" (click)="onProcessRequest(req.id, true)">Approve Student</button>
-          <button class="btn btn-sm btn-danger" (click)="onProcessRequest(req.id, false)">Reject Request</button>
+          <button class="btn btn-sm btn-success" (click)="onProcessRequest(req.requestId, true)">Approve Student</button>
+          <button class="btn btn-sm btn-danger" (click)="onProcessRequest(req.requestId, false)">Reject Request</button>
         </div>
       </div>
       <p *ngIf="registrationRequests.length === 0">No pending student registration requests.</p>
@@ -221,8 +221,8 @@
           <p class="reason-text"><strong>Reason:</strong> {{ req.reason || 'No reason specified.' }}</p>
         </div>
         <div class="actions-cell">
-          <button class="btn btn-sm btn-success" (click)="onProcessRequest(req.id, true)">Approve</button>
-          <button class="btn btn-sm btn-danger" (click)="onProcessRequest(req.id, false)">Reject</button>
+          <button class="btn btn-sm btn-success" (click)="onProcessRequest(req.requestId, true)">Approve</button>
+          <button class="btn btn-sm btn-danger" (click)="onProcessRequest(req.requestId, false)">Reject</button>
         </div>
       </div>
       <p *ngIf="courseRequests.length === 0">No pending enrollment or unenrollment requests.</p>

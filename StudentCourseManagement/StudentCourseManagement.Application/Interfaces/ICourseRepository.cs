@@ -1,4 +1,4 @@
-﻿using StudentCourseManagement.Application.DTOs;
+using StudentCourseManagement.Application.DTOs;
 using StudentCourseManagement.Domain.Entities;
 
 namespace StudentCourseManagement.Application.Interfaces;
@@ -7,7 +7,7 @@ public interface ICourseRepository
 {
     Task<List<Course>> GetAllAsync();
     Task<PagedResultDto<Course>> GetPagedAsync(CourseQueryParameters queryParams);
-    Task<List<Course>> GetAvailableCoursesForStudentsAsync();
+    Task<List<Course>> GetAvailableCoursesForStudentsAsync(int? studentId = null);
     Task<Course?> GetByIdAsync(int id);
     Task<Course> AddAsync(Course course);
     Task UpdateAsync(Course course);

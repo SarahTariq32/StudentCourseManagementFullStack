@@ -30,6 +30,8 @@ export class RegisterComponent {
     });
   }
 
+  successMessage: string = '';
+
   onSubmit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
@@ -38,6 +40,7 @@ export class RegisterComponent {
 
     this.isLoading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
     const payload = {
       fullName: this.registerForm.value.fullName,
@@ -50,19 +53,21 @@ export class RegisterComponent {
     this.authService.register(payload).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/login']);
+        this.successMessage = 'Registration successful! Redirecting to login...';
+        setTimeout(() => this.router.navigate(['/login']), 1500);
       },
       error: (err: any) => {
         this.isLoading = false;
+        console.error('Registration API Error:', err);
+
         if (typeof err.error === 'string') {
           this.errorMessage = err.error;
         } else if (err.error?.message) {
           this.errorMessage = err.error.message;
-        } else if (err.error?.errors) {
-          const firstKey = Object.keys(err.error.errors)[0];
-          this.errorMessage = err.error.errors[firstKey][0];
+        } else if (err.error?.title) {
+          this.errorMessage = err.error.title;
         } else {
-          this.errorMessage = 'Registration failed. Try again.';
+          this.errorMessage = 'Registration failed. Check server logs.';
         }
       }
     });

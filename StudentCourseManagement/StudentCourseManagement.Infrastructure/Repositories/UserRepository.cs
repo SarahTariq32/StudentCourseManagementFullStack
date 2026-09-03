@@ -23,8 +23,10 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByUsernameAsync(string username)
     {
+        if (string.IsNullOrWhiteSpace(username)) return null;
+        // Match by Username OR Email so duplicate checks and login both work
         var user = await _context.UsersData
-            .FirstOrDefaultAsync(u => u.Username == username);
+            .FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
 
         if (user == null)
             return null;
@@ -45,10 +47,20 @@ public class UserRepository : IUserRepository
 
     public async Task AddAsync(User user)
     {
+        // Explicit duplicate check before insert to prevent DB constraint errors (HTTP 500)
+        bool usernameTaken = await _context.UsersData.AnyAsync(u => u.Username == user.Username);
+        if (usernameTaken)
+            throw new InvalidOperationException($"Username '{user.Username}' is already taken.");
+
+        bool emailTaken = !string.IsNullOrWhiteSpace(user.Email)
+            && await _context.UsersData.AnyAsync(u => u.Email == user.Email);
+        if (emailTaken)
+            throw new InvalidOperationException($"Email '{user.Email}' is already registered.");
+
         var entity = new UsersDatum
         {
-            FullName = user.FullName,
-            Email = user.Email,
+            FullName = user.FullName ?? string.Empty,
+            Email = user.Email ?? string.Empty,
             Username = user.Username,
             PasswordHash = user.PasswordHash,
             Role = user.Role.ToString()

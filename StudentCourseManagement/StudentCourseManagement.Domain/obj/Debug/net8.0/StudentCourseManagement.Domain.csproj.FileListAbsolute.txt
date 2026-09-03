@@ -10,3 +10,15 @@ C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCour
 C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.pdb
 C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\ref\StudentCourseManagement.Domain.dll
 C:\Users\sarah\OneDrive\Desktop\Internship 2\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.sourcelink.json
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\bin\Debug\net8.0\StudentCourseManagement.Domain.deps.json
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\bin\Debug\net8.0\StudentCourseManagement.Domain.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\bin\Debug\net8.0\StudentCourseManagement.Domain.pdb
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.AssemblyInfoInputs.cache
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.AssemblyInfo.cs
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.csproj.CoreCompileInputs.cache
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.sourcelink.json
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\refint\StudentCourseManagement.Domain.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\StudentCourseManagement.Domain.pdb
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.Domain\obj\Debug\net8.0\ref\StudentCourseManagement.Domain.dll

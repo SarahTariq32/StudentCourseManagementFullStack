@@ -19,11 +19,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         var result = await _authService.RegisterAsync(dto);
-
         if (!result)
-            return BadRequest("Username already exists.");
-
-        return Ok("User registered successfully.");
+            return BadRequest(new { message = "Username already exists." });
+        return Ok(new { message = "User registered successfully." });
     }
 
     [HttpPost("login")]

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentCourseManagement.Application.DTOs;
@@ -5,23 +6,55 @@ using StudentCourseManagement.Application.Interfaces;
 
 namespace StudentCourseManagement.API.Controllers;
 
-[Authorize(Roles = "Admin,admin")]
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CoursesController : ControllerBase
 {
     private readonly ICourseService _service;
+    private readonly IStudentService _studentService;
 
-    public CoursesController(ICourseService service)
+    public CoursesController(ICourseService service, IStudentService studentService)
     {
         _service = service;
+        _studentService = studentService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] CourseQueryParameters queryParams)
     {
+        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (string.Equals(roleClaim, "Student", StringComparison.OrdinalIgnoreCase))
+        {
+            var loggedInUsername = User.FindFirst(ClaimTypes.Name)?.Value;
+            int? studentId = null;
+            if (!string.IsNullOrEmpty(loggedInUsername))
+            {
+                var student = await _studentService.GetByNameAsync(loggedInUsername);
+                studentId = student?.Id;
+            }
+
+            var availableCourses = await _service.GetAvailableCoursesForStudentsAsync(studentId);
+            return Ok(availableCourses);
+        }
+
         var result = await _service.GetPagedAsync(queryParams);
         return Ok(result);
+    }
+
+    [HttpGet("available")]
+    public async Task<IActionResult> GetAvailableCourses()
+    {
+        var loggedInUsername = User.FindFirst(ClaimTypes.Name)?.Value;
+        int? studentId = null;
+        if (!string.IsNullOrEmpty(loggedInUsername))
+        {
+            var student = await _studentService.GetByNameAsync(loggedInUsername);
+            studentId = student?.Id;
+        }
+
+        var availableCourses = await _service.GetAvailableCoursesForStudentsAsync(studentId);
+        return Ok(availableCourses);
     }
 
     [HttpGet("{id}")]
@@ -34,6 +67,7 @@ public class CoursesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,admin")]
     public async Task<IActionResult> Create(CreateCourseDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -42,6 +76,7 @@ public class CoursesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,admin")]
     public async Task<IActionResult> Update(int id, UpdateCourseDto dto)
     {
         if (id <= 0) return BadRequest("Invalid course ID.");
@@ -52,6 +87,7 @@ public class CoursesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,admin")]
     public async Task<IActionResult> Delete(int id)
     {
         if (id <= 0) return BadRequest("Invalid course ID.");
@@ -60,8 +96,9 @@ public class CoursesController : ControllerBase
         return NoContent();
     }
 
-
     [HttpGet("requests")]
+    [HttpGet("pending-requests")]
+    [Authorize(Roles = "Admin,admin")]
     public async Task<IActionResult> GetPendingRequests()
     {
         var requests = await _service.GetPendingEnrollmentRequestsAsync();
@@ -69,15 +106,36 @@ public class CoursesController : ControllerBase
     }
 
     [HttpPost("requests/{requestId}/process")]
+    [Authorize(Roles = "Admin,admin")]
     public async Task<IActionResult> ProcessRequest(int requestId, [FromQuery] bool approve)
     {
         if (requestId <= 0)
-            return BadRequest("Invalid request ID.");
+            return BadRequest(new { message = "Invalid request ID." });
 
         var result = await _service.ProcessEnrollmentRequestAsync(requestId, approve);
         if (!result.Success)
-            return BadRequest(result.Message);
+            return BadRequest(new { message = result.Message });
 
-        return Ok(result.Message);
+        return Ok(new { message = result.Message });
     }
+
+    [HttpPost("process-request")]
+    [Authorize(Roles = "Admin,admin")]
+    public async Task<IActionResult> ProcessRequestFromBody([FromBody] ProcessRequestDto body)
+    {
+        if (body == null || body.RequestId <= 0)
+            return BadRequest(new { message = "Invalid request ID." });
+
+        var result = await _service.ProcessEnrollmentRequestAsync(body.RequestId, body.Approve);
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(new { message = result.Message });
+    }
+}
+
+public class ProcessRequestDto
+{
+    public int RequestId { get; set; }
+    public bool Approve { get; set; }
 }

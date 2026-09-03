@@ -44,11 +44,11 @@ export class StudentService {
     return this.http.post(`${this.apiUrl}/enroll`, { courseId });
   }
 
-  requestEnrollment(courseId: number, reason: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/request-enrollment`, { courseId, reason });
+  requestEnrollment(courseId: number, reason: string, studentId?: number, courseName?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/request-enrollment`, { courseId, studentId, courseName, reason });
   }
 
-  requestUnenrollment(courseId: number, reason: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/request-unenrollment`, { courseId, reason });
+  requestUnenrollment(courseId: number, reason: string, studentId?: number, courseName?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/request-unenrollment`, { courseId, studentId, courseName, reason });
   }
 }

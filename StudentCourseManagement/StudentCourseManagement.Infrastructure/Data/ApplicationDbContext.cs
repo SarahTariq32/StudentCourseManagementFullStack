@@ -24,6 +24,7 @@ public partial class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<StudentCourse>(entity =>
         {
+            base.OnModelCreating(modelBuilder);
             entity.HasKey(sc => new { sc.StudentId, sc.CourseId });
 
             entity.HasOne(sc => sc.Student)
@@ -56,11 +57,25 @@ public partial class ApplicationDbContext : DbContext
 
             entity.HasKey(e => e.Id);
 
-            entity.Property(e => e.FullName).HasMaxLength(100).HasDefaultValue("");
-            entity.Property(e => e.Email).HasMaxLength(100).HasDefaultValue("");
-            entity.Property(e => e.Username).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.PasswordHash).HasMaxLength(255).IsRequired();
-            entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.FullName)
+                .HasMaxLength(100)
+                .HasDefaultValue("");
+
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .HasDefaultValue("");
+
+            entity.Property(e => e.Username)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.PasswordHash)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(e => e.Role)
+                .HasMaxLength(50)
+                .IsRequired();
         });
 
         modelBuilder.Entity<EnrollmentRequest>(entity =>

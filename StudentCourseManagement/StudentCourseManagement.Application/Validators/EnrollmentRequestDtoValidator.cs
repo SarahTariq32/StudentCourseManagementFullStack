@@ -12,8 +12,11 @@ public class EnrollmentRequestDtoValidator : AbstractValidator<CreateEnrollmentR
 {
     public EnrollmentRequestDtoValidator()
     {
-        RuleFor(x => x.CourseId)
-            .GreaterThan(0).WithMessage("Course ID must be greater than 0.");
+        RuleFor(x => x)
+            .Must(x => x.CourseId > 0
+                     || !string.IsNullOrWhiteSpace(x.CourseName)
+                     || (x.Reason != null && x.Reason.Contains("ACCOUNT_CREATION_REQUEST")))
+            .WithMessage("Either a valid Course ID, Course Name, or account creation reason is required.");
 
         RuleFor(x => x.Reason)
             .MaximumLength(250).WithMessage("Reason cannot exceed 250 characters.");

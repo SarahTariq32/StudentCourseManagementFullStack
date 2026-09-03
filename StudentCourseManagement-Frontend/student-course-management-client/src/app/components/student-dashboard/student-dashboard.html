@@ -1,4 +1,4 @@
-<div class="student-shell">
+<div class="student-dashboard-layout" style="display: flex; min-height: 100vh;">
   <!-- SIDEBAR NAVIGATION -->
   <aside class="sidebar">
     <div class="brand">
@@ -34,13 +34,18 @@
   </aside>
 
   <!-- MAIN CONTENT AREA -->
-  <main class="content">
+  <main class="content" style="flex: 1; padding: 24px;">
+    <!-- Maximum Course Limit Warning Banner -->
+    <div *ngIf="showMaxCoursesBanner" class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #ffeeba;">
+      <strong>Notice:</strong> You are currently enrolled in <strong>7 courses</strong>, which is the maximum allowed limit. You cannot enroll or request enrollment in additional courses until you unenroll from an active course.
+    </div>
+
     <div *ngIf="!isLoading && !isVerified" class="alert alert-warning">
-      <h3>⚠️ Unverified Account Link</h3>
-      <p>Your login is registered, but you aren't linked to an active student record yet. Send a request to the Admin below:</p>
+      <h3>⚠️ Unverified Account Status</h3>
+      <p>Your user account is registered, but not yet linked to an active Student database profile. Submit a request below for Admin verification:</p>
       <div class="request-box">
-        <input type="text" [(ngModel)]="accountRequestReason" placeholder="Reason or Student ID details..." />
-        <button class="btn btn-primary btn-sm" (click)="onRequestAccountCreation()">Send Request to Admin</button>
+        <input type="text" [(ngModel)]="accountRequestReason" placeholder="Notes or registration request details..." />
+        <button class="btn btn-primary btn-sm" (click)="onRequestAccountCreation()">Request Student Registration</button>
       </div>
     </div>
 
@@ -70,7 +75,7 @@
       </div>
     </section>
 
-    <!-- 2. MY ACTIVE COURSES WITH UNENROLLMENT CONTROL -->
+    <!-- 2. MY ACTIVE COURSES -->
     <section *ngIf="!isLoading && activeView === 'my-courses'" class="card">
       <div class="card-header">
         <h3>My Enrolled Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</h3>
@@ -136,10 +141,10 @@
             <!-- DIRECT ENROLL -->
             <button 
               class="btn btn-success"
-              [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name) || (studentProfile?.enrolledCourses?.length ?? 0) >= 7"
+              [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               (click)="onEnrollDirectly(c.id)"
             >
-              {{ isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : 'Enroll Now') }}
+              {{ isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : (!isVerified ? 'Verification Required' : 'Self-Enroll')) }}
             </button>
 
             <!-- SPECIAL REQUEST -->
@@ -165,7 +170,7 @@
       </div>
     </section>
 
-    <!-- 4. PROFILE VIEW & STYLED EDIT FORM -->
+    <!-- 4. PROFILE VIEW -->
     <section *ngIf="!isLoading && activeView === 'profile' && studentProfile" class="card profile-card">
       <div class="card-header">
         <h3>Academic Profile Details</h3>
@@ -174,7 +179,6 @@
         </button>
       </div>
 
-      <!-- READ-ONLY VIEW -->
       <div *ngIf="!isEditingProfile" class="profile-details">
         <div class="detail-row">
           <span class="detail-label">Student Name:</span>
@@ -198,7 +202,6 @@
         </div>
       </div>
 
-      <!-- STYLED EDIT PROFILE FORM -->
       <form *ngIf="isEditingProfile" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="styled-edit-form">
         <div class="form-group">
           <label>Full Name</label>

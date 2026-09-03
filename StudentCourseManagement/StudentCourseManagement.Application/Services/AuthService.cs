@@ -202,32 +202,45 @@ public class AuthService : IAuthService
     public async Task<bool> RegisterAsync(RegisterDto dto)
     {
         // 1. Check duplicate username
-        var existingUser = await _userRepository.GetByUsernameAsync(dto.Username);
-        if (existingUser != null)
+        var existingByUsername = await _userRepository.GetByUsernameAsync(dto.Username);
+        if (existingByUsername != null)
+            return false;
+
+        // 2. Check duplicate email
+        if (!string.IsNullOrWhiteSpace(dto.Email))
         {
-            throw new Exception("Username already exists.");
+            var existingByEmail = await _userRepository.GetByUsernameAsync(dto.Email);
+            if (existingByEmail != null)
+                return false;
         }
 
-        // 2. Parse role safely
+        // 3. Parse role safely
         if (!Enum.TryParse<UserRole>(dto.Role, true, out var parsedRole))
         {
             parsedRole = UserRole.Student;
         }
 
-        // 3. Create domain model
+        // 4. Create domain model instance
         var newUser = new User
         {
-            FullName = dto.FullName ?? string.Empty,
+            FullName = !string.IsNullOrWhiteSpace(dto.FullName) ? dto.FullName : dto.Username,
             Email = dto.Email ?? string.Empty,
             Username = dto.Username,
             Role = parsedRole
         };
 
-        // 4. Hash password safely without passing uninitialized entity reference
-        newUser.PasswordHash = _passwordHasher.HashPassword(null!, dto.Password);
+        // 5. Hash password with the instantiated newUser model
+        newUser.PasswordHash = _passwordHasher.HashPassword(newUser, dto.Password);
 
-        // 5. Save entity
-        await _userRepository.AddAsync(newUser);
+        // 6. Save entity via repository
+        try
+        {
+            await _userRepository.AddAsync(newUser);
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
 
         return true;
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +9,8 @@ namespace StudentCourseManagement.Application.DTOs;
 public class CreateEnrollmentRequestDto
 {
     public int CourseId { get; set; }
+    public int StudentId { get; set; }
+    public string? CourseName { get; set; }
     public string? Reason { get; set; }
 }
 

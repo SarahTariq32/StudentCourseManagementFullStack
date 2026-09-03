@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
 export interface PendingRequest {
-  id: number;
+  requestId: number;
   studentId: number;
   studentName: string;
   courseId: number;

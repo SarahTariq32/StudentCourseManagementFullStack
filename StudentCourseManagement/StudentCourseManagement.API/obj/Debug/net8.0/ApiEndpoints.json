@@ -164,6 +164,42 @@
   },
   {
     "ContainingType": "StudentCourseManagement.API.Controllers.CoursesController",
+    "Method": "GetAvailableCourses",
+    "RelativePath": "api/Courses/available",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.CoursesController",
+    "Method": "GetPendingRequests",
+    "RelativePath": "api/Courses/pending-requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.CoursesController",
+    "Method": "ProcessRequestFromBody",
+    "RelativePath": "api/Courses/process-request",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "StudentCourseManagement.API.Controllers.ProcessRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.CoursesController",
     "Method": "GetPendingRequests",
     "RelativePath": "api/Courses/requests",
     "HttpMethod": "GET",
@@ -235,22 +271,6 @@
         "Name": "PageSize",
         "Type": "System.Int32",
         "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "StudentCourseManagement.API.Controllers.StudentsController",
-    "Method": "Create",
-    "RelativePath": "api/Students",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "dto",
-        "Type": "StudentCourseManagement.Application.DTOs.CreateStudentDto",
-        "IsRequired": true
       }
     ],
     "ReturnTypes": []

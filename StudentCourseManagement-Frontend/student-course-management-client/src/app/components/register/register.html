@@ -34,7 +34,10 @@
     <div *ngIf="errorMessage" class="server-error">
       {{ errorMessage }}
     </div>
-
+    <div *ngIf="successMessage" class="server-success">
+      {{ successMessage }}
+    </div>
+    
     <button type="submit" class="submit-btn" [disabled]="isLoading || registerForm.invalid">
       {{ isLoading ? 'Creating Account...' : 'Sign Up' }}
     </button>

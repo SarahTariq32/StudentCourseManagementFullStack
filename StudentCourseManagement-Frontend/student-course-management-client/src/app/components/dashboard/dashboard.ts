@@ -34,13 +34,13 @@ export class DashboardComponent implements OnInit {
       next: (data: Course[]) => {
         this.courses = data;
         this.isLoading = false;
-        this.cdr.detectChanges(); // <-- FORCE ANGULAR TO UPDATE THE UI NOW
+        this.cdr.detectChanges(); 
       },
       error: (err: any) => {
         console.error('API Error:', err);
         this.errorMessage = 'Failed to load course list.';
         this.isLoading = false;
-        this.cdr.detectChanges(); // <-- FORCE ANGULAR TO UPDATE ON ERROR TOO
+        this.cdr.detectChanges(); 
       }
     });
   }

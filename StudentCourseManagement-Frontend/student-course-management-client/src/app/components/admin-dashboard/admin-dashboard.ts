@@ -3,7 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AdminService } from '../../services/admin';
+
+import { TableModule, TableLazyLoadEvent } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+
+import { AdminService, QueryParameters } from '../../services/admin';
 import { AuthService } from '../../services/auth';
 import { PendingRequest } from '../../models/admin.model';
 import { extractErrorMessage } from '../../utils/http-error.util';
@@ -22,7 +27,13 @@ type AdminView =
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule
+  ],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss'
 })
@@ -32,6 +43,12 @@ export class AdminDashboardComponent implements OnInit {
   students: any[] = [];
   courses: any[] = [];
   
+  totalStudentsCount: number = 0;
+  totalCoursesCount: number = 0;
+  
+  studentsLoading: boolean = false;
+  coursesLoading: boolean = false;
+
   registrationRequests: PendingRequest[] = [];
   courseRequests: PendingRequest[] = [];
   
@@ -66,7 +83,8 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.refreshAllData();
+    this.refreshOverviewCounts();
+    this.refreshPendingRequests();
   }
 
   setView(view: AdminView): void {
@@ -77,34 +95,119 @@ export class AdminDashboardComponent implements OnInit {
     this.searchedCourse = null;
   }
 
-  refreshAllData(): void {
-    // 1. Fetch Students (Handles both direct array or paged wrapper payload, sorted by ID ascending)
-    this.adminService.getStudents().subscribe({
-      next: (res: any) => { 
-        const raw = Array.isArray(res) ? res : (res?.items || []); 
-        this.students = raw.slice().sort((a: any, b: any) => (a.id || 0) - (b.id || 0));
-        this.cdr.detectChanges(); 
-      },
-      error: (err: HttpErrorResponse) => {
-        console.error('Students fetch error:', err);
-        this.errorMessage = extractErrorMessage(err, 'Failed to load student directory.');
+  refreshOverviewCounts(): void {
+    this.adminService.getStudents({ pageIndex: 1, pageSize: 1 }).subscribe({
+      next: (res: any) => {
+        this.totalStudentsCount = res?.totalCount ?? res?.TotalCount ?? (Array.isArray(res) ? res.length : 0);
+        this.cdr.detectChanges();
       }
     });
 
-    // 2. Fetch Courses (Handles array or wrapped payload, sorted by ID ascending)
-    this.adminService.getCourses().subscribe({
-      next: (res: any) => { 
-        const raw = Array.isArray(res) ? res : (res?.items || []); 
-        this.courses = raw.slice().sort((a: any, b: any) => (a.id || 0) - (b.id || 0));
-        this.cdr.detectChanges(); 
-      },
-      error: (err: HttpErrorResponse) => {
-        console.error('Courses fetch error:', err);
-        this.errorMessage = extractErrorMessage(err, 'Failed to load course catalog.');
+    this.adminService.getCourses({ pageIndex: 1, pageSize: 1 }).subscribe({
+      next: (res: any) => {
+        this.totalCoursesCount = res?.totalCount ?? res?.TotalCount ?? (Array.isArray(res) ? res.length : 0);
+        this.cdr.detectChanges();
       }
     });
+  }
 
-    // 3. Fetch Pending Requests
+  // --- SERVER-SIDE LAZY LOADING FOR STUDENTS ---
+  onLazyLoadStudents(event: TableLazyLoadEvent): void {
+    setTimeout(() => {
+      this.studentsLoading = true;
+      this.cdr.detectChanges();
+
+      const first = event.first ?? 0;
+      const rows = event.rows ?? 5;
+      const pageIndex = Math.floor(first / rows) + 1;
+      const pageSize = rows;
+
+      const searchTerm = typeof event.globalFilter === 'string' ? event.globalFilter.trim() : '';
+      const sortBy = typeof event.sortField === 'string' ? event.sortField : 'Name';
+      const isDescending = event.sortOrder === -1;
+
+      const queryParams: QueryParameters = {
+        pageIndex,
+        pageSize,
+        searchTerm,
+        sortBy,
+        isDescending
+      };
+
+      this.adminService.getStudents(queryParams).subscribe({
+        next: (res: any) => {
+          if (Array.isArray(res)) {
+            this.students = res;
+            this.totalStudentsCount = res.length;
+          } else if (res) {
+            this.students = res.items || res.Items || res.data || res.Data || [];
+            this.totalStudentsCount = res.totalCount ?? res.TotalCount ?? res.count ?? this.students.length;
+          } else {
+            this.students = [];
+            this.totalStudentsCount = 0;
+          }
+          this.studentsLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Students fetch error:', err);
+          this.errorMessage = extractErrorMessage(err, 'Failed to load student directory.');
+          this.studentsLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
+    }, 0);
+  }
+
+  // --- SERVER-SIDE LAZY LOADING FOR COURSES ---
+  onLazyLoadCourses(event: TableLazyLoadEvent): void {
+    setTimeout(() => {
+      this.coursesLoading = true;
+      this.cdr.detectChanges();
+
+      const first = event.first ?? 0;
+      const rows = event.rows ?? 5;
+      const pageIndex = Math.floor(first / rows) + 1;
+      const pageSize = rows;
+
+      const searchTerm = typeof event.globalFilter === 'string' ? event.globalFilter.trim() : '';
+      const sortBy = typeof event.sortField === 'string' ? event.sortField : 'Name';
+      const isDescending = event.sortOrder === -1;
+
+      const queryParams: QueryParameters = {
+        pageIndex,
+        pageSize,
+        searchTerm,
+        sortBy,
+        isDescending
+      };
+
+      this.adminService.getCourses(queryParams).subscribe({
+        next: (res: any) => {
+          if (Array.isArray(res)) {
+            this.courses = res;
+            this.totalCoursesCount = res.length;
+          } else if (res) {
+            this.courses = res.items || res.Items || res.data || res.Data || [];
+            this.totalCoursesCount = res.totalCount ?? res.TotalCount ?? res.count ?? this.courses.length;
+          } else {
+            this.courses = [];
+            this.totalCoursesCount = 0;
+          }
+          this.coursesLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Courses fetch error:', err);
+          this.errorMessage = extractErrorMessage(err, 'Failed to load course catalog.');
+          this.coursesLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
+    }, 0);
+  }
+
+  refreshPendingRequests(): void {
     this.adminService.getPendingRequests().subscribe({
       next: (requests: PendingRequest[]) => {
         const allReqs = requests || [];
@@ -165,7 +268,7 @@ export class AdminDashboardComponent implements OnInit {
       this.adminService.updateCourse(this.selectedCourseId, this.courseForm.value).subscribe({
         next: () => {
           this.statusMessage = 'Course updated successfully!';
-          this.refreshAllData();
+          this.refreshOverviewCounts();
           this.setView('courses-list');
         },
         error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Update failed.')
@@ -174,7 +277,7 @@ export class AdminDashboardComponent implements OnInit {
       this.adminService.createCourse(this.courseForm.value).subscribe({
         next: () => {
           this.statusMessage = 'New course created successfully!';
-          this.refreshAllData();
+          this.refreshOverviewCounts();
           this.setView('courses-list');
         },
         error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Creation failed.')
@@ -189,7 +292,8 @@ export class AdminDashboardComponent implements OnInit {
       next: () => {
         this.statusMessage = `Course #${id} deleted successfully.`;
         this.searchedCourse = null;
-        this.refreshAllData();
+        this.refreshOverviewCounts();
+        this.setView('courses-list');
       },
       error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Delete operation failed.')
     });
@@ -229,7 +333,7 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.updateStudent(this.selectedStudentId, this.studentEditForm.value).subscribe({
       next: () => {
         this.statusMessage = 'Student profile updated successfully!';
-        this.refreshAllData();
+        this.refreshOverviewCounts();
         this.setView('students-list');
       },
       error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Update failed.')
@@ -243,18 +347,19 @@ export class AdminDashboardComponent implements OnInit {
       next: () => {
         this.statusMessage = 'Student profile deleted successfully.';
         this.searchedStudent = null;
-        this.refreshAllData();
+        this.refreshOverviewCounts();
+        this.setView('students-list');
       },
       error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Delete operation failed.')
     });
   }
 
-  // --- PROCESS REQUESTS ---
   onProcessRequest(requestId: number, approve: boolean): void {
     this.adminService.processRequest(requestId, approve).subscribe({
       next: (res) => {
         this.statusMessage = res.message || (approve ? 'Approved successfully.' : 'Rejected.');
-        this.refreshAllData();
+        this.refreshOverviewCounts();
+        this.refreshPendingRequests();
       },
       error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Processing failed.')
     });

@@ -1,11 +1,19 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { PendingRequest } from '../models/admin.model';
-import { PagedResult, Course } from '../models/course.model';
+import { Course } from '../models/course.model';
 import { StudentProfile } from '../models/student.model';
 import { ApiMessageResponse } from '../models/common.model';
+
+export interface QueryParameters {
+  pageIndex?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  sortBy?: string;
+  isDescending?: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +23,16 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  getStudents(): Observable<PagedResult<StudentProfile>> {
-    return this.http.get<PagedResult<StudentProfile>>(`${this.apiUrl}/Students?pageIndex=1&pageSize=100`);
+  getStudents(params?: QueryParameters): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.pageIndex) httpParams = httpParams.set('pageIndex', params.pageIndex);
+      if (params.pageSize) httpParams = httpParams.set('pageSize', params.pageSize);
+      if (params.searchTerm) httpParams = httpParams.set('searchTerm', params.searchTerm);
+      if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
+      if (params.isDescending !== undefined) httpParams = httpParams.set('isDescending', params.isDescending);
+    }
+    return this.http.get<any>(`${this.apiUrl}/Students`, { params: httpParams });
   }
 
   getStudentById(id: number): Observable<StudentProfile> {
@@ -31,8 +47,16 @@ export class AdminService {
     return this.http.delete<void>(`${this.apiUrl}/Students/${id}`);
   }
 
-  getCourses(): Observable<PagedResult<Course> | Course[]> {
-    return this.http.get<PagedResult<Course> | Course[]>(`${this.apiUrl}/Courses`);
+  getCourses(params?: QueryParameters): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.pageIndex) httpParams = httpParams.set('pageIndex', params.pageIndex);
+      if (params.pageSize) httpParams = httpParams.set('pageSize', params.pageSize);
+      if (params.searchTerm) httpParams = httpParams.set('searchTerm', params.searchTerm);
+      if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
+      if (params.isDescending !== undefined) httpParams = httpParams.set('isDescending', params.isDescending);
+    }
+    return this.http.get<any>(`${this.apiUrl}/Courses`, { params: httpParams });
   }
 
   getCourseById(id: number): Observable<Course> {

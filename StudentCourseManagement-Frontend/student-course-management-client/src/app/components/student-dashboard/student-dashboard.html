@@ -1,244 +1,222 @@
-<div class="student-dashboard-layout" style="display: flex; min-height: 100vh;">
+<div class="flex min-h-screen bg-slate-50 font-sans">
   <!-- SIDEBAR NAVIGATION -->
-  <aside class="sidebar">
-    <div class="brand">
-      <h2>Student Portal</h2>
-      <p *ngIf="studentProfile" class="user-greeting">Welcome, <strong>{{ studentProfile.name }}</strong></p>
+  <aside class="w-64 min-w-[16rem] bg-slate-900 text-slate-200 p-6 flex flex-col justify-between shadow-xl">
+    <div>
+      <div class="mb-8">
+        <h2 class="text-xl font-bold text-sky-400">Student Portal</h2>
+        <p *ngIf="studentProfile" class="text-xs text-slate-400 mt-1">Welcome, <strong class="text-slate-200">{{ studentProfile.name }}</strong></p>
+      </div>
+      
+      <nav class="flex flex-col gap-1">
+        <button 
+          [class.bg-slate-800]="activeView === 'overview'" 
+          [class.text-white]="activeView === 'overview'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          (click)="setView('overview')"
+        >
+          Dashboard Overview
+        </button>
+
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">My Academics</div>
+        <button 
+          [class.bg-slate-800]="activeView === 'my-courses'"
+          [disabled]="!isVerified"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40"
+          (click)="setView('my-courses')"
+        >
+          My Active Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)
+        </button>
+        <button 
+          [class.bg-slate-800]="activeView === 'available-courses'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          (click)="setView('available-courses')"
+        >
+          Browse Course Catalog
+        </button>
+
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Account</div>
+        <button 
+          [class.bg-slate-800]="activeView === 'profile'"
+          [disabled]="!isVerified"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40"
+          (click)="setView('profile')"
+        >
+          My Profile {{ !isVerified ? '(Locked)' : '' }}
+        </button>
+      </nav>
     </div>
-    
-    <nav class="menu">
-      <button [class.active]="activeView === 'overview'" (click)="setView('overview')">
-        Dashboard Overview
-      </button>
 
-      <div class="menu-label">My Academics</div>
-      <button 
-        [class.active]="activeView === 'my-courses'" 
-        [disabled]="!isVerified" 
-        (click)="setView('my-courses')"
-      >
-        My Active Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)
-      </button>
-
-      <button [class.active]="activeView === 'available-courses'" (click)="setView('available-courses')">
-        Browse Available Courses
-      </button>
-
-      <div class="menu-label">Account</div>
-      <button [class.active]="activeView === 'profile'" [disabled]="!isVerified" (click)="setView('profile')">
-        My Profile {{ !isVerified ? '(Locked)' : '' }}
-      </button>
-    </nav>
-
-    <button (click)="onLogout()" class="logout-btn">Logout</button>
+    <button (click)="onLogout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm">
+      Logout
+    </button>
   </aside>
 
   <!-- MAIN CONTENT AREA -->
-  <main class="content" style="flex: 1; padding: 24px;">
-    <!-- Maximum Course Limit Warning Banner -->
-    <div *ngIf="showMaxCoursesBanner" class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #ffeeba;">
-      <strong>Notice:</strong> You are currently enrolled in <strong>7 courses</strong>, which is the maximum allowed limit. You cannot enroll or request enrollment in additional courses until you unenroll from an active course.
+  <main class="flex-1 p-8 overflow-y-auto">
+    <!-- Notice Banners -->
+    <div *ngIf="showMaxCoursesBanner" class="bg-amber-50 text-amber-900 border border-amber-200 p-4 rounded-xl mb-6 text-sm">
+      <strong>Notice:</strong> You are currently enrolled in 7 courses (maximum limit). You must drop a course before registering for new ones.
     </div>
 
-    <div *ngIf="!isLoading && !isVerified" class="alert alert-warning">
-      <h3>⚠️ Unverified Account Status</h3>
-      <p>Your user account is registered, but not yet linked to an active Student database profile. Submit a request below for Admin verification:</p>
-      <div class="request-box">
-        <input type="text" [(ngModel)]="accountRequestReason" placeholder="Notes or registration request details..." />
-        <button class="btn btn-primary btn-sm" (click)="onRequestAccountCreation()">Request Student Registration</button>
+    <div *ngIf="!isLoading && !isVerified" class="bg-amber-50 text-amber-900 border border-amber-200 p-5 rounded-xl mb-6">
+      <h3 class="font-bold text-base mb-1">⚠️ Unverified Account Status</h3>
+      <p class="text-sm mb-3">Your account is registered but awaiting admin verification. Submit a request below to verify your profile:</p>
+      <div class="flex gap-2">
+        <input type="text" [(ngModel)]="accountRequestReason" placeholder="Notes for admin..." class="px-3 py-1.5 border border-amber-300 rounded-lg text-sm flex-1 bg-white" />
+        <button class="px-4 py-1.5 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition" (click)="onRequestAccountCreation()">Submit Request</button>
       </div>
     </div>
 
-    <div *ngIf="statusMessage" class="alert alert-success">{{ statusMessage }}</div>
-    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-
-    <p *ngIf="isLoading" class="loading-spinner">Loading student portal...</p>
+    <div *ngIf="statusMessage" class="bg-emerald-50 text-emerald-800 border border-emerald-200 p-4 rounded-xl mb-6 text-sm">
+      {{ statusMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="bg-rose-50 text-rose-800 border border-rose-200 p-4 rounded-xl mb-6 text-sm">
+      {{ errorMessage }}
+    </div>
 
     <!-- 1. OVERVIEW -->
-    <section *ngIf="!isLoading && activeView === 'overview'" class="hub-grid">
-      <div class="card stat-card" (click)="setView('my-courses')">
-        <h3>Enrolled Courses</h3>
-        <p class="stat-number">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="max-cap">/ 7 Max</span></p>
-        <span>View active classes →</span>
+    <section *ngIf="!isLoading && activeView === 'overview'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('my-courses')">
+        <h3 class="text-sm font-medium text-slate-500">Enrolled Courses</h3>
+        <p class="text-3xl font-bold text-slate-900 my-2">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="text-sm text-slate-400 font-normal">/ 7 Max</span></p>
+        <span class="text-xs text-sky-600 font-medium">View active classes →</span>
       </div>
-      <div class="card stat-card" (click)="setView('available-courses')">
-        <h3>Available Catalog Courses</h3>
-        <p class="stat-number">{{ courses.length }}</p>
-        <span>Explore course catalog →</span>
+      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('available-courses')">
+        <h3 class="text-sm font-medium text-slate-500">Available Catalog</h3>
+        <p class="text-3xl font-bold text-slate-900 my-2">{{ courses.length }}</p>
+        <span class="text-xs text-sky-600 font-medium">Browse catalog →</span>
       </div>
-      <div class="card stat-card" (click)="setView('profile')">
-        <h3>Account Status</h3>
-        <p class="stat-number" [class.success-text]="isVerified" [class.warning-text]="!isVerified">
+      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('profile')">
+        <h3 class="text-sm font-medium text-slate-500">Account Status</h3>
+        <p class="text-3xl font-bold my-2" [class.text-emerald-600]="isVerified" [class.text-amber-600]="!isVerified">
           {{ isVerified ? 'Verified' : 'Pending' }}
         </p>
-        <span>View profile details →</span>
+        <span class="text-xs text-sky-600 font-medium">View profile →</span>
       </div>
     </section>
 
     <!-- 2. MY ACTIVE COURSES -->
-    <section *ngIf="!isLoading && activeView === 'my-courses'" class="card">
-      <div class="card-header">
-        <h3>My Enrolled Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</h3>
-      </div>
+    <section *ngIf="!isLoading && activeView === 'my-courses'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <h3 class="text-lg font-bold text-slate-800 mb-4">My Enrolled Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</h3>
 
-      <div *ngIf="studentProfile?.enrolledCourses?.length" class="enrolled-list">
-        <div *ngFor="let courseName of studentProfile?.enrolledCourses" class="enrolled-item">
-          <div class="course-info">
-            <h4>{{ courseName }}</h4>
-            <span class="badge badge-active">Active Registration</span>
+      <div *ngIf="studentProfile?.enrolledCourses?.length" class="flex flex-col gap-3">
+        <div *ngFor="let courseName of studentProfile?.enrolledCourses" class="flex justify-between items-center p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+          <div>
+            <h4 class="font-bold text-slate-900">{{ courseName }}</h4>
+            <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-medium mt-1 inline-block">Active Registration</span>
           </div>
 
-          <div class="unenroll-inline-box">
-            <input 
-              type="text" 
-              [(ngModel)]="unenrollmentReasonMap[courseName]" 
-              placeholder="Reason for dropping..." 
-            />
-            <button class="btn btn-sm btn-danger" (click)="onRequestUnenrollment(courseName)">
-              Request Unenrollment
+          <div class="flex gap-2 items-center">
+            <input type="text" [(ngModel)]="unenrollmentReasonMap[courseName]" placeholder="Reason for dropping..." class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs w-56 bg-white" />
+            <button class="px-3 py-1.5 text-xs font-medium bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition" (click)="onRequestUnenrollment(courseName)">
+              Request Drop
             </button>
           </div>
         </div>
       </div>
 
-      <p *ngIf="!studentProfile?.enrolledCourses?.length">You are not currently enrolled in any courses.</p>
+      <p *ngIf="!studentProfile?.enrolledCourses?.length" class="text-slate-500 text-sm py-4">You are not currently enrolled in any courses.</p>
     </section>
 
-    <!-- 3. AVAILABLE COURSES CATALOG -->
-    <section *ngIf="!isLoading && activeView === 'available-courses'" class="course-catalog">
-      <h3>Course Catalog</h3>
-      <div class="course-grid">
+    <!-- 3. MODERN COURSE CARDS CATALOG -->
+    <section *ngIf="!isLoading && activeView === 'available-courses'">
+      <h3 class="text-lg font-bold text-slate-800 mb-4">Course Catalog</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div 
           *ngFor="let c of courses" 
-          class="card course-card" 
-          [class.disabled-card]="c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
+          class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col justify-between"
+          [class.opacity-60]="c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
         >
-          <div class="card-header">
-            <h4>{{ c.name }}</h4>
-            <span class="badge credits-badge">{{ c.credits }} Credits</span>
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <h4 class="font-bold text-slate-900 text-base">{{ c.name }}</h4>
+              <span class="bg-sky-50 text-sky-700 text-xs px-2.5 py-1 rounded-md font-semibold">{{ c.credits }} Credits</span>
+            </div>
+
+            <div class="my-3">
+              <span *ngIf="isAlreadyEnrolled(c.name)" class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200">✓ Enrolled</span>
+              <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount < 50" class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md">Available</span>
+              <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount >= 50" class="text-xs bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md">Course Full</span>
+            </div>
+
+            <p class="text-xs text-slate-500 mb-4">
+              <strong>Capacity:</strong> 
+              <span [class.text-rose-600]="c.enrolledStudentsCount >= 50" class="font-semibold">
+                {{ c.enrolledStudentsCount }}/50 Seats
+              </span>
+            </p>
           </div>
 
-          <div class="badge-status-container">
-            <span *ngIf="isAlreadyEnrolled(c.name)" class="badge badge-enrolled">
-              ✓ Currently Enrolled
-            </span>
-            <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount < 50" class="badge badge-available">
-              Available to Enroll
-            </span>
-            <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount >= 50" class="badge badge-full">
-              Course Full (50/50)
-            </span>
-          </div>
-
-          <p class="capacity-info">
-            <strong>Capacity:</strong> 
-            <span [class.text-danger]="c.enrolledStudentsCount >= 50">
-              {{ c.enrolledStudentsCount ?? 0 }}/50 Enrolled
-            </span>
-          </p>
-
-          <div class="card-actions">
-            <!-- DIRECT ENROLL -->
+          <div class="flex flex-col gap-2 pt-2 border-t border-slate-100">
             <button 
-              class="btn btn-success"
+              class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg text-xs transition disabled:bg-slate-200 disabled:text-slate-400"
               [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               (click)="onEnrollDirectly(c.id)"
             >
               {{ isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : (!isVerified ? 'Verification Required' : 'Self-Enroll')) }}
             </button>
 
-            <!-- SPECIAL REQUEST -->
-            <div class="request-inline-box">
+            <div class="flex gap-2">
               <input 
                 type="text" 
                 [(ngModel)]="enrollmentReasonMap[c.id]" 
-                placeholder="Reason for special request..." 
+                placeholder="Special request note..." 
+                class="px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs flex-1"
                 [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               />
               <button 
-                class="btn btn-sm btn-outline" 
+                class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium rounded-lg text-xs transition disabled:opacity-40"
                 [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
                 (click)="onRequestEnrollment(c.id)"
               >
-                Request Enrollment
+                Request
               </button>
             </div>
           </div>
         </div>
-
-        <p *ngIf="!courses || courses.length === 0">No courses available in catalog.</p>
       </div>
     </section>
 
     <!-- 4. PROFILE VIEW -->
-    <section *ngIf="!isLoading && activeView === 'profile' && studentProfile" class="card profile-card">
-      <div class="card-header">
-        <h3>Academic Profile Details</h3>
-        <button class="btn btn-outline btn-sm" (click)="toggleEditProfile()">
+    <section *ngIf="!isLoading && activeView === 'profile' && studentProfile" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm max-w-lg">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-bold text-slate-800">Academic Profile</h3>
+        <button class="px-3 py-1.5 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 transition" (click)="toggleEditProfile()">
           {{ isEditingProfile ? 'Cancel' : 'Edit Profile' }}
         </button>
       </div>
 
-      <div *ngIf="!isEditingProfile" class="profile-details">
-        <div class="detail-row">
-          <span class="detail-label">Student Name:</span>
-          <span class="detail-value"><strong>{{ studentProfile.name }}</strong></span>
+      <div *ngIf="!isEditingProfile" class="flex flex-col gap-3">
+        <div class="flex py-2 border-b border-slate-100 text-sm">
+          <span class="w-36 text-slate-500">Full Name:</span>
+          <span class="font-bold text-slate-900">{{ studentProfile.name }}</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Email Address:</span>
-          <span class="detail-value">{{ studentProfile.email }}</span>
+        <div class="flex py-2 border-b border-slate-100 text-sm">
+          <span class="w-36 text-slate-500">Email:</span>
+          <span class="text-slate-800">{{ studentProfile.email }}</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Student Age:</span>
-          <span class="detail-value">{{ studentProfile.age }}</span>
-        </div>
-
-        <div class="courses-summary">
-          <h4>Active Course Registrations ({{ studentProfile.enrolledCourses.length }}/7 Max)</h4>
-          <ul class="enrolled-bullets">
-            <li *ngFor="let c of studentProfile.enrolledCourses">{{ c }}</li>
-            <li *ngIf="studentProfile.enrolledCourses.length === 0">No enrolled courses.</li>
-          </ul>
+        <div class="flex py-2 border-b border-slate-100 text-sm">
+          <span class="w-36 text-slate-500">Age:</span>
+          <span class="text-slate-800">{{ studentProfile.age }}</span>
         </div>
       </div>
 
-      <form *ngIf="isEditingProfile" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="styled-edit-form">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" formControlName="name" placeholder="Enter full name"
-                [class.is-invalid]="profileForm.get('name')?.touched && profileForm.get('name')?.invalid" />
-          <div class="field-error" *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.errors?.['required']">
-            Full name is required.
-          </div>
+      <form *ngIf="isEditingProfile" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+          <input type="text" formControlName="name" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
         </div>
-
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" formControlName="email" placeholder="student@university.edu"
-                [class.is-invalid]="profileForm.get('email')?.touched && profileForm.get('email')?.invalid" />
-          <div class="field-error" *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.errors?.['required']">
-            Email is required.
-          </div>
-          <div class="field-error" *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.errors?.['email']">
-            Please enter a valid email address.
-          </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
+          <input type="email" formControlName="email" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
         </div>
-
-        <div class="form-group">
-          <label>Age</label>
-          <input type="number" formControlName="age"
-                [class.is-invalid]="profileForm.get('age')?.touched && profileForm.get('age')?.invalid" />
-          <div class="field-error" *ngIf="profileForm.get('age')?.touched && profileForm.get('age')?.errors?.['required']">
-            Age is required.
-          </div>
-          <div class="field-error" *ngIf="profileForm.get('age')?.touched && profileForm.get('age')?.errors?.['min']">
-            Age must be at least 16.
-          </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Age</label>
+          <input type="number" formControlName="age" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
         </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-          <button type="button" class="btn btn-secondary" (click)="toggleEditProfile()">Cancel</button>
+        <div class="flex gap-3 mt-2">
+          <button type="submit" class="px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition">Save Profile</button>
+          <button type="button" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition" (click)="toggleEditProfile()">Cancel</button>
         </div>
       </form>
     </section>

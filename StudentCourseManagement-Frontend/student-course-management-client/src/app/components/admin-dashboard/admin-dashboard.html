@@ -1,270 +1,285 @@
-<div class="admin-shell">
+<div class="flex min-h-screen bg-slate-50 font-sans">
   <!-- SIDEBAR NAVIGATION -->
-  <aside class="sidebar">
-    <div class="brand">
-      <h2>Admin Control</h2>
+  <aside class="w-64 min-w-[16rem] bg-slate-900 text-slate-200 p-6 flex flex-col justify-between shadow-xl">
+    <div>
+      <div class="mb-8">
+        <h2 class="text-xl font-bold text-sky-400">Admin Control</h2>
+      </div>
+      
+      <nav class="flex flex-col gap-1">
+        <button 
+          [class.bg-slate-800]="activeView === 'overview'" 
+          [class.text-white]="activeView === 'overview'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          (click)="setView('overview')"
+        >
+          Dashboard Overview
+        </button>
+
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Students</div>
+        <button 
+          [class.bg-slate-800]="activeView === 'students-list'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          (click)="setView('students-list')"
+        >
+          View All Students
+        </button>
+        <button 
+          [class.bg-slate-800]="activeView === 'student-search'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          (click)="setView('student-search')"
+        >
+          Find / Update / Delete Student
+        </button>
+
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Courses</div>
+        <button 
+          [class.bg-slate-800]="activeView === 'courses-list'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          (click)="setView('courses-list')"
+        >
+          View All Courses
+        </button>
+        <button 
+          [class.bg-slate-800]="activeView === 'course-search'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          (click)="setView('course-search')"
+        >
+          Find / Update / Delete Course
+        </button>
+
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Pending Approvals</div>
+        <button 
+          [class.bg-slate-800]="activeView === 'registration-requests'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center"
+          (click)="setView('registration-requests')"
+        >
+          <span>Student Registrations</span>
+          <span class="bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full">{{ registrationRequests.length }}</span>
+        </button>
+        <button 
+          [class.bg-slate-800]="activeView === 'course-requests'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center"
+          (click)="setView('course-requests')"
+        >
+          <span>Enrollment Requests</span>
+          <span class="bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full">{{ courseRequests.length }}</span>
+        </button>
+      </nav>
     </div>
-    
-    <nav class="menu">
-      <button [class.active]="activeView === 'overview'" (click)="setView('overview')">
-        Dashboard Overview
-      </button>
 
-      <div class="menu-label">Students</div>
-      <button [class.active]="activeView === 'students-list'" (click)="setView('students-list')">
-        View All Students
-      </button>
-      <button [class.active]="activeView === 'student-search'" (click)="setView('student-search')">
-        Find / Update / Delete Student
-      </button>
-
-      <div class="menu-label">Courses</div>
-      <button [class.active]="activeView === 'courses-list'" (click)="setView('courses-list')">
-        View All Courses
-      </button>
-      <button [class.active]="activeView === 'course-search'" (click)="setView('course-search')">
-        Find / Update / Delete Course
-      </button>
-
-      <div class="menu-label">Pending Approvals</div>
-      <button [class.active]="activeView === 'registration-requests'" (click)="setView('registration-requests')">
-        Student Registrations ({{ registrationRequests.length }})
-      </button>
-      <button [class.active]="activeView === 'course-requests'" (click)="setView('course-requests')">
-        Enrollment Requests ({{ courseRequests.length }})
-      </button>
-    </nav>
-
-    <button (click)="onLogout()" class="logout-btn">Logout</button>
+    <button (click)="onLogout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm">
+      Logout
+    </button>
   </aside>
 
   <!-- MAIN CONTENT AREA -->
-  <main class="content">
-    <div *ngIf="statusMessage" class="alert alert-success">{{ statusMessage }}</div>
-    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <main class="flex-1 p-8 overflow-y-auto">
+    <div *ngIf="statusMessage" class="bg-emerald-50 text-emerald-800 border border-emerald-200 p-4 rounded-xl mb-6 text-sm">
+      {{ statusMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="bg-rose-50 text-rose-800 border border-rose-200 p-4 rounded-xl mb-6 text-sm">
+      {{ errorMessage }}
+    </div>
 
     <!-- 1. DASHBOARD OVERVIEW -->
-    <section *ngIf="activeView === 'overview'" class="hub-grid">
-      <div class="card stat-card" (click)="setView('students-list')">
-        <h3>Total Students</h3>
-        <p class="stat-number">{{ students?.length || 0 }}</p>
-        <span>Manage directory →</span>
+    <section *ngIf="activeView === 'overview'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('students-list')">
+        <h3 class="text-sm font-medium text-slate-500">Total Students Records</h3>
+        <p class="text-3xl font-bold text-slate-900 my-2">{{ totalStudentsCount }}</p>
+        <span class="text-xs text-sky-600 font-medium">Manage directory →</span>
       </div>
-      <div class="card stat-card" (click)="setView('courses-list')">
-        <h3>Total Courses</h3>
-        <p class="stat-number">{{ courses?.length || 0 }}</p>
-        <span>Manage catalog →</span>
+      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('courses-list')">
+        <h3 class="text-sm font-medium text-slate-500">Total Catalog Courses</h3>
+        <p class="text-3xl font-bold text-slate-900 my-2">{{ totalCoursesCount }}</p>
+        <span class="text-xs text-sky-600 font-medium">Manage catalog →</span>
       </div>
-      <div class="card stat-card" (click)="setView('registration-requests')">
-        <h3>Registration Requests</h3>
-        <p class="stat-number warning">{{ registrationRequests.length }}</p>
-        <span>Approve accounts →</span>
+      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('registration-requests')">
+        <h3 class="text-sm font-medium text-slate-500">Registration Requests</h3>
+        <p class="text-3xl font-bold text-amber-600 my-2">{{ registrationRequests.length }}</p>
+        <span class="text-xs text-amber-600 font-medium">Approve accounts →</span>
       </div>
-      <div class="card stat-card" (click)="setView('course-requests')">
-        <h3>Enrollment Requests</h3>
-        <p class="stat-number warning">{{ courseRequests.length }}</p>
-        <span>Review course changes →</span>
+      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('course-requests')">
+        <h3 class="text-sm font-medium text-slate-500">Enrollment Requests</h3>
+        <p class="text-3xl font-bold text-amber-600 my-2">{{ courseRequests.length }}</p>
+        <span class="text-xs text-amber-600 font-medium">Review course changes →</span>
       </div>
     </section>
 
-    <!-- 2. VIEW ALL STUDENTS -->
-    <section *ngIf="activeView === 'students-list'" class="card">
-      <div class="card-header">
-        <h3>Student Directory</h3>
+    <!-- 2. LAZY-LOADED SERVER-PAGINATED STUDENT TABLE -->
+    <section *ngIf="activeView === 'students-list'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-bold text-slate-800">Student Directory (Database Processed)</h3>
       </div>
-      <table class="styled-table">
-        <thead>
+
+      <p-table 
+        #dtStudents
+        [value]="students" 
+        [lazy]="true"
+        (onLazyLoad)="onLazyLoadStudents($event)"
+        [paginator]="true" 
+        [rows]="5" 
+        [totalRecords]="totalStudentsCount"
+        [loading]="studentsLoading"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        responsiveLayout="scroll"
+        styleClass="p-datatable-striped"
+      >
+        <ng-template pTemplate="caption">
+          <div class="flex justify-end">
+            <input 
+              pInputText 
+              type="text" 
+              (input)="dtStudents.filterGlobal($any($event.target).value, 'contains')" 
+              placeholder="Search DB students..." 
+              class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm w-64"
+            />
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header">
           <tr>
-            <th>ID</th><th>Name</th><th>Email</th><th>Age</th><th>Enrolled Courses</th><th>Actions</th>
+            <th pSortableColumn="id">ID</th>
+            <th pSortableColumn="name">Name</th>
+            <th pSortableColumn="email">Email</th>
+            <th pSortableColumn="age">Age</th>
+            <th>Enrolled Courses</th>
+            <th>Actions</th>
           </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let s of students">
-            <td>{{ s.id }}</td>
-            <td><strong>{{ s.name }}</strong></td>
+        </ng-template>
+        <ng-template pTemplate="body" let-s>
+          <tr>
+            <td>#{{ s.id }}</td>
+            <td class="font-medium text-slate-900">{{ s.name }}</td>
             <td>{{ s.email }}</td>
             <td>{{ s.age }}</td>
-            <td>{{ s.enrolledCourses?.join(', ') || 'None' }}</td>
-            <td class="actions-cell">
-              <button class="btn btn-sm btn-outline" (click)="openEditStudent(s)">Update</button>
-              <button class="btn btn-sm btn-danger" (click)="onDeleteStudent(s.id)">Delete</button>
+            <td>
+              <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">
+                {{ s.enrolledCourses?.join(', ') || 'None' }}
+              </span>
+            </td>
+            <td>
+              <div class="flex gap-2">
+                <button (click)="openEditStudent(s)" class="px-3 py-1 text-xs font-medium text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition">
+                  Update
+                </button>
+                <button (click)="onDeleteStudent(s.id)" class="px-3 py-1 text-xs font-medium text-rose-600 border border-rose-200 rounded-md hover:bg-rose-50 transition">
+                  Delete
+                </button>
+              </div>
             </td>
           </tr>
-          <tr *ngIf="!students || students.length === 0">
-            <td colspan="6" style="text-align: center; padding: 1.5rem;">No student records found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- 3. FIND / UPDATE / DELETE STUDENT BY ID -->
-    <section *ngIf="activeView === 'student-search'" class="card">
-      <h3>Lookup Student Profile</h3>
-      <div class="search-box">
-        <input #sIdInput type="number" placeholder="Enter Student ID (e.g. 1006)..." />
-        <button class="btn btn-primary" (click)="onSearchStudent(sIdInput.value)">Search Student</button>
-      </div>
-
-      <div *ngIf="searchedStudent" class="result-box">
-        <h4>{{ searchedStudent.name }} (Student ID: #{{ searchedStudent.id }})</h4>
-        <p><strong>Email:</strong> {{ searchedStudent.email }}</p>
-        <p><strong>Age:</strong> {{ searchedStudent.age }}</p>
-        <p><strong>Enrolled Courses:</strong> {{ searchedStudent.enrolledCourses?.join(', ') || 'None' }}</p>
-        
-        <div class="form-actions" style="margin-top: 1rem;">
-          <button class="btn btn-sm btn-outline" (click)="openEditStudent(searchedStudent)">Update Profile</button>
-          <button class="btn btn-sm btn-danger" (click)="onDeleteStudent(searchedStudent.id)">Delete Student</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. EDIT STUDENT FORM -->
-    <section *ngIf="activeView === 'student-edit'" class="card form-card">
-      <h3>Update Student Profile (ID: #{{ selectedStudentId }})</h3>
-      <form [formGroup]="studentEditForm" (ngSubmit)="onUpdateStudent()">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" formControlName="name" [class.is-invalid]="studentEditForm.get('name')?.touched && studentEditForm.get('name')?.invalid" />
-          <div class="field-error" *ngIf="studentEditForm.get('name')?.touched && studentEditForm.get('name')?.errors?.['required']">
-            Full name is required.
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" formControlName="email" [class.is-invalid]="studentEditForm.get('email')?.touched && studentEditForm.get('email')?.invalid" />
-          <div class="field-error" *ngIf="studentEditForm.get('email')?.touched && studentEditForm.get('email')?.errors?.['required']">
-            Email is required.
-          </div>
-          <div class="field-error" *ngIf="studentEditForm.get('email')?.touched && studentEditForm.get('email')?.errors?.['email']">
-            Please enter a valid email address.
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Age</label>
-          <input type="number" formControlName="age" [class.is-invalid]="studentEditForm.get('age')?.touched && studentEditForm.get('age')?.invalid" />
-          <div class="field-error" *ngIf="studentEditForm.get('age')?.touched && studentEditForm.get('age')?.errors?.['required']">
-            Age is required.
-          </div>
-          <div class="field-error" *ngIf="studentEditForm.get('age')?.touched && studentEditForm.get('age')?.errors?.['min']">
-            Student must be at least 16 years old.
-          </div>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-          <button type="button" class="btn btn-secondary" (click)="setView('students-list')">Cancel</button>
-        </div>
-      </form>
-    </section>
-
-    <!-- 5. VIEW ALL COURSES -->
-    <section *ngIf="activeView === 'courses-list'" class="card">
-      <div class="card-header">
-        <h3>Course Catalog</h3>
-        <button class="btn btn-primary" (click)="setView('course-form')">+ Add New Course</button>
-      </div>
-      <table class="styled-table">
-        <thead>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
           <tr>
-            <th>ID</th><th>Course Name</th><th>Credits</th><th>Capacity</th><th>Actions</th>
+            <td colspan="6" class="text-center py-6 text-slate-500">No student records match backend query.</td>
           </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let c of courses">
-            <td>{{ c.id }}</td>
-            <td><strong>{{ c.name }}</strong></td>
-            <td>{{ c.credits }} Credits</td>
-            <td>{{ c.enrolledStudentsCount ?? 0 }}/50</td>
-            <td class="actions-cell">
-              <button class="btn btn-sm btn-outline" (click)="openEditCourse(c)">Update</button>
-              <button class="btn btn-sm btn-danger" (click)="onDeleteCourse(c.id)">Delete</button>
+        </ng-template>
+      </p-table>
+    </section>
+
+    <!-- 3. LAZY-LOADED SERVER-PAGINATED COURSE TABLE -->
+    <section *ngIf="activeView === 'courses-list'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-bold text-slate-800">Course Catalog (Database Processed)</h3>
+        <button (click)="setView('course-form')" class="px-4 py-2 text-sm font-medium bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition">
+          + Add New Course
+        </button>
+      </div>
+
+      <p-table 
+        #dtCourses
+        [value]="courses" 
+        [lazy]="true"
+        (onLazyLoad)="onLazyLoadCourses($event)"
+        [paginator]="true" 
+        [rows]="5" 
+        [totalRecords]="totalCoursesCount"
+        [loading]="coursesLoading"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        responsiveLayout="scroll"
+        styleClass="p-datatable-striped"
+      >
+        <ng-template pTemplate="caption">
+          <div class="flex justify-end">
+            <input 
+              pInputText 
+              type="text" 
+              (input)="dtCourses.filterGlobal($any($event.target).value, 'contains')" 
+              placeholder="Search DB catalog..." 
+              class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm w-64"
+            />
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id">ID</th>
+            <th pSortableColumn="name">Course Name</th>
+            <th pSortableColumn="credits">Credits</th>
+            <th>Capacity</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-c>
+          <tr>
+            <td>#{{ c.id }}</td>
+            <td class="font-medium text-slate-900">{{ c.name }}</td>
+            <td><span class="text-xs bg-sky-50 text-sky-700 px-2 py-0.5 rounded font-semibold">{{ c.credits }} Credits</span></td>
+            <td>
+              <span [class.text-rose-600]="(c.enrolledStudentsCount || 0) >= 50" class="text-sm font-medium">
+                {{ c.enrolledStudentsCount }}/50 Enrolled
+              </span>
+            </td>
+            <td>
+              <div class="flex gap-2">
+                <button (click)="openEditCourse(c)" class="px-3 py-1 text-xs font-medium text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition">
+                  Update
+                </button>
+                <button (click)="onDeleteCourse(c.id)" class="px-3 py-1 text-xs font-medium text-rose-600 border border-rose-200 rounded-md hover:bg-rose-50 transition">
+                  Delete
+                </button>
+              </div>
             </td>
           </tr>
-          <tr *ngIf="!courses || courses.length === 0">
-            <td colspan="5" style="text-align: center; padding: 1.5rem;">No courses found in catalog.</td>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="text-center py-6 text-slate-500">No courses match backend query.</td>
           </tr>
-        </tbody>
-      </table>
+        </ng-template>
+      </p-table>
     </section>
 
-    <!-- 6. FIND / UPDATE / DELETE COURSE BY ID -->
-    <section *ngIf="activeView === 'course-search'" class="card">
-      <h3>Lookup Course by ID</h3>
-      <div class="search-box">
-        <input #cIdInput type="number" placeholder="Enter Course ID..." />
-        <button class="btn btn-primary" (click)="onSearchCourse(cIdInput.value)">Get Course</button>
-      </div>
-
-      <div *ngIf="searchedCourse" class="result-box">
-        <h4>{{ searchedCourse.name }} (Course ID: #{{ searchedCourse.id }})</h4>
-        <p><strong>Credits:</strong> {{ searchedCourse.credits }}</p>
-        <p><strong>Enrolled Students:</strong> {{ searchedCourse.enrolledStudentsCount ?? 0 }}/50</p>
-        
-        <div class="form-actions" style="margin-top: 1rem;">
-          <button class="btn btn-sm btn-outline" (click)="openEditCourse(searchedCourse)">Update Course</button>
-          <button class="btn btn-sm btn-danger" (click)="onDeleteCourse(searchedCourse.id)">Delete Course</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 7. ADD / EDIT COURSE FORM -->
-    <section *ngIf="activeView === 'course-form'" class="card form-card">
-      <h3>{{ selectedCourseId ? 'Update Course #' + selectedCourseId : 'Create New Course' }}</h3>
-      <form [formGroup]="courseForm" (ngSubmit)="onSaveCourse()">
-        <div class="form-group">
-          <label>Course Name</label>
-          <input type="text" formControlName="name" [class.is-invalid]="courseForm.get('name')?.touched && courseForm.get('name')?.invalid" />
-          <div class="field-error" *ngIf="courseForm.get('name')?.touched && courseForm.get('name')?.errors?.['required']">
-            Course name is required.
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Credits (1-6)</label>
-          <input type="number" formControlName="credits" [class.is-invalid]="courseForm.get('credits')?.touched && courseForm.get('credits')?.invalid" />
-          <div class="field-error" *ngIf="courseForm.get('credits')?.touched && courseForm.get('credits')?.errors?.['required']">
-            Credits are required.
-          </div>
-          <div class="field-error" *ngIf="courseForm.get('credits')?.touched && (courseForm.get('credits')?.errors?.['min'] || courseForm.get('credits')?.errors?.['max'])">
-            Credits must be between 1 and 6.
-          </div>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Save Course</button>
-          <button type="button" class="btn btn-secondary" (click)="setView('courses-list')">Cancel</button>
-        </div>
-      </form>
-    </section>
-
-    <!-- 8. STUDENT REGISTRATION REQUESTS -->
-    <section *ngIf="activeView === 'registration-requests'" class="card">
-      <h3>Pending Student Account Registration Requests</h3>
-      <div *ngFor="let req of registrationRequests" class="request-row">
+    <!-- 4. STUDENT REGISTRATION REQUESTS -->
+    <section *ngIf="activeView === 'registration-requests'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <h3 class="text-lg font-bold text-slate-800 mb-4">Pending Student Account Registration Requests</h3>
+      <div *ngFor="let req of registrationRequests" class="flex justify-between items-center py-4 border-b border-slate-100">
         <div>
-          <h4>{{ req.studentName }}</h4>
-          <p class="reason-text"><strong>Details:</strong> {{ req.reason || 'Requested account verification.' }}</p>
+          <h4 class="font-semibold text-slate-900">{{ req.studentName }}</h4>
+          <p class="text-xs text-slate-500 mt-1"><strong>Details:</strong> {{ req.reason || 'Requested account verification.' }}</p>
         </div>
-        <div class="actions-cell">
-          <button class="btn btn-sm btn-success" (click)="onProcessRequest(req.requestId, true)">Approve Student</button>
-          <button class="btn btn-sm btn-danger" (click)="onProcessRequest(req.requestId, false)">Reject Request</button>
+        <div class="flex gap-2">
+          <button (click)="onProcessRequest(req.requestId, true)" class="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Approve Student</button>
+          <button (click)="onProcessRequest(req.requestId, false)" class="px-3 py-1.5 text-xs font-medium bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition">Reject Request</button>
         </div>
       </div>
-      <p *ngIf="registrationRequests.length === 0">No pending student registration requests.</p>
+      <p *ngIf="registrationRequests.length === 0" class="text-slate-500 text-sm py-4">No pending student registration requests.</p>
     </section>
 
-    <!-- 9. COURSE ENROLLMENT / UNENROLLMENT REQUESTS -->
-    <section *ngIf="activeView === 'course-requests'" class="card">
-      <h3>Pending Course Enrollment & Unenrollment Requests</h3>
-      <div *ngFor="let req of courseRequests" class="request-row">
+    <!-- 5. COURSE ENROLLMENT REQUESTS -->
+    <section *ngIf="activeView === 'course-requests'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <h3 class="text-lg font-bold text-slate-800 mb-4">Pending Course Enrollment & Unenrollment Requests</h3>
+      <div *ngFor="let req of courseRequests" class="flex justify-between items-center py-4 border-b border-slate-100">
         <div>
-          <h4>{{ req.studentName }} — <em>{{ req.requestType }} Request</em></h4>
-          <p><strong>Course:</strong> {{ req.courseName }}</p>
-          <p class="reason-text"><strong>Reason:</strong> {{ req.reason || 'No reason specified.' }}</p>
+          <h4 class="font-semibold text-slate-900">{{ req.studentName }} — <em class="text-sky-600 font-normal">{{ req.requestType }}</em></h4>
+          <p class="text-xs text-slate-600 mt-1"><strong>Course:</strong> {{ req.courseName }}</p>
+          <p class="text-xs text-slate-500"><strong>Reason:</strong> {{ req.reason || 'No reason specified.' }}</p>
         </div>
-        <div class="actions-cell">
-          <button class="btn btn-sm btn-success" (click)="onProcessRequest(req.requestId, true)">Approve</button>
-          <button class="btn btn-sm btn-danger" (click)="onProcessRequest(req.requestId, false)">Reject</button>
+        <div class="flex gap-2">
+          <button (click)="onProcessRequest(req.requestId, true)" class="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Approve</button>
+          <button (click)="onProcessRequest(req.requestId, false)" class="px-3 py-1.5 text-xs font-medium bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition">Reject</button>
         </div>
       </div>
-      <p *ngIf="courseRequests.length === 0">No pending enrollment or unenrollment requests.</p>
+      <p *ngIf="courseRequests.length === 0" class="text-slate-500 text-sm py-4">No pending enrollment or unenrollment requests.</p>
     </section>
   </main>
 </div>

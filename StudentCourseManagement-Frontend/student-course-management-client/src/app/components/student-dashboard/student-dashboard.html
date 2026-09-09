@@ -1,10 +1,15 @@
 <div class="flex min-h-screen bg-slate-50 font-sans">
   <!-- SIDEBAR NAVIGATION -->
-  <aside class="w-64 min-w-[16rem] bg-slate-900 text-slate-200 p-6 flex flex-col justify-between shadow-xl">
+  <aside class="w-64 min-w-[16rem] bg-dark-900 text-slate-200 p-6 flex flex-col justify-between shadow-xl">
     <div>
       <div class="mb-8">
-        <h2 class="text-xl font-bold text-sky-400">Student Portal</h2>
-        <p *ngIf="studentProfile" class="text-xs text-slate-400 mt-1">Welcome, <strong class="text-slate-200">{{ studentProfile.name }}</strong></p>
+        <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-500 text-white font-bold text-lg mb-2 shadow-md shadow-brand-500/30">
+          SC
+        </div>
+        <h2 class="text-xl font-bold text-brand-500">Student Portal</h2>
+        <p *ngIf="studentProfile" class="text-xs text-slate-400 mt-1">
+          Welcome, <strong class="text-slate-200">{{ studentProfile.name }}</strong>
+        </p>
       </div>
       
       <nav class="flex flex-col gap-1">
@@ -46,9 +51,13 @@
       </nav>
     </div>
 
-    <button (click)="onLogout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm">
-      Logout
-    </button>
+    <button 
+      pButton 
+      label="Logout" 
+      icon="pi pi-sign-out" 
+      (click)="onLogout()" 
+      class="w-full bg-accent-rose hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm border-none"
+    ></button>
   </aside>
 
   <!-- MAIN CONTENT AREA -->
@@ -59,58 +68,78 @@
     </div>
 
     <div *ngIf="!isLoading && !isVerified" class="bg-amber-50 text-amber-900 border border-amber-200 p-5 rounded-xl mb-6">
-      <h3 class="font-bold text-base mb-1">⚠️ Unverified Account Status</h3>
-      <p class="text-sm mb-3">Your account is registered but awaiting admin verification. Submit a request below to verify your profile:</p>
+      <h3 class="font-bold text-base mb-1 text-amber-900">⚠️ Unverified Account Status</h3>
+      <p class="text-sm mb-3 text-amber-800">Your account is registered but awaiting admin verification. Submit a request below to verify your profile:</p>
       <div class="flex gap-2">
-        <input type="text" [(ngModel)]="accountRequestReason" placeholder="Notes for admin..." class="px-3 py-1.5 border border-amber-300 rounded-lg text-sm flex-1 bg-white" />
-        <button class="px-4 py-1.5 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition" (click)="onRequestAccountCreation()">Submit Request</button>
+        <input 
+          pInputText 
+          type="text" 
+          [(ngModel)]="accountRequestReason" 
+          placeholder="Notes for admin..." 
+          class="p-inputtext-sm flex-1 bg-white" 
+        />
+        <button 
+          pButton 
+          label="Submit Request" 
+          (click)="onRequestAccountCreation()" 
+          class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none"
+        ></button>
       </div>
     </div>
 
-    <div *ngIf="statusMessage" class="bg-emerald-50 text-emerald-800 border border-emerald-200 p-4 rounded-xl mb-6 text-sm">
+    <div *ngIf="statusMessage" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-4 rounded-xl mb-6 text-sm font-medium">
       {{ statusMessage }}
     </div>
-    <div *ngIf="errorMessage" class="bg-rose-50 text-rose-800 border border-rose-200 p-4 rounded-xl mb-6 text-sm">
+    <div *ngIf="errorMessage" class="bg-rose-50 text-accent-rose border border-rose-200 p-4 rounded-xl mb-6 text-sm font-medium">
       {{ errorMessage }}
     </div>
 
     <!-- 1. OVERVIEW -->
     <section *ngIf="!isLoading && activeView === 'overview'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('my-courses')">
+      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('my-courses')">
         <h3 class="text-sm font-medium text-slate-500">Enrolled Courses</h3>
-        <p class="text-3xl font-bold text-slate-900 my-2">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="text-sm text-slate-400 font-normal">/ 7 Max</span></p>
-        <span class="text-xs text-sky-600 font-medium">View active classes →</span>
+        <p class="text-3xl font-bold text-dark-900 my-2">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="text-sm text-slate-400 font-normal">/ 7 Max</span></p>
+        <span class="text-xs text-brand-600 font-semibold">View active classes →</span>
       </div>
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('available-courses')">
+      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('available-courses')">
         <h3 class="text-sm font-medium text-slate-500">Available Catalog</h3>
-        <p class="text-3xl font-bold text-slate-900 my-2">{{ courses.length }}</p>
-        <span class="text-xs text-sky-600 font-medium">Browse catalog →</span>
+        <p class="text-3xl font-bold text-dark-900 my-2">{{ courses.length }}</p>
+        <span class="text-xs text-brand-600 font-semibold">Browse catalog →</span>
       </div>
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('profile')">
+      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('profile')">
         <h3 class="text-sm font-medium text-slate-500">Account Status</h3>
-        <p class="text-3xl font-bold my-2" [class.text-emerald-600]="isVerified" [class.text-amber-600]="!isVerified">
+        <p class="text-3xl font-bold my-2" [class.text-accent-emerald]="isVerified" [class.text-amber-600]="!isVerified">
           {{ isVerified ? 'Verified' : 'Pending' }}
         </p>
-        <span class="text-xs text-sky-600 font-medium">View profile →</span>
+        <span class="text-xs text-brand-600 font-semibold">View profile →</span>
       </div>
     </section>
 
     <!-- 2. MY ACTIVE COURSES -->
-    <section *ngIf="!isLoading && activeView === 'my-courses'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-      <h3 class="text-lg font-bold text-slate-800 mb-4">My Enrolled Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</h3>
+    <section *ngIf="!isLoading && activeView === 'my-courses'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+      <h3 class="text-lg font-bold text-dark-900 mb-4">My Enrolled Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</h3>
 
       <div *ngIf="studentProfile?.enrolledCourses?.length" class="flex flex-col gap-3">
         <div *ngFor="let courseName of studentProfile?.enrolledCourses" class="flex justify-between items-center p-4 rounded-xl border border-slate-100 bg-slate-50/50">
           <div>
-            <h4 class="font-bold text-slate-900">{{ courseName }}</h4>
-            <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-medium mt-1 inline-block">Active Registration</span>
+            <h4 class="font-bold text-dark-900">{{ courseName }}</h4>
+            <span class="text-xs bg-emerald-100 text-accent-emerald px-2 py-0.5 rounded font-semibold mt-1 inline-block">Active Registration</span>
           </div>
 
           <div class="flex gap-2 items-center">
-            <input type="text" [(ngModel)]="unenrollmentReasonMap[courseName]" placeholder="Reason for dropping..." class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs w-56 bg-white" />
-            <button class="px-3 py-1.5 text-xs font-medium bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition" (click)="onRequestUnenrollment(courseName)">
-              Request Drop
-            </button>
+            <input 
+              pInputText 
+              type="text" 
+              [(ngModel)]="unenrollmentReasonMap[courseName]" 
+              placeholder="Reason for dropping..." 
+              class="p-inputtext-sm w-56 bg-white" 
+            />
+            <button 
+              pButton 
+              label="Request Drop" 
+              (click)="onRequestUnenrollment(courseName)" 
+              class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none"
+            ></button>
           </div>
         </div>
       </div>
@@ -118,30 +147,30 @@
       <p *ngIf="!studentProfile?.enrolledCourses?.length" class="text-slate-500 text-sm py-4">You are not currently enrolled in any courses.</p>
     </section>
 
-    <!-- 3. MODERN COURSE CARDS CATALOG -->
+    <!-- 3. COURSE CATALOG -->
     <section *ngIf="!isLoading && activeView === 'available-courses'">
-      <h3 class="text-lg font-bold text-slate-800 mb-4">Course Catalog</h3>
+      <h3 class="text-lg font-bold text-dark-900 mb-4">Course Catalog</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div 
           *ngFor="let c of courses" 
-          class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col justify-between"
+          class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm flex flex-col justify-between"
           [class.opacity-60]="c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
         >
           <div>
             <div class="flex justify-between items-start mb-2">
-              <h4 class="font-bold text-slate-900 text-base">{{ c.name }}</h4>
-              <span class="bg-sky-50 text-sky-700 text-xs px-2.5 py-1 rounded-md font-semibold">{{ c.credits }} Credits</span>
+              <h4 class="font-bold text-dark-900 text-base">{{ c.name }}</h4>
+              <span class="bg-brand-50 text-brand-600 text-xs px-2.5 py-1 rounded-md font-semibold">{{ c.credits }} Credits</span>
             </div>
 
             <div class="my-3">
               <span *ngIf="isAlreadyEnrolled(c.name)" class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200">✓ Enrolled</span>
-              <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount < 50" class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md">Available</span>
-              <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount >= 50" class="text-xs bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md">Course Full</span>
+              <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount < 50" class="text-xs bg-emerald-50 text-accent-emerald px-2.5 py-1 rounded-md font-semibold">Available</span>
+              <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount >= 50" class="text-xs bg-rose-50 text-accent-rose px-2.5 py-1 rounded-md font-semibold">Course Full</span>
             </div>
 
             <p class="text-xs text-slate-500 mb-4">
               <strong>Capacity:</strong> 
-              <span [class.text-rose-600]="c.enrolledStudentsCount >= 50" class="font-semibold">
+              <span [class.text-accent-rose]="c.enrolledStudentsCount >= 50" class="font-semibold">
                 {{ c.enrolledStudentsCount }}/50 Seats
               </span>
             </p>
@@ -149,28 +178,29 @@
 
           <div class="flex flex-col gap-2 pt-2 border-t border-slate-100">
             <button 
-              class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg text-xs transition disabled:bg-slate-200 disabled:text-slate-400"
+              pButton 
+              [label]="isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : (!isVerified ? 'Verification Required' : 'Self-Enroll'))"
               [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               (click)="onEnrollDirectly(c.id)"
-            >
-              {{ isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : (!isVerified ? 'Verification Required' : 'Self-Enroll')) }}
-            </button>
+              class="w-full bg-accent-emerald hover:bg-emerald-700 text-white font-medium text-xs border-none disabled:bg-slate-200 disabled:text-slate-400"
+            ></button>
 
             <div class="flex gap-2">
               <input 
+                pInputText 
                 type="text" 
                 [(ngModel)]="enrollmentReasonMap[c.id]" 
                 placeholder="Special request note..." 
-                class="px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs flex-1"
+                class="p-inputtext-sm flex-1"
                 [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               />
               <button 
-                class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium rounded-lg text-xs transition disabled:opacity-40"
+                pButton 
+                label="Request" 
                 [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
                 (click)="onRequestEnrollment(c.id)"
-              >
-                Request
-              </button>
+                class="bg-slate-100 hover:bg-slate-200 text-dark-800 font-medium text-xs border border-slate-200"
+              ></button>
             </div>
           </div>
         </div>
@@ -178,18 +208,16 @@
     </section>
 
     <!-- 4. PROFILE VIEW -->
-    <section *ngIf="!isLoading && activeView === 'profile' && studentProfile" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm max-w-lg">
+    <section *ngIf="!isLoading && activeView === 'profile' && studentProfile" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-bold text-slate-800">Academic Profile</h3>
-        <button class="px-3 py-1.5 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 transition" (click)="toggleEditProfile()">
-          {{ isEditingProfile ? 'Cancel' : 'Edit Profile' }}
-        </button>
+        <h3 class="text-lg font-bold text-dark-900">Academic Profile</h3>
+        <button pButton [label]="isEditingProfile ? 'Cancel' : 'Edit Profile'" class="p-button-outlined p-button-sm text-xs" (click)="toggleEditProfile()"></button>
       </div>
 
       <div *ngIf="!isEditingProfile" class="flex flex-col gap-3">
         <div class="flex py-2 border-b border-slate-100 text-sm">
           <span class="w-36 text-slate-500">Full Name:</span>
-          <span class="font-bold text-slate-900">{{ studentProfile.name }}</span>
+          <span class="font-bold text-dark-900">{{ studentProfile.name }}</span>
         </div>
         <div class="flex py-2 border-b border-slate-100 text-sm">
           <span class="w-36 text-slate-500">Email:</span>
@@ -203,20 +231,20 @@
 
       <form *ngIf="isEditingProfile" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="flex flex-col gap-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
-          <input type="text" formControlName="name" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+          <label class="block text-xs font-semibold text-dark-800 mb-1">Full Name</label>
+          <input pInputText type="text" formControlName="name" class="w-full p-inputtext-sm" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
-          <input type="email" formControlName="email" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+          <label class="block text-xs font-semibold text-dark-800 mb-1">Email</label>
+          <input pInputText type="email" formControlName="email" class="w-full p-inputtext-sm" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Age</label>
-          <input type="number" formControlName="age" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+          <label class="block text-xs font-semibold text-dark-800 mb-1">Age</label>
+          <input pInputText type="number" formControlName="age" class="w-full p-inputtext-sm" />
         </div>
         <div class="flex gap-3 mt-2">
-          <button type="submit" class="px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition">Save Profile</button>
-          <button type="button" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 transition" (click)="toggleEditProfile()">Cancel</button>
+          <button pButton type="submit" label="Save Profile" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none"></button>
+          <button pButton type="button" label="Cancel" class="bg-slate-100 text-slate-600 text-xs font-medium border-none" (click)="toggleEditProfile()"></button>
         </div>
       </form>
     </section>

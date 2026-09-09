@@ -1,16 +1,28 @@
+<!-- PRIME NG THEMED CONFIRMATION DIALOG -->
+<p-confirmDialog 
+  [style]="{width: '420px'}" 
+  styleClass="custom-confirm-dialog"
+></p-confirmDialog>
+
 <div class="flex min-h-screen bg-slate-50 font-sans">
   <!-- SIDEBAR NAVIGATION -->
-  <aside class="w-64 min-w-[16rem] bg-slate-900 text-slate-200 p-6 flex flex-col justify-between shadow-xl">
+  <aside class="w-64 min-w-[16rem] bg-dark-900 text-slate-200 p-6 flex flex-col justify-between shadow-xl">
     <div>
-      <div class="mb-8">
-        <h2 class="text-xl font-bold text-sky-400">Admin Control</h2>
+      <div class="mb-8 flex items-center gap-3">
+        <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-500 text-white font-bold text-lg shadow-md shadow-brand-500/30">
+          SC
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-white tracking-tight">Admin Control</h2>
+          <p class="text-[11px] text-brand-500 font-semibold uppercase tracking-wider">Management</p>
+        </div>
       </div>
       
       <nav class="flex flex-col gap-1">
         <button 
           [class.bg-slate-800]="activeView === 'overview'" 
           [class.text-white]="activeView === 'overview'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
           (click)="setView('overview')"
         >
           Dashboard Overview
@@ -19,14 +31,14 @@
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Students</div>
         <button 
           [class.bg-slate-800]="activeView === 'students-list'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
           (click)="setView('students-list')"
         >
           View All Students
         </button>
         <button 
           [class.bg-slate-800]="activeView === 'student-search'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
           (click)="setView('student-search')"
         >
           Find / Update / Delete Student
@@ -35,14 +47,14 @@
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Courses</div>
         <button 
           [class.bg-slate-800]="activeView === 'courses-list'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
           (click)="setView('courses-list')"
         >
           View All Courses
         </button>
         <button 
           [class.bg-slate-800]="activeView === 'course-search'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
           (click)="setView('course-search')"
         >
           Find / Update / Delete Course
@@ -51,65 +63,73 @@
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Pending Approvals</div>
         <button 
           [class.bg-slate-800]="activeView === 'registration-requests'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center font-medium"
           (click)="setView('registration-requests')"
         >
           <span>Student Registrations</span>
-          <span class="bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full">{{ registrationRequests.length }}</span>
+          <span class="bg-amber-500/20 text-accent-amber text-xs px-2 py-0.5 rounded-full font-bold">{{ registrationRequests.length }}</span>
         </button>
         <button 
           [class.bg-slate-800]="activeView === 'course-requests'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center font-medium"
           (click)="setView('course-requests')"
         >
           <span>Enrollment Requests</span>
-          <span class="bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full">{{ courseRequests.length }}</span>
+          <span class="bg-amber-500/20 text-accent-amber text-xs px-2 py-0.5 rounded-full font-bold">{{ courseRequests.length }}</span>
         </button>
       </nav>
     </div>
 
-    <button (click)="onLogout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm">
-      Logout
-    </button>
+    <button 
+      pButton 
+      label="Logout" 
+      icon="pi pi-sign-out" 
+      (click)="onLogout()" 
+      class="w-full bg-accent-rose hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm border-none"
+    ></button>
   </aside>
 
   <!-- MAIN CONTENT AREA -->
   <main class="flex-1 p-8 overflow-y-auto">
-    <div *ngIf="statusMessage" class="bg-emerald-50 text-emerald-800 border border-emerald-200 p-4 rounded-xl mb-6 text-sm">
+    <!-- Status Notifications -->
+    <div *ngIf="statusMessage" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-4 rounded-xl mb-6 text-sm font-medium">
       {{ statusMessage }}
     </div>
-    <div *ngIf="errorMessage" class="bg-rose-50 text-rose-800 border border-rose-200 p-4 rounded-xl mb-6 text-sm">
+    <div *ngIf="errorMessage" class="bg-rose-50 text-accent-rose border border-rose-200 p-4 rounded-xl mb-6 text-sm font-medium">
       {{ errorMessage }}
     </div>
 
     <!-- 1. DASHBOARD OVERVIEW -->
     <section *ngIf="activeView === 'overview'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('students-list')">
+      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('students-list')">
         <h3 class="text-sm font-medium text-slate-500">Total Students Records</h3>
-        <p class="text-3xl font-bold text-slate-900 my-2">{{ totalStudentsCount }}</p>
-        <span class="text-xs text-sky-600 font-medium">Manage directory →</span>
+        <p class="text-3xl font-bold text-dark-900 my-2">{{ totalStudentsCount }}</p>
+        <span class="text-xs text-brand-600 font-semibold">Manage directory →</span>
       </div>
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('courses-list')">
+      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('courses-list')">
         <h3 class="text-sm font-medium text-slate-500">Total Catalog Courses</h3>
-        <p class="text-3xl font-bold text-slate-900 my-2">{{ totalCoursesCount }}</p>
-        <span class="text-xs text-sky-600 font-medium">Manage catalog →</span>
+        <p class="text-3xl font-bold text-dark-900 my-2">{{ totalCoursesCount }}</p>
+        <span class="text-xs text-brand-600 font-semibold">Manage catalog →</span>
       </div>
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('registration-requests')">
+      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('registration-requests')">
         <h3 class="text-sm font-medium text-slate-500">Registration Requests</h3>
-        <p class="text-3xl font-bold text-amber-600 my-2">{{ registrationRequests.length }}</p>
-        <span class="text-xs text-amber-600 font-medium">Approve accounts →</span>
+        <p class="text-3xl font-bold text-accent-amber my-2">{{ registrationRequests.length }}</p>
+        <span class="text-xs text-accent-amber font-semibold">Approve accounts →</span>
       </div>
-      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('course-requests')">
+      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('course-requests')">
         <h3 class="text-sm font-medium text-slate-500">Enrollment Requests</h3>
-        <p class="text-3xl font-bold text-amber-600 my-2">{{ courseRequests.length }}</p>
-        <span class="text-xs text-amber-600 font-medium">Review course changes →</span>
+        <p class="text-3xl font-bold text-accent-amber my-2">{{ courseRequests.length }}</p>
+        <span class="text-xs text-accent-amber font-semibold">Review course changes →</span>
       </div>
     </section>
 
-    <!-- 2. LAZY-LOADED SERVER-PAGINATED STUDENT TABLE -->
-    <section *ngIf="activeView === 'students-list'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+    <!-- 2. LAZY-LOADED STUDENT TABLE -->
+    <section *ngIf="activeView === 'students-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-bold text-slate-800">Student Directory (Database Processed)</h3>
+        <div>
+          <h3 class="text-lg font-bold text-dark-900">Student Directory (Database Processed)</h3>
+          <p class="text-xs text-slate-500 mt-1">Click on column headers (ID, Name, Email, Age) to sort records.</p>
+        </div>
       </div>
 
       <p-table 
@@ -123,67 +143,144 @@
         [loading]="studentsLoading"
         [rowsPerPageOptions]="[5, 10, 20]"
         responsiveLayout="scroll"
-        styleClass="p-datatable-striped"
       >
         <ng-template pTemplate="caption">
-          <div class="flex justify-end">
-            <input 
-              pInputText 
-              type="text" 
-              (input)="dtStudents.filterGlobal($any($event.target).value, 'contains')" 
-              placeholder="Search DB students..." 
-              class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm w-64"
-            />
+          <div class="flex items-center justify-between gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <span class="text-xs font-semibold text-dark-800">Filter Directory:</span>
+            <div class="flex gap-3">
+              <input 
+                pInputText 
+                type="text" 
+                (input)="dtStudents.filterGlobal($any($event.target).value, 'contains')" 
+                placeholder="Search by Student Name..." 
+                class="p-inputtext-sm w-72"
+              />
+            </div>
           </div>
         </ng-template>
+
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="id">ID</th>
-            <th pSortableColumn="name">Name</th>
-            <th pSortableColumn="email">Email</th>
-            <th pSortableColumn="age">Age</th>
+            <th pSortableColumn="id" class="cursor-pointer hover:bg-slate-200">
+              ID <p-sortIcon field="id"></p-sortIcon>
+            </th>
+            <th pSortableColumn="name" class="cursor-pointer hover:bg-slate-200">
+              Name <p-sortIcon field="name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="email" class="cursor-pointer hover:bg-slate-200">
+              Email <p-sortIcon field="email"></p-sortIcon>
+            </th>
+            <th pSortableColumn="age" class="cursor-pointer hover:bg-slate-200">
+              Age <p-sortIcon field="age"></p-sortIcon>
+            </th>
             <th>Enrolled Courses</th>
             <th>Actions</th>
           </tr>
         </ng-template>
+
         <ng-template pTemplate="body" let-s>
           <tr>
             <td>#{{ s.id }}</td>
-            <td class="font-medium text-slate-900">{{ s.name }}</td>
-            <td>{{ s.email }}</td>
-            <td>{{ s.age }}</td>
+            <td class="font-bold text-dark-900">{{ s.name }}</td>
+            <td class="text-slate-600">{{ s.email }}</td>
+            <td class="text-slate-600">{{ s.age }}</td>
             <td>
-              <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">
+              <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md font-medium">
                 {{ s.enrolledCourses?.join(', ') || 'None' }}
               </span>
             </td>
             <td>
               <div class="flex gap-2">
-                <button (click)="openEditStudent(s)" class="px-3 py-1 text-xs font-medium text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition">
-                  Update
-                </button>
-                <button (click)="onDeleteStudent(s.id)" class="px-3 py-1 text-xs font-medium text-rose-600 border border-rose-200 rounded-md hover:bg-rose-50 transition">
-                  Delete
-                </button>
+                <button 
+                  pButton 
+                  label="Update" 
+                  (click)="openEditStudent(s)" 
+                  class="p-button-outlined p-button-sm text-xs border-slate-300 text-dark-800"
+                ></button>
+                <button 
+                  pButton 
+                  label="Delete" 
+                  (click)="onDeleteStudent(s.id)" 
+                  class="p-button-outlined p-button-danger p-button-sm text-xs"
+                ></button>
               </div>
             </td>
           </tr>
         </ng-template>
+
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="6" class="text-center py-6 text-slate-500">No student records match backend query.</td>
+            <td colspan="6" class="text-center py-6 text-slate-500">No student records match the search criteria.</td>
           </tr>
         </ng-template>
       </p-table>
     </section>
 
-    <!-- 3. LAZY-LOADED SERVER-PAGINATED COURSE TABLE -->
-    <section *ngIf="activeView === 'courses-list'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+    <!-- 3. FIND / UPDATE / DELETE STUDENT -->
+    <section *ngIf="activeView === 'student-search'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-2xl">
+      <h3 class="text-lg font-bold text-dark-900 mb-2">Find Student by Specific ID</h3>
+      <p class="text-xs text-slate-500 mb-4">Enter the exact numeric Student ID below to retrieve, update, or remove their profile directly.</p>
+
+      <div class="flex gap-3 mb-6">
+        <input #sIdInput type="number" placeholder="Enter Numeric Student ID (e.g. 1016)..." pInputText class="p-inputtext-sm flex-1" />
+        <button pButton label="Search ID" icon="pi pi-search" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none" (click)="onSearchStudent(sIdInput.value)"></button>
+      </div>
+
+      <div *ngIf="searchedStudent" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <h4 class="text-base font-bold text-brand-600">{{ searchedStudent.name }}</h4>
+            <span class="text-xs text-slate-500 font-semibold">Student ID: #{{ searchedStudent.id }}</span>
+          </div>
+          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">Age: {{ searchedStudent.age }}</span>
+        </div>
+
+        <p class="text-sm text-slate-700 my-1"><strong>Email Address:</strong> {{ searchedStudent.email }}</p>
+        <p class="text-sm text-slate-700 my-1"><strong>Enrolled Courses:</strong> {{ searchedStudent.enrolledCourses?.join(', ') || 'None' }}</p>
+        
+        <div class="flex gap-3 mt-5 pt-3 border-t border-slate-200">
+          <button pButton label="Update Profile" icon="pi pi-user-edit" class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none" (click)="openEditStudent(searchedStudent)"></button>
+          <button pButton label="Delete Student" icon="pi pi-trash" class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none" (click)="onDeleteStudent(searchedStudent.id)"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. EDIT STUDENT FORM -->
+    <section *ngIf="activeView === 'student-edit'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
+      <h3 class="text-lg font-bold text-dark-900 mb-4">Update Student Profile (ID: #{{ selectedStudentId }})</h3>
+      <form [formGroup]="studentEditForm" (ngSubmit)="onUpdateStudent()" class="flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-dark-800 mb-1">Full Name</label>
+          <input pInputText type="text" formControlName="name" class="w-full p-inputtext-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-dark-800 mb-1">Email Address</label>
+          <input pInputText type="email" formControlName="email" class="w-full p-inputtext-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-dark-800 mb-1">Age</label>
+          <input pInputText type="number" formControlName="age" class="w-full p-inputtext-sm" />
+        </div>
+        <div class="flex gap-3 mt-2">
+          <button pButton type="submit" label="Save Changes" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none"></button>
+          <button pButton type="button" label="Cancel" class="bg-slate-100 text-slate-600 text-xs font-medium border-none" (click)="setView('students-list')"></button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 5. LAZY-LOADED COURSE TABLE -->
+    <section *ngIf="activeView === 'courses-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-lg font-bold text-slate-800">Course Catalog (Database Processed)</h3>
-        <button (click)="setView('course-form')" class="px-4 py-2 text-sm font-medium bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition">
-          + Add New Course
-        </button>
+        <div>
+          <h3 class="text-lg font-bold text-dark-900">Course Catalog (Database Processed)</h3>
+          <p class="text-xs text-slate-500 mt-1">Click on column headers (ID, Course Name, Credits) to sort catalog.</p>
+        </div>
+        <button 
+          pButton 
+          label="+ Add New Course" 
+          (click)="setView('course-form')" 
+          class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none"
+        ></button>
       </div>
 
       <p-table 
@@ -197,86 +294,170 @@
         [loading]="coursesLoading"
         [rowsPerPageOptions]="[5, 10, 20]"
         responsiveLayout="scroll"
-        styleClass="p-datatable-striped"
       >
         <ng-template pTemplate="caption">
-          <div class="flex justify-end">
-            <input 
-              pInputText 
-              type="text" 
-              (input)="dtCourses.filterGlobal($any($event.target).value, 'contains')" 
-              placeholder="Search DB catalog..." 
-              class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm w-64"
-            />
+          <div class="flex items-center justify-between gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <span class="text-xs font-semibold text-dark-800">Filter Catalog:</span>
+            <div class="flex gap-3">
+              <input 
+                pInputText 
+                type="text" 
+                (input)="dtCourses.filterGlobal($any($event.target).value, 'contains')" 
+                placeholder="Search by Course Title..." 
+                class="p-inputtext-sm w-72"
+              />
+            </div>
           </div>
         </ng-template>
+
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="id">ID</th>
-            <th pSortableColumn="name">Course Name</th>
-            <th pSortableColumn="credits">Credits</th>
+            <th pSortableColumn="id" class="cursor-pointer hover:bg-slate-200">
+              ID <p-sortIcon field="id"></p-sortIcon>
+            </th>
+            <th pSortableColumn="name" class="cursor-pointer hover:bg-slate-200">
+              Course Name <p-sortIcon field="name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="credits" class="cursor-pointer hover:bg-slate-200">
+              Credits <p-sortIcon field="credits"></p-sortIcon>
+            </th>
             <th>Capacity</th>
             <th>Actions</th>
           </tr>
         </ng-template>
+
         <ng-template pTemplate="body" let-c>
           <tr>
             <td>#{{ c.id }}</td>
-            <td class="font-medium text-slate-900">{{ c.name }}</td>
-            <td><span class="text-xs bg-sky-50 text-sky-700 px-2 py-0.5 rounded font-semibold">{{ c.credits }} Credits</span></td>
+            <td class="font-bold text-dark-900">{{ c.name }}</td>
+            <td><span class="text-xs bg-brand-50 text-brand-600 px-2 py-0.5 rounded font-semibold">{{ c.credits }} Credits</span></td>
             <td>
-              <span [class.text-rose-600]="(c.enrolledStudentsCount || 0) >= 50" class="text-sm font-medium">
-                {{ c.enrolledStudentsCount }}/50 Enrolled
+              <span [class.text-accent-rose]="(c.enrolledStudentsCount || 0) >= 50" class="text-sm font-medium">
+                {{ c.enrolledStudentsCount || 0 }}/50 Enrolled
               </span>
             </td>
             <td>
               <div class="flex gap-2">
-                <button (click)="openEditCourse(c)" class="px-3 py-1 text-xs font-medium text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition">
-                  Update
-                </button>
-                <button (click)="onDeleteCourse(c.id)" class="px-3 py-1 text-xs font-medium text-rose-600 border border-rose-200 rounded-md hover:bg-rose-50 transition">
-                  Delete
-                </button>
+                <button 
+                  pButton 
+                  label="Update" 
+                  (click)="openEditCourse(c)" 
+                  class="p-button-outlined p-button-sm text-xs border-slate-300 text-dark-800"
+                ></button>
+                <button 
+                  pButton 
+                  label="Delete" 
+                  (click)="onDeleteCourse(c.id)" 
+                  class="p-button-outlined p-button-danger p-button-sm text-xs"
+                ></button>
               </div>
             </td>
           </tr>
         </ng-template>
+
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="5" class="text-center py-6 text-slate-500">No courses match backend query.</td>
+            <td colspan="5" class="text-center py-6 text-slate-500">No courses match the search criteria.</td>
           </tr>
         </ng-template>
       </p-table>
     </section>
 
-    <!-- 4. STUDENT REGISTRATION REQUESTS -->
-    <section *ngIf="activeView === 'registration-requests'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-      <h3 class="text-lg font-bold text-slate-800 mb-4">Pending Student Account Registration Requests</h3>
+    <!-- 6. FIND / UPDATE / DELETE COURSE -->
+    <section *ngIf="activeView === 'course-search'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-2xl">
+      <h3 class="text-lg font-bold text-dark-900 mb-2">Find Course by Specific ID</h3>
+      <p class="text-xs text-slate-500 mb-4">Enter the exact numeric Course ID below to inspect, edit, or delete a catalog item.</p>
+
+      <div class="flex gap-3 mb-6">
+        <input #cIdInput type="number" placeholder="Enter Numeric Course ID..." pInputText class="p-inputtext-sm flex-1" />
+        <button pButton label="Get Course" icon="pi pi-search" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none" (click)="onSearchCourse(cIdInput.value)"></button>
+      </div>
+
+      <div *ngIf="searchedCourse" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <h4 class="text-base font-bold text-brand-600">{{ searchedCourse.name }}</h4>
+            <span class="text-xs text-slate-500 font-semibold">Course ID: #{{ searchedCourse.id }}</span>
+          </div>
+          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">{{ searchedCourse.credits }} Credits</span>
+        </div>
+
+        <p class="text-sm text-slate-700 my-1"><strong>Capacity Status:</strong> {{ searchedCourse.enrolledStudentsCount || 0 }}/50 Seats Enrolled</p>
+        
+        <div class="flex gap-3 mt-5 pt-3 border-t border-slate-200">
+          <button pButton label="Update Course" icon="pi pi-file-edit" class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none" (click)="openEditCourse(searchedCourse)"></button>
+          <button pButton label="Delete Course" icon="pi pi-trash" class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none" (click)="onDeleteCourse(searchedCourse.id)"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. ADD / EDIT COURSE FORM -->
+    <section *ngIf="activeView === 'course-form'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
+      <h3 class="text-lg font-bold text-dark-900 mb-4">{{ selectedCourseId ? 'Update Course #' + selectedCourseId : 'Create New Course' }}</h3>
+      <form [formGroup]="courseForm" (ngSubmit)="onSaveCourse()" class="flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-dark-800 mb-1">Course Title</label>
+          <input pInputText type="text" formControlName="name" class="w-full p-inputtext-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-dark-800 mb-1">Credits (1-6)</label>
+          <input pInputText type="number" formControlName="credits" class="w-full p-inputtext-sm" />
+        </div>
+        <div class="flex gap-3 mt-2">
+          <button pButton type="submit" label="Save Course" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none"></button>
+          <button pButton type="button" label="Cancel" class="bg-slate-100 text-slate-600 text-xs font-medium border-none" (click)="setView('courses-list')"></button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 8. STUDENT REGISTRATION REQUESTS -->
+    <section *ngIf="activeView === 'registration-requests'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+      <h3 class="text-lg font-bold text-dark-900 mb-4">Pending Student Account Registration Requests</h3>
       <div *ngFor="let req of registrationRequests" class="flex justify-between items-center py-4 border-b border-slate-100">
         <div>
-          <h4 class="font-semibold text-slate-900">{{ req.studentName }}</h4>
+          <h4 class="font-bold text-dark-900">{{ req.studentName }}</h4>
           <p class="text-xs text-slate-500 mt-1"><strong>Details:</strong> {{ req.reason || 'Requested account verification.' }}</p>
         </div>
         <div class="flex gap-2">
-          <button (click)="onProcessRequest(req.requestId, true)" class="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Approve Student</button>
-          <button (click)="onProcessRequest(req.requestId, false)" class="px-3 py-1.5 text-xs font-medium bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition">Reject Request</button>
+          <button 
+            pButton 
+            label="Approve Student" 
+            (click)="onProcessRequest(req.requestId, true)" 
+            class="bg-accent-emerald hover:bg-emerald-700 text-white text-xs font-medium border-none"
+          ></button>
+          <button 
+            pButton 
+            label="Reject Request" 
+            (click)="onProcessRequest(req.requestId, false)" 
+            class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none"
+          ></button>
         </div>
       </div>
       <p *ngIf="registrationRequests.length === 0" class="text-slate-500 text-sm py-4">No pending student registration requests.</p>
     </section>
 
-    <!-- 5. COURSE ENROLLMENT REQUESTS -->
-    <section *ngIf="activeView === 'course-requests'" class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-      <h3 class="text-lg font-bold text-slate-800 mb-4">Pending Course Enrollment & Unenrollment Requests</h3>
+    <!-- 9. COURSE ENROLLMENT REQUESTS -->
+    <section *ngIf="activeView === 'course-requests'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+      <h3 class="text-lg font-bold text-dark-900 mb-4">Pending Course Enrollment & Unenrollment Requests</h3>
       <div *ngFor="let req of courseRequests" class="flex justify-between items-center py-4 border-b border-slate-100">
         <div>
-          <h4 class="font-semibold text-slate-900">{{ req.studentName }} — <em class="text-sky-600 font-normal">{{ req.requestType }}</em></h4>
+          <h4 class="font-bold text-dark-900">{{ req.studentName }} — <em class="text-brand-600 font-normal">{{ req.requestType }}</em></h4>
           <p class="text-xs text-slate-600 mt-1"><strong>Course:</strong> {{ req.courseName }}</p>
           <p class="text-xs text-slate-500"><strong>Reason:</strong> {{ req.reason || 'No reason specified.' }}</p>
         </div>
         <div class="flex gap-2">
-          <button (click)="onProcessRequest(req.requestId, true)" class="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Approve</button>
-          <button (click)="onProcessRequest(req.requestId, false)" class="px-3 py-1.5 text-xs font-medium bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition">Reject</button>
+          <button 
+            pButton 
+            label="Approve" 
+            (click)="onProcessRequest(req.requestId, true)" 
+            class="bg-accent-emerald hover:bg-emerald-700 text-white text-xs font-medium border-none"
+          ></button>
+          <button 
+            pButton 
+            label="Reject" 
+            (click)="onProcessRequest(req.requestId, false)" 
+            class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none"
+          ></button>
         </div>
       </div>
       <p *ngIf="courseRequests.length === 0" class="text-slate-500 text-sm py-4">No pending enrollment or unenrollment requests.</p>

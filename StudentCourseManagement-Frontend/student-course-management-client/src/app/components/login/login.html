@@ -1,82 +1,38 @@
-<!-- <div class="auth-card">
-  <h2>Welcome Back</h2>
-  <p class="subtitle">Please enter your details to sign in.</p>
-
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="username">Username</label>
-      <input
-        id="username"
-        type="text"
-        formControlName="username"
-        placeholder="Enter your username"
-        [class.is-invalid]="f['username'].touched && f['username'].invalid"
-      />
-      <small class="error-msg" *ngIf="f['username'].touched && f['username'].errors?.['required']">
-        Username is required.
-      </small>
-    </div>
-
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input
-        id="password"
-        type="password"
-        formControlName="password"
-        placeholder="••••••••"
-        [class.is-invalid]="f['password'].touched && f['password'].invalid"
-      />
-      <small class="error-msg" *ngIf="f['password'].touched && f['password'].errors?.['required']">
-        Password is required.
-      </small>
-      <small class="error-msg" *ngIf="f['password'].touched && f['password'].errors?.['minlength']">
-        Password must be at least 6 characters.
-      </small>
-    </div>
-
-    <div class="server-error" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
-
-    <button type="submit" class="submit-btn" [disabled]="isLoading">
-      {{ isLoading ? 'Signing in...' : 'Sign In' }}
-    </button>
-  </form>
-
-  <div class="auth-footer">
-    <p>Don't have an account? <a routerLink="/register">Sign up here</a></p>
-  </div>
-</div> -->
-
-<div class="min-h-screen flex items-center justify-center bg-slate-100 p-4 font-sans">
-  <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-slate-200/60">
+<div class="min-h-screen flex items-center justify-center bg-brand-50/60 p-4 font-sans">
+  <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-brand-100">
+    
+    <!-- Header with Custom Brand Colors -->
     <div class="text-center mb-6">
-      <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Welcome Back</h2>
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500 text-white font-bold text-xl mb-3 shadow-md shadow-brand-500/30">
+        SC
+      </div>
+      <h2 class="text-2xl font-bold text-dark-900 tracking-tight">Welcome Back</h2>
       <p class="text-xs text-slate-500 mt-1">Please enter your details to sign in.</p>
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+      
       <!-- Username Field -->
       <div class="flex flex-col gap-1.5">
-        <label for="username" class="text-xs font-semibold text-slate-700">Username</label>
+        <label for="username" class="text-xs font-semibold text-dark-800">Username</label>
         <input
           id="username"
           pInputText
           type="text"
           formControlName="username"
           placeholder="Enter your username"
-          class="w-full p-inputtext-sm"
+          class="w-full p-inputtext-sm focus:border-brand-500"
           [class.ng-invalid]="f['username'].touched && f['username'].invalid"
           [class.ng-dirty]="f['username'].touched"
         />
-        <small class="text-xs text-rose-600 font-medium" *ngIf="f['username'].touched && f['username'].errors?.['required']">
+        <small class="text-xs text-accent-rose font-medium" *ngIf="f['username'].touched && f['username'].errors?.['required']">
           Username is required.
         </small>
       </div>
 
       <!-- Password Field -->
       <div class="flex flex-col gap-1.5">
-        <label for="password" class="text-xs font-semibold text-slate-700">Password</label>
+        <label for="password" class="text-xs font-semibold text-dark-800">Password</label>
         <p-password
           id="password"
           formControlName="password"
@@ -84,20 +40,20 @@
           [feedback]="false"
           [toggleMask]="true"
           styleClass="w-full"
-          inputStyleClass="w-full p-inputtext-sm"
+          inputStyleClass="w-full p-inputtext-sm focus:border-brand-500"
           [class.ng-invalid]="f['password'].touched && f['password'].invalid"
           [class.ng-dirty]="f['password'].touched"
         ></p-password>
-        <small class="text-xs text-rose-600 font-medium" *ngIf="f['password'].touched && f['password'].errors?.['required']">
+        <small class="text-xs text-accent-rose font-medium" *ngIf="f['password'].touched && f['password'].errors?.['required']">
           Password is required.
         </small>
-        <small class="text-xs text-rose-600 font-medium" *ngIf="f['password'].touched && f['password'].errors?.['minlength']">
+        <small class="text-xs text-accent-rose font-medium" *ngIf="f['password'].touched && f['password'].errors?.['minlength']">
           Password must be at least 6 characters.
         </small>
       </div>
 
-      <!-- Error Alert -->
-      <div *ngIf="errorMessage" class="bg-rose-50 text-rose-800 border border-rose-200 p-3 rounded-lg text-xs text-center font-medium my-1">
+      <!-- Server Error Message -->
+      <div *ngIf="errorMessage" class="bg-rose-50 text-accent-rose border border-rose-200 p-3 rounded-lg text-xs text-center font-medium my-1">
         {{ errorMessage }}
       </div>
 
@@ -108,12 +64,13 @@
         [label]="isLoading ? 'Signing in...' : 'Sign In'" 
         [icon]="isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-sign-in'"
         [disabled]="isLoading"
-        class="w-full mt-2 p-button-primary"
+        class="w-full mt-2 bg-brand-500 hover:bg-brand-600 text-white font-medium py-2.5 rounded-lg border-none transition shadow-lg shadow-brand-500/20"
       ></button>
     </form>
 
+    <!-- Footer -->
     <div class="mt-6 pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
-      <p>Don't have an account? <a routerLink="/register" class="text-sky-600 hover:text-sky-700 font-semibold underline transition">Sign up here</a></p>
+      <p>Don't have an account? <a routerLink="/register" class="text-brand-600 hover:text-brand-700 font-semibold underline transition">Sign up here</a></p>
     </div>
   </div>
 </div>

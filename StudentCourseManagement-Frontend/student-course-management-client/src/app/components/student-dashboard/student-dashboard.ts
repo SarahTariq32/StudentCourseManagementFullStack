@@ -3,6 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+
+// PrimeNG Imports
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { ButtonModule } from 'primeng/button';
+
 import { CourseService } from '../../services/course';
 import { StudentService } from '../../services/student';
 import { AuthService } from '../../services/auth';
@@ -15,7 +21,14 @@ type StudentView = 'overview' | 'my-courses' | 'available-courses' | 'profile';
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    FormsModule,
+    InputTextModule,
+    InputNumberModule,
+    ButtonModule
+  ],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.scss'
 })
@@ -23,7 +36,7 @@ export class StudentDashboardComponent implements OnInit {
   activeView: StudentView = 'overview';
   
   courses: Course[] = [];
-  allSystemCourses: Course[] = []; // Stores all system courses to look up enrolled course IDs
+  allSystemCourses: Course[] = [];
   studentProfile: StudentProfile | null = null;
   isVerified: boolean = false;
   isLoading: boolean = true;
@@ -37,7 +50,7 @@ export class StudentDashboardComponent implements OnInit {
 
   statusMessage: string = '';
   errorMessage: string = '';
-  showMaxCoursesBanner: boolean = false; // Triggered only on attempt
+  showMaxCoursesBanner: boolean = false;
 
   get enrolledCount(): number {
     return this.studentProfile?.enrolledCourses?.length || 0;
@@ -98,12 +111,10 @@ export class StudentDashboardComponent implements OnInit {
   }
 
   loadCourses(): void {
-    // Load available courses
     this.courseService.getCourses().subscribe({
       next: (data: any) => {
         this.courses = Array.isArray(data) ? data : (data?.items || []);
         
-        // Also fetch all system courses to resolve enrolled course IDs
         this.courseService.getAllCourses().subscribe({
           next: (allData: any) => {
             this.allSystemCourses = Array.isArray(allData) ? allData : (allData?.items || []);
@@ -133,7 +144,6 @@ export class StudentDashboardComponent implements OnInit {
     );
   }
 
-  // --- PROFILE EDITING ---
   toggleEditProfile(): void {
     this.isEditingProfile = !this.isEditingProfile;
     if (this.studentProfile) {
@@ -163,7 +173,6 @@ export class StudentDashboardComponent implements OnInit {
     });
   }
 
-  // --- ENROLLMENT & UNENROLLMENT ACTIONS ---
   onEnrollDirectly(courseId: number): void {
     this.statusMessage = '';
     this.errorMessage = '';
@@ -215,7 +224,6 @@ export class StudentDashboardComponent implements OnInit {
 
     const reason = this.unenrollmentReasonMap[courseName] || 'Student requested unenrollment';
 
-    // Pass courseName cleanly
     this.studentService.requestUnenrollment(0, reason, this.studentProfile?.id, courseName.trim()).subscribe({
       next: (res: any) => {
         this.statusMessage = res?.message || `Unenrollment request for "${courseName}" sent to Admin!`;

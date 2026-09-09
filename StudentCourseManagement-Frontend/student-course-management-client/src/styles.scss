@@ -13,37 +13,62 @@ html, body {
   color: #0f172a;
 }
 
+/* PrimeNG Table Refinements */
 .p-datatable {
   width: 100%;
-  
+
   .p-datatable-thead > tr > th {
-    background-color: #f8fafc !important;
-    color: #334155 !important;
-    font-weight: 600 !important;
-    padding: 0.75rem 1rem !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    background-color: #f8fafc;
+    color: #334155;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
   }
 
   .p-datatable-tbody > tr {
-    background-color: #ffffff !important;
-    color: #0f172a !important;
-    border-bottom: 1px solid #f1f5f9 !important;
+    background-color: #ffffff;
+    color: #0f172a;
+    border-bottom: 1px solid #f1f5f9;
 
     > td {
-      padding: 0.75rem 1rem !important;
+      padding: 0.75rem 1rem;
     }
   }
 
   .p-datatable-loading-overlay {
-    background-color: rgba(255, 255, 255, 0.5) !important;
+    background-color: rgba(255, 255, 255, 0.5);
   }
 }
 
-/* Hide PrimeUI License Watermark Banner */
+/* Styled Confirmation Dialog Modal */
+.p-confirm-dialog {
+  .p-dialog-content {
+    padding: 1.5rem !important;
+    font-size: 0.9rem;
+    color: #334155;
+  }
+
+  .p-dialog-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.25rem 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .p-dialog-footer {
+    background-color: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+
+/* Watermark Cleanup */
 .p-license-banner,
 div[class*="license"],
 iframe[src*="primeui"] {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
+  display: none;
 }

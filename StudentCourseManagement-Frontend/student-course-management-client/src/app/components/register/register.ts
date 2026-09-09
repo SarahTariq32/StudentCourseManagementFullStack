@@ -6,10 +6,24 @@ import { AuthService } from '../../services/auth';
 import { HttpErrorResponse } from '@angular/common/http';
 import { extractErrorMessage } from '../../utils/http-error.util';
 
+// PrimeNG Imports
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    RouterLink,
+    InputTextModule,
+    PasswordModule,
+    SelectModule,
+    ButtonModule
+  ],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })
@@ -18,6 +32,11 @@ export class RegisterComponent {
   errorMessage: string = '';
   successMessage: string = '';
   isLoading: boolean = false;
+
+  roles = [
+    { label: 'Student', value: 'Student' },
+    { label: 'Admin', value: 'Admin' }
+  ];
 
   constructor(
     private fb: FormBuilder,

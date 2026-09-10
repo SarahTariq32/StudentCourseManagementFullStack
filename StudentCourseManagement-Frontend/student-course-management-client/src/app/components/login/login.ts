@@ -10,6 +10,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 
+import { LucideAngularModule, LogIn, User, Lock, ShieldAlert } from 'lucide-angular';
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -19,12 +21,18 @@ import { ButtonModule } from 'primeng/button';
     RouterLink,
     InputTextModule,
     PasswordModule,
-    ButtonModule
+    ButtonModule,
+    LucideAngularModule
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
 export class LoginComponent implements OnInit {
+  readonly LogInIcon = LogIn;
+  readonly UserIcon = User;
+  readonly LockIcon = Lock;
+  readonly AlertIcon = ShieldAlert;
+
   loginForm: FormGroup;
   errorMessage: string = '';
   isLoading: boolean = false;

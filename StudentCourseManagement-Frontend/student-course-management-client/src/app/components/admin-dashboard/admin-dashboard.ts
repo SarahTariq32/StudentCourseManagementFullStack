@@ -11,6 +11,22 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
 
+import { 
+  LucideAngularModule, 
+  LogOut, 
+  Search, 
+  Trash2, 
+  Edit, 
+  UserPlus, 
+  BookPlus, 
+  Users, 
+  BookOpen, 
+  UserCheck, 
+  Check, 
+  X,
+  ArrowRight
+} from 'lucide-angular';
+
 import { AdminService, QueryParameters } from '../../services/admin';
 import { AuthService } from '../../services/auth';
 import { PendingRequest } from '../../models/admin.model';
@@ -37,7 +53,8 @@ type AdminView =
     ButtonModule,
     InputTextModule,
     ConfirmDialogModule,
-    SkeletonModule
+    SkeletonModule,
+    LucideAngularModule
   ],
   providers: [ConfirmationService],
   templateUrl: './admin-dashboard.html',
@@ -46,6 +63,19 @@ type AdminView =
 export class AdminDashboardComponent implements OnInit {
   @ViewChild('dtStudents') dtStudents!: Table;
   @ViewChild('dtCourses') dtCourses!: Table;
+
+  readonly LogOutIcon = LogOut;
+  readonly SearchIcon = Search;
+  readonly TrashIcon = Trash2;
+  readonly EditIcon = Edit;
+  readonly UserPlusIcon = UserPlus;
+  readonly BookPlusIcon = BookPlus;
+  readonly UsersIcon = Users;
+  readonly BookOpenIcon = BookOpen;
+  readonly UserCheckIcon = UserCheck;
+  readonly CheckIcon = Check;
+  readonly XIcon = X;
+  readonly ArrowRightIcon = ArrowRight;
 
   activeView: AdminView = 'overview';
   
@@ -121,7 +151,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // Reloads PrimeNG Table state automatically without full browser refresh
   reloadStudentTable(): void {
     if (this.dtStudents) {
       this.dtStudents.reset();
@@ -138,7 +167,6 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  // --- SERVER-SIDE LAZY LOADING FOR STUDENTS ---
   onLazyLoadStudents(event: TableLazyLoadEvent): void {
     setTimeout(() => {
       this.studentsLoading = true;
@@ -179,7 +207,6 @@ export class AdminDashboardComponent implements OnInit {
     }, 0);
   }
 
-  // --- SERVER-SIDE LAZY LOADING FOR COURSES ---
   onLazyLoadCourses(event: TableLazyLoadEvent): void {
     setTimeout(() => {
       this.coursesLoading = true;
@@ -241,12 +268,10 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // --- STYLED CONFIRMATION DIALOG FOR DELETING STUDENT ---
   onDeleteStudent(id: number): void {
     this.confirmationService.confirm({
       message: `Are you sure you want to permanently delete Student #${id}?`,
       header: 'Confirm Student Deletion',
-      icon: 'pi pi-user-minus',
       acceptLabel: 'Delete Student',
       rejectLabel: 'Cancel',
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
@@ -266,12 +291,10 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // --- STYLED CONFIRMATION DIALOG FOR DELETING COURSE ---
   onDeleteCourse(id: number): void {
     this.confirmationService.confirm({
       message: `Are you sure you want to permanently delete Course #${id}?`,
       header: 'Confirm Course Deletion',
-      icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Delete Course',
       rejectLabel: 'Cancel',
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
@@ -291,7 +314,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // --- STUDENT SEARCH & UPDATE ---
   onSearchStudent(idInput: string): void {
     const id = parseInt(idInput, 10);
     if (!id) return;
@@ -333,7 +355,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // --- COURSE SEARCH & UPDATE ---
   onSearchCourse(idInput: string): void {
     const id = parseInt(idInput, 10);
     if (!id) return;

@@ -1,4 +1,4 @@
-<!-- PRIME NG THEMED CONFIRMATION DIALOG -->
+
 <p-confirmDialog 
   [style]="{width: '420px'}" 
   styleClass="custom-confirm-dialog"
@@ -22,42 +22,47 @@
         <button 
           [class.bg-slate-800]="activeView === 'overview'" 
           [class.text-white]="activeView === 'overview'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
           (click)="setView('overview')"
         >
-          Dashboard Overview
+          <lucide-icon [img]="BookOpenIcon" class="w-4 h-4 text-brand-500"></lucide-icon>
+          <span>Dashboard Overview</span>
         </button>
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Students</div>
         <button 
           [class.bg-slate-800]="activeView === 'students-list'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
           (click)="setView('students-list')"
         >
-          View All Students
+          <lucide-icon [img]="UsersIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+          <span>View All Students</span>
         </button>
         <button 
           [class.bg-slate-800]="activeView === 'student-search'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
           (click)="setView('student-search')"
         >
-          Find / Update / Delete Student
+          <lucide-icon [img]="SearchIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+          <span>Find / Update / Delete</span>
         </button>
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Courses</div>
         <button 
           [class.bg-slate-800]="activeView === 'courses-list'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
           (click)="setView('courses-list')"
         >
-          View All Courses
+          <lucide-icon [img]="BookPlusIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+          <span>View All Courses</span>
         </button>
         <button 
           [class.bg-slate-800]="activeView === 'course-search'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
           (click)="setView('course-search')"
         >
-          Find / Update / Delete Course
+          <lucide-icon [img]="SearchIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+          <span>Find / Update / Delete</span>
         </button>
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Pending Approvals</div>
@@ -66,7 +71,10 @@
           class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center font-medium"
           (click)="setView('registration-requests')"
         >
-          <span>Student Registrations</span>
+          <div class="flex items-center gap-2.5">
+            <lucide-icon [img]="UserCheckIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+            <span>Student Registrations</span>
+          </div>
           <span class="bg-amber-500/20 text-accent-amber text-xs px-2 py-0.5 rounded-full font-bold">{{ registrationRequests.length }}</span>
         </button>
         <button 
@@ -74,19 +82,22 @@
           class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center font-medium"
           (click)="setView('course-requests')"
         >
-          <span>Enrollment Requests</span>
+          <div class="flex items-center gap-2.5">
+            <lucide-icon [img]="UserPlusIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+            <span>Enrollment Requests</span>
+          </div>
           <span class="bg-amber-500/20 text-accent-amber text-xs px-2 py-0.5 rounded-full font-bold">{{ courseRequests.length }}</span>
         </button>
       </nav>
     </div>
 
     <button 
-      pButton 
-      label="Logout" 
-      icon="pi pi-sign-out" 
       (click)="onLogout()" 
-      class="w-full bg-accent-rose hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm border-none"
-    ></button>
+      class="w-full bg-accent-rose hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm border-none flex items-center justify-center gap-2 cursor-pointer"
+    >
+      <lucide-icon [img]="LogOutIcon" class="w-4 h-4"></lucide-icon>
+      <span>Logout</span>
+    </button>
   </aside>
 
   <!-- MAIN CONTENT AREA -->
@@ -104,26 +115,34 @@
       <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('students-list')">
         <h3 class="text-sm font-medium text-slate-500">Total Students Records</h3>
         <p class="text-3xl font-bold text-dark-900 my-2">{{ totalStudentsCount }}</p>
-        <span class="text-xs text-brand-600 font-semibold">Manage directory →</span>
+        <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
+          Manage directory <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
+        </span>
       </div>
       <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('courses-list')">
         <h3 class="text-sm font-medium text-slate-500">Total Catalog Courses</h3>
         <p class="text-3xl font-bold text-dark-900 my-2">{{ totalCoursesCount }}</p>
-        <span class="text-xs text-brand-600 font-semibold">Manage catalog →</span>
+        <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
+          Manage catalog <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
+        </span>
       </div>
       <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('registration-requests')">
         <h3 class="text-sm font-medium text-slate-500">Registration Requests</h3>
         <p class="text-3xl font-bold text-accent-amber my-2">{{ registrationRequests.length }}</p>
-        <span class="text-xs text-accent-amber font-semibold">Approve accounts →</span>
+        <span class="text-xs text-accent-amber font-semibold flex items-center gap-1">
+          Approve accounts <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
+        </span>
       </div>
       <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('course-requests')">
         <h3 class="text-sm font-medium text-slate-500">Enrollment Requests</h3>
         <p class="text-3xl font-bold text-accent-amber my-2">{{ courseRequests.length }}</p>
-        <span class="text-xs text-accent-amber font-semibold">Review course changes →</span>
+        <span class="text-xs text-accent-amber font-semibold flex items-center gap-1">
+          Review course changes <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
+        </span>
       </div>
     </section>
 
-    <!-- 2. LAZY-LOADED STUDENT TABLE WITH SKELETON LOADING -->
+    <!-- 2. LAZY-LOADED STUDENT TABLE -->
     <section *ngIf="activeView === 'students-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <div>
@@ -192,23 +211,24 @@
             <td>
               <div class="flex gap-2">
                 <button 
-                  pButton 
-                  label="Update" 
                   (click)="openEditStudent(s)" 
-                  class="p-button-outlined p-button-sm text-xs border-slate-300 text-dark-800"
-                ></button>
+                  class="px-3 py-1 text-xs font-medium border border-slate-300 text-dark-800 rounded-lg hover:bg-slate-100 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <lucide-icon [img]="EditIcon" class="w-3.5 h-3.5 text-slate-600"></lucide-icon>
+                  <span>Update</span>
+                </button>
                 <button 
-                  pButton 
-                  label="Delete" 
                   (click)="onDeleteStudent(s.id)" 
-                  class="p-button-outlined p-button-danger p-button-sm text-xs"
-                ></button>
+                  class="px-3 py-1 text-xs font-medium border border-rose-200 text-accent-rose rounded-lg hover:bg-rose-50 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>
+                  <span>Delete</span>
+                </button>
               </div>
             </td>
           </tr>
         </ng-template>
 
-        <!-- SKELETON LOADING ROWS FOR STUDENTS TABLE -->
         <ng-template pTemplate="loadingbody">
           <tr *ngFor="let i of [1, 2, 3, 4, 5]">
             <td><p-skeleton width="3rem" height="1.2rem"></p-skeleton></td>
@@ -240,7 +260,13 @@
 
       <div class="flex gap-3 mb-6">
         <input #sIdInput type="number" placeholder="Enter Numeric Student ID (e.g. 1016)..." pInputText class="p-inputtext-sm flex-1" />
-        <button pButton label="Search ID" icon="pi pi-search" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none" (click)="onSearchStudent(sIdInput.value)"></button>
+        <button 
+          (click)="onSearchStudent(sIdInput.value)" 
+          class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
+        >
+          <lucide-icon [img]="SearchIcon" class="w-3.5 h-3.5"></lucide-icon>
+          <span>Search ID</span>
+        </button>
       </div>
 
       <div *ngIf="searchedStudent" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
@@ -256,8 +282,20 @@
         <p class="text-sm text-slate-700 my-1"><strong>Enrolled Courses:</strong> {{ searchedStudent.enrolledCourses?.join(', ') || 'None' }}</p>
         
         <div class="flex gap-3 mt-5 pt-3 border-t border-slate-200">
-          <button pButton label="Update Profile" icon="pi pi-user-edit" class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none" (click)="openEditStudent(searchedStudent)"></button>
-          <button pButton label="Delete Student" icon="pi pi-trash" class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none" (click)="onDeleteStudent(searchedStudent.id)"></button>
+          <button 
+            (click)="openEditStudent(searchedStudent)" 
+            class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
+          >
+            <lucide-icon [img]="EditIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Update Profile</span>
+          </button>
+          <button 
+            (click)="onDeleteStudent(searchedStudent.id)" 
+            class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
+          >
+            <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Delete Student</span>
+          </button>
         </div>
       </div>
     </section>
@@ -285,7 +323,7 @@
       </form>
     </section>
 
-    <!-- 5. LAZY-LOADED COURSE TABLE WITH SKELETON LOADING -->
+    <!-- 5. LAZY-LOADED COURSE TABLE -->
     <section *ngIf="activeView === 'courses-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <div>
@@ -293,11 +331,12 @@
           <p class="text-xs text-slate-500 mt-1">Click on column headers (ID, Course Name, Credits) to sort catalog.</p>
         </div>
         <button 
-          pButton 
-          label="+ Add New Course" 
           (click)="setView('course-form')" 
-          class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none"
-        ></button>
+          class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
+        >
+          <lucide-icon [img]="BookPlusIcon" class="w-4 h-4"></lucide-icon>
+          <span>Add New Course</span>
+        </button>
       </div>
 
       <p-table 
@@ -356,23 +395,24 @@
             <td>
               <div class="flex gap-2">
                 <button 
-                  pButton 
-                  label="Update" 
                   (click)="openEditCourse(c)" 
-                  class="p-button-outlined p-button-sm text-xs border-slate-300 text-dark-800"
-                ></button>
+                  class="px-3 py-1 text-xs font-medium border border-slate-300 text-dark-800 rounded-lg hover:bg-slate-100 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <lucide-icon [img]="EditIcon" class="w-3.5 h-3.5 text-slate-600"></lucide-icon>
+                  <span>Update</span>
+                </button>
                 <button 
-                  pButton 
-                  label="Delete" 
                   (click)="onDeleteCourse(c.id)" 
-                  class="p-button-outlined p-button-danger p-button-sm text-xs"
-                ></button>
+                  class="px-3 py-1 text-xs font-medium border border-rose-200 text-accent-rose rounded-lg hover:bg-rose-50 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>
+                  <span>Delete</span>
+                </button>
               </div>
             </td>
           </tr>
         </ng-template>
 
-        <!-- SKELETON LOADING ROWS FOR COURSES TABLE -->
         <ng-template pTemplate="loadingbody">
           <tr *ngFor="let i of [1, 2, 3, 4, 5]">
             <td><p-skeleton width="3rem" height="1.2rem"></p-skeleton></td>
@@ -403,7 +443,13 @@
 
       <div class="flex gap-3 mb-6">
         <input #cIdInput type="number" placeholder="Enter Numeric Course ID..." pInputText class="p-inputtext-sm flex-1" />
-        <button pButton label="Get Course" icon="pi pi-search" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none" (click)="onSearchCourse(cIdInput.value)"></button>
+        <button 
+          (click)="onSearchCourse(cIdInput.value)" 
+          class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
+        >
+          <lucide-icon [img]="SearchIcon" class="w-3.5 h-3.5"></lucide-icon>
+          <span>Get Course</span>
+        </button>
       </div>
 
       <div *ngIf="searchedCourse" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
@@ -418,8 +464,20 @@
         <p class="text-sm text-slate-700 my-1"><strong>Capacity Status:</strong> {{ searchedCourse.enrolledStudentsCount || 0 }}/50 Seats Enrolled</p>
         
         <div class="flex gap-3 mt-5 pt-3 border-t border-slate-200">
-          <button pButton label="Update Course" icon="pi pi-file-edit" class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none" (click)="openEditCourse(searchedCourse)"></button>
-          <button pButton label="Delete Course" icon="pi pi-trash" class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none" (click)="onDeleteCourse(searchedCourse.id)"></button>
+          <button 
+            (click)="openEditCourse(searchedCourse)" 
+            class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
+          >
+            <lucide-icon [img]="EditIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Update Course</span>
+          </button>
+          <button 
+            (click)="onDeleteCourse(searchedCourse.id)" 
+            class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
+          >
+            <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Delete Course</span>
+          </button>
         </div>
       </div>
     </section>
@@ -453,17 +511,19 @@
         </div>
         <div class="flex gap-2">
           <button 
-            pButton 
-            label="Approve Student" 
             (click)="onProcessRequest(req.requestId, true)" 
-            class="bg-accent-emerald hover:bg-emerald-700 text-white text-xs font-medium border-none"
-          ></button>
+            class="bg-accent-emerald hover:bg-emerald-700 text-white text-xs font-medium border-none px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
+          >
+            <lucide-icon [img]="CheckIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Approve</span>
+          </button>
           <button 
-            pButton 
-            label="Reject Request" 
             (click)="onProcessRequest(req.requestId, false)" 
-            class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none"
-          ></button>
+            class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
+          >
+            <lucide-icon [img]="XIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Reject</span>
+          </button>
         </div>
       </div>
       <p *ngIf="registrationRequests.length === 0" class="text-slate-500 text-sm py-4">No pending student registration requests.</p>
@@ -480,17 +540,19 @@
         </div>
         <div class="flex gap-2">
           <button 
-            pButton 
-            label="Approve" 
             (click)="onProcessRequest(req.requestId, true)" 
-            class="bg-accent-emerald hover:bg-emerald-700 text-white text-xs font-medium border-none"
-          ></button>
+            class="bg-accent-emerald hover:bg-emerald-700 text-white text-xs font-medium border-none px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
+          >
+            <lucide-icon [img]="CheckIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Approve</span>
+          </button>
           <button 
-            pButton 
-            label="Reject" 
             (click)="onProcessRequest(req.requestId, false)" 
-            class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none"
-          ></button>
+            class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
+          >
+            <lucide-icon [img]="XIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Reject</span>
+          </button>
         </div>
       </div>
       <p *ngIf="courseRequests.length === 0" class="text-slate-500 text-sm py-4">No pending enrollment or unenrollment requests.</p>

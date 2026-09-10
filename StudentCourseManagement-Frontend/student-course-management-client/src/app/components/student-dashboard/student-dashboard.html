@@ -16,59 +16,67 @@
         <button 
           [class.bg-slate-800]="activeView === 'overview'" 
           [class.text-white]="activeView === 'overview'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('overview')"
         >
-          Dashboard Overview
+          <lucide-icon [img]="GraduationCapIcon" class="w-4 h-4 text-brand-500"></lucide-icon>
+          <span>Dashboard Overview</span>
         </button>
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">My Academics</div>
         <button 
           [class.bg-slate-800]="activeView === 'my-courses'"
           [disabled]="!isVerified"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40 font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40 font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('my-courses')"
         >
-          My Active Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)
+          <lucide-icon [img]="BookOpenIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+          <span>My Active Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</span>
         </button>
         <button 
           [class.bg-slate-800]="activeView === 'available-courses'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('available-courses')"
         >
-          Browse Course Catalog
+          <lucide-icon [img]="BookOpenIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+          <span>Browse Course Catalog</span>
         </button>
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Account</div>
         <button 
           [class.bg-slate-800]="activeView === 'profile'"
           [disabled]="!isVerified"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40 font-medium"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40 font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('profile')"
         >
-          My Profile {{ !isVerified ? '(Locked)' : '' }}
+          <lucide-icon [img]="UserIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
+          <span>My Profile {{ !isVerified ? '(Locked)' : '' }}</span>
         </button>
       </nav>
     </div>
 
     <button 
-      pButton 
-      label="Logout" 
-      icon="pi pi-sign-out" 
       (click)="onLogout()" 
-      class="w-full bg-accent-rose hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm border-none"
-    ></button>
+      class="w-full bg-accent-rose hover:bg-rose-700 text-white font-medium py-2.5 rounded-lg transition text-sm border-none flex items-center justify-center gap-2 cursor-pointer"
+    >
+      <lucide-icon [img]="LogOutIcon" class="w-4 h-4"></lucide-icon>
+      <span>Logout</span>
+    </button>
   </aside>
 
   <!-- MAIN CONTENT AREA -->
   <main class="flex-1 p-8 overflow-y-auto">
     <!-- Notice Banners -->
-    <div *ngIf="showMaxCoursesBanner" class="bg-amber-50 text-amber-900 border border-amber-200 p-4 rounded-xl mb-6 text-sm">
-      <strong>Notice:</strong> You are currently enrolled in 7 courses (maximum limit). You must drop a course before registering for new ones.
+    <div *ngIf="showMaxCoursesBanner" class="bg-amber-50 text-amber-900 border border-amber-200 p-4 rounded-xl mb-6 text-sm flex items-center gap-2">
+      <lucide-icon [img]="AlertTriangleIcon" class="w-5 h-5 text-amber-600 flex-shrink-0"></lucide-icon>
+      <span><strong>Notice:</strong> You are currently enrolled in 7 courses (maximum limit). You must drop a course before registering for new ones.</span>
     </div>
 
     <div *ngIf="!isLoading && !isVerified" class="bg-amber-50 text-amber-900 border border-amber-200 p-5 rounded-xl mb-6">
-      <h3 class="font-bold text-base mb-1 text-amber-900">⚠️ Unverified Account Status</h3>
+      <div class="flex items-center gap-2 mb-1">
+        <lucide-icon [img]="AlertTriangleIcon" class="w-5 h-5 text-amber-600"></lucide-icon>
+        <h3 class="font-bold text-base text-amber-900">Unverified Account Status</h3>
+      </div>
       <p class="text-sm mb-3 text-amber-800">Your account is registered but awaiting admin verification. Submit a request below to verify your profile:</p>
       <div class="flex gap-2">
         <input 
@@ -79,11 +87,12 @@
           class="p-inputtext-sm flex-1 bg-white" 
         />
         <button 
-          pButton 
-          label="Submit Request" 
           (click)="onRequestAccountCreation()" 
-          class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none"
-        ></button>
+          class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer border-none"
+        >
+          <lucide-icon [img]="SendIcon" class="w-3.5 h-3.5"></lucide-icon>
+          <span>Submit Request</span>
+        </button>
       </div>
     </div>
 
@@ -110,19 +119,25 @@
         <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('my-courses')">
           <h3 class="text-sm font-medium text-slate-500">Enrolled Courses</h3>
           <p class="text-3xl font-bold text-dark-900 my-2">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="text-sm text-slate-400 font-normal">/ 7 Max</span></p>
-          <span class="text-xs text-brand-600 font-semibold">View active classes →</span>
+          <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
+            View active classes <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
+          </span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('available-courses')">
           <h3 class="text-sm font-medium text-slate-500">Available Catalog</h3>
           <p class="text-3xl font-bold text-dark-900 my-2">{{ courses.length }}</p>
-          <span class="text-xs text-brand-600 font-semibold">Browse catalog →</span>
+          <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
+            Browse catalog <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
+          </span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('profile')">
           <h3 class="text-sm font-medium text-slate-500">Account Status</h3>
           <p class="text-3xl font-bold my-2" [class.text-accent-emerald]="isVerified" [class.text-amber-600]="!isVerified">
             {{ isVerified ? 'Verified' : 'Pending' }}
           </p>
-          <span class="text-xs text-brand-600 font-semibold">View profile →</span>
+          <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
+            View profile <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
+          </span>
         </div>
       </div>
     </section>
@@ -144,7 +159,9 @@
         <div *ngFor="let courseName of studentProfile?.enrolledCourses" class="flex justify-between items-center p-4 rounded-xl border border-slate-100 bg-slate-50/50">
           <div>
             <h4 class="font-bold text-dark-900">{{ courseName }}</h4>
-            <span class="text-xs bg-emerald-100 text-accent-emerald px-2 py-0.5 rounded font-semibold mt-1 inline-block">Active Registration</span>
+            <span class="text-xs bg-emerald-100 text-accent-emerald px-2 py-0.5 rounded font-semibold mt-1 inline-flex items-center gap-1">
+              <lucide-icon [img]="CheckIcon" class="w-3 h-3"></lucide-icon> Active Registration
+            </span>
           </div>
 
           <div class="flex gap-2 items-center">
@@ -156,11 +173,12 @@
               class="p-inputtext-sm w-56 bg-white" 
             />
             <button 
-              pButton 
-              label="Request Drop" 
               (click)="onRequestUnenrollment(courseName)" 
-              class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none"
-            ></button>
+              class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium px-3 py-2 rounded-lg flex items-center gap-1 border-none cursor-pointer"
+            >
+              <lucide-icon [img]="MinusCircleIcon" class="w-3.5 h-3.5"></lucide-icon>
+              <span>Request Drop</span>
+            </button>
           </div>
         </div>
       </div>
@@ -203,7 +221,9 @@
             </div>
 
             <div class="my-3">
-              <span *ngIf="isAlreadyEnrolled(c.name)" class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200">✓ Enrolled</span>
+              <span *ngIf="isAlreadyEnrolled(c.name)" class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200 inline-flex items-center gap-1">
+                <lucide-icon [img]="CheckIcon" class="w-3 h-3"></lucide-icon> Enrolled
+              </span>
               <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount < 50" class="text-xs bg-emerald-50 text-accent-emerald px-2.5 py-1 rounded-md font-semibold">Available</span>
               <span *ngIf="!isAlreadyEnrolled(c.name) && c.enrolledStudentsCount >= 50" class="text-xs bg-rose-50 text-accent-rose px-2.5 py-1 rounded-md font-semibold">Course Full</span>
             </div>
@@ -218,12 +238,13 @@
 
           <div class="flex flex-col gap-2 pt-2 border-t border-slate-100">
             <button 
-              pButton 
-              [label]="isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : (!isVerified ? 'Verification Required' : 'Self-Enroll'))"
               [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               (click)="onEnrollDirectly(c.id)"
-              class="w-full bg-accent-emerald hover:bg-emerald-700 text-white font-medium text-xs border-none disabled:bg-slate-200 disabled:text-slate-400"
-            ></button>
+              class="w-full bg-accent-emerald hover:bg-emerald-700 text-white font-medium text-xs py-2 rounded-lg border-none transition disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <lucide-icon [img]="UserCheckIcon" class="w-3.5 h-3.5"></lucide-icon>
+              <span>{{ isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : (!isVerified ? 'Verification Required' : 'Self-Enroll')) }}</span>
+            </button>
 
             <div class="flex gap-2">
               <input 
@@ -235,12 +256,13 @@
                 [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               />
               <button 
-                pButton 
-                label="Request" 
                 [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
                 (click)="onRequestEnrollment(c.id)"
-                class="bg-slate-100 hover:bg-slate-200 text-dark-800 font-medium text-xs border border-slate-200"
-              ></button>
+                class="bg-slate-100 hover:bg-slate-200 text-dark-800 font-medium text-xs px-3 py-1.5 rounded-lg border border-slate-200 transition disabled:opacity-40 flex items-center gap-1 cursor-pointer"
+              >
+                <lucide-icon [img]="SendIcon" class="w-3.5 h-3.5"></lucide-icon>
+                <span>Request</span>
+              </button>
             </div>
           </div>
         </div>
@@ -251,7 +273,13 @@
     <section *ngIf="!isLoading && activeView === 'profile' && studentProfile" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-bold text-dark-900">Academic Profile</h3>
-        <button pButton [label]="isEditingProfile ? 'Cancel' : 'Edit Profile'" class="p-button-outlined p-button-sm text-xs" (click)="toggleEditProfile()"></button>
+        <button 
+          (click)="toggleEditProfile()"
+          class="border border-slate-300 hover:bg-slate-50 text-dark-800 text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+        >
+          <lucide-icon [img]="Edit3Icon" class="w-3.5 h-3.5 text-slate-600"></lucide-icon>
+          <span>{{ isEditingProfile ? 'Cancel' : 'Edit Profile' }}</span>
+        </button>
       </div>
 
       <div *ngIf="!isEditingProfile" class="flex flex-col gap-3">

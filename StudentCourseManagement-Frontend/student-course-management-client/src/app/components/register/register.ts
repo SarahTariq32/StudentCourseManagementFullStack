@@ -6,11 +6,21 @@ import { AuthService } from '../../services/auth';
 import { HttpErrorResponse } from '@angular/common/http';
 import { extractErrorMessage } from '../../utils/http-error.util';
 
-// PrimeNG Imports
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
+
+import { 
+  LucideAngularModule, 
+  UserPlus, 
+  User, 
+  Mail, 
+  AtSign, 
+  Lock, 
+  ShieldAlert, 
+  CheckCircle 
+} from 'lucide-angular';
 
 @Component({
   selector: 'app-register',
@@ -22,12 +32,21 @@ import { ButtonModule } from 'primeng/button';
     InputTextModule,
     PasswordModule,
     SelectModule,
-    ButtonModule
+    ButtonModule,
+    LucideAngularModule
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })
 export class RegisterComponent {
+  readonly UserPlusIcon = UserPlus;
+  readonly UserIcon = User;
+  readonly MailIcon = Mail;
+  readonly AtSignIcon = AtSign;
+  readonly LockIcon = Lock;
+  readonly AlertIcon = ShieldAlert;
+  readonly CheckIcon = CheckCircle;
+
   registerForm: FormGroup;
   errorMessage: string = '';
   successMessage: string = '';

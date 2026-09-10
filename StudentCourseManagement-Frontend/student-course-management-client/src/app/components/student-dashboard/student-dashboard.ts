@@ -8,6 +8,22 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
+
+import { 
+  LucideAngularModule, 
+  LogOut, 
+  BookOpen, 
+  GraduationCap, 
+  User, 
+  Check, 
+  Send, 
+  MinusCircle, 
+  Edit3, 
+  AlertTriangle,
+  ArrowRight,
+  UserCheck
+} from 'lucide-angular';
+
 import { CourseService } from '../../services/course';
 import { StudentService } from '../../services/student';
 import { AuthService } from '../../services/auth';
@@ -27,12 +43,25 @@ type StudentView = 'overview' | 'my-courses' | 'available-courses' | 'profile';
     InputTextModule,
     InputNumberModule,
     ButtonModule,
-    SkeletonModule
+    SkeletonModule,
+    LucideAngularModule
   ],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.scss'
 })
 export class StudentDashboardComponent implements OnInit {
+  readonly LogOutIcon = LogOut;
+  readonly BookOpenIcon = BookOpen;
+  readonly GraduationCapIcon = GraduationCap;
+  readonly UserIcon = User;
+  readonly CheckIcon = Check;
+  readonly SendIcon = Send;
+  readonly MinusCircleIcon = MinusCircle;
+  readonly Edit3Icon = Edit3;
+  readonly AlertTriangleIcon = AlertTriangle;
+  readonly ArrowRightIcon = ArrowRight;
+  readonly UserCheckIcon = UserCheck;
+
   activeView: StudentView = 'overview';
   
   courses: Course[] = [];

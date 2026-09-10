@@ -14,7 +14,10 @@
       
       <!-- Full Name -->
       <div class="flex flex-col gap-1.5">
-        <label for="fullName" class="text-xs font-semibold text-dark-800">Full Name</label>
+        <label for="fullName" class="text-xs font-semibold text-dark-800 flex items-center gap-1.5">
+          <lucide-icon [img]="UserIcon" class="w-3.5 h-3.5 text-slate-500"></lucide-icon>
+          <span>Full Name</span>
+        </label>
         <input 
           id="fullName" 
           pInputText 
@@ -31,7 +34,10 @@
 
       <!-- Email -->
       <div class="flex flex-col gap-1.5">
-        <label for="email" class="text-xs font-semibold text-dark-800">Email Address</label>
+        <label for="email" class="text-xs font-semibold text-dark-800 flex items-center gap-1.5">
+          <lucide-icon [img]="MailIcon" class="w-3.5 h-3.5 text-slate-500"></lucide-icon>
+          <span>Email Address</span>
+        </label>
         <input 
           id="email" 
           pInputText 
@@ -49,7 +55,10 @@
 
       <!-- Username -->
       <div class="flex flex-col gap-1.5">
-        <label for="username" class="text-xs font-semibold text-dark-800">Username</label>
+        <label for="username" class="text-xs font-semibold text-dark-800 flex items-center gap-1.5">
+          <lucide-icon [img]="AtSignIcon" class="w-3.5 h-3.5 text-slate-500"></lucide-icon>
+          <span>Username</span>
+        </label>
         <input 
           id="username" 
           pInputText 
@@ -67,7 +76,10 @@
 
       <!-- Password -->
       <div class="flex flex-col gap-1.5">
-        <label for="password" class="text-xs font-semibold text-dark-800">Password</label>
+        <label for="password" class="text-xs font-semibold text-dark-800 flex items-center gap-1.5">
+          <lucide-icon [img]="LockIcon" class="w-3.5 h-3.5 text-slate-500"></lucide-icon>
+          <span>Password</span>
+        </label>
         <p-password
           id="password"
           formControlName="password"
@@ -84,7 +96,7 @@
         </small>
       </div>
 
-      <!-- Register As Dropdown using PrimeNG 18+ p-select -->
+      <!-- Register As Dropdown -->
       <div class="flex flex-col gap-1.5">
         <label for="role" class="text-xs font-semibold text-dark-800">Register As</label>
         <p-select
@@ -98,22 +110,26 @@
       </div>
 
       <!-- Alert Messages -->
-      <div *ngIf="errorMessage" class="bg-rose-50 text-accent-rose border border-rose-200 p-3 rounded-lg text-xs text-center font-medium my-1">
-        {{ errorMessage }}
+      <div *ngIf="errorMessage" class="bg-rose-50 text-accent-rose border border-rose-200 p-3 rounded-lg text-xs font-medium flex items-center gap-2 my-1">
+        <lucide-icon [img]="AlertIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+        <span>{{ errorMessage }}</span>
       </div>
-      <div *ngIf="successMessage" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-3 rounded-lg text-xs text-center font-medium my-1">
-        {{ successMessage }}
+      <div *ngIf="successMessage" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-3 rounded-lg text-xs font-medium flex items-center gap-2 my-1">
+        <lucide-icon [img]="CheckIcon" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+        <span>{{ successMessage }}</span>
       </div>
 
       <!-- Submit Button -->
       <button 
         pButton 
         type="submit" 
-        [label]="isLoading ? 'Creating Account...' : 'Sign Up'" 
-        [icon]="isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-user-plus'"
         [disabled]="isLoading"
-        class="w-full mt-2 bg-brand-500 hover:bg-brand-600 text-white font-medium py-2.5 rounded-lg border-none transition shadow-lg shadow-brand-500/20"
-      ></button>
+        class="w-full mt-2 bg-brand-500 hover:bg-brand-600 text-white font-medium py-2.5 rounded-lg border-none transition shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <lucide-icon *ngIf="!isLoading" [img]="UserPlusIcon" class="w-4 h-4"></lucide-icon>
+        <i *ngIf="isLoading" class="pi pi-spin pi-spinner text-sm"></i>
+        <span>{{ isLoading ? 'Creating Account...' : 'Sign Up' }}</span>
+      </button>
     </form>
 
     <!-- Footer -->

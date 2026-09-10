@@ -4,12 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
-// PrimeNG Imports
 import { Table, TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
+import { SkeletonModule } from 'primeng/skeleton';
 
 import { AdminService, QueryParameters } from '../../services/admin';
 import { AuthService } from '../../services/auth';
@@ -36,7 +36,8 @@ type AdminView =
     TableModule,
     ButtonModule,
     InputTextModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    SkeletonModule
   ],
   providers: [ConfirmationService],
   templateUrl: './admin-dashboard.html',

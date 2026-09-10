@@ -123,7 +123,7 @@
       </div>
     </section>
 
-    <!-- 2. LAZY-LOADED STUDENT TABLE -->
+    <!-- 2. LAZY-LOADED STUDENT TABLE WITH SKELETON LOADING -->
     <section *ngIf="activeView === 'students-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <div>
@@ -208,6 +208,23 @@
           </tr>
         </ng-template>
 
+        <!-- SKELETON LOADING ROWS FOR STUDENTS TABLE -->
+        <ng-template pTemplate="loadingbody">
+          <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+            <td><p-skeleton width="3rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="10rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="12rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="2rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="8rem" height="1.2rem"></p-skeleton></td>
+            <td>
+              <div class="flex gap-2">
+                <p-skeleton width="4rem" height="1.8rem" borderRadius="6px"></p-skeleton>
+                <p-skeleton width="4rem" height="1.8rem" borderRadius="6px"></p-skeleton>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
         <ng-template pTemplate="emptymessage">
           <tr>
             <td colspan="6" class="text-center py-6 text-slate-500">No student records match the search criteria.</td>
@@ -268,7 +285,7 @@
       </form>
     </section>
 
-    <!-- 5. LAZY-LOADED COURSE TABLE -->
+    <!-- 5. LAZY-LOADED COURSE TABLE WITH SKELETON LOADING -->
     <section *ngIf="activeView === 'courses-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <div>
@@ -350,6 +367,22 @@
                   (click)="onDeleteCourse(c.id)" 
                   class="p-button-outlined p-button-danger p-button-sm text-xs"
                 ></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- SKELETON LOADING ROWS FOR COURSES TABLE -->
+        <ng-template pTemplate="loadingbody">
+          <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+            <td><p-skeleton width="3rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="12rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="5rem" height="1.2rem"></p-skeleton></td>
+            <td><p-skeleton width="7rem" height="1.2rem"></p-skeleton></td>
+            <td>
+              <div class="flex gap-2">
+                <p-skeleton width="4rem" height="1.8rem" borderRadius="6px"></p-skeleton>
+                <p-skeleton width="4rem" height="1.8rem" borderRadius="6px"></p-skeleton>
               </div>
             </td>
           </tr>

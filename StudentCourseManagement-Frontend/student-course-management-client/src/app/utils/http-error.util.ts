@@ -20,7 +20,6 @@ export function extractErrorMessage(
     return body.title;
   }
 
-  // ASP.NET ModelState validation errors: { errors: { field: ["msg"] } }
   if (body?.errors) {
     const firstField = Object.keys(body.errors)[0];
     const firstMsg = firstField && body.errors[firstField]?.[0];

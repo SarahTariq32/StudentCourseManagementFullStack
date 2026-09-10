@@ -4,11 +4,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } 
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
-// PrimeNG Imports
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
-
+import { SkeletonModule } from 'primeng/skeleton';
 import { CourseService } from '../../services/course';
 import { StudentService } from '../../services/student';
 import { AuthService } from '../../services/auth';
@@ -27,7 +26,8 @@ type StudentView = 'overview' | 'my-courses' | 'available-courses' | 'profile';
     FormsModule,
     InputTextModule,
     InputNumberModule,
-    ButtonModule
+    ButtonModule,
+    SkeletonModule
   ],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.scss'

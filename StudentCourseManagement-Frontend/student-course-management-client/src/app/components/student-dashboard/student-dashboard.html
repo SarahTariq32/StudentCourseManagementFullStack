@@ -16,7 +16,7 @@
         <button 
           [class.bg-slate-800]="activeView === 'overview'" 
           [class.text-white]="activeView === 'overview'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
           (click)="setView('overview')"
         >
           Dashboard Overview
@@ -26,14 +26,14 @@
         <button 
           [class.bg-slate-800]="activeView === 'my-courses'"
           [disabled]="!isVerified"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40 font-medium"
           (click)="setView('my-courses')"
         >
           My Active Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)
         </button>
         <button 
           [class.bg-slate-800]="activeView === 'available-courses'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium"
           (click)="setView('available-courses')"
         >
           Browse Course Catalog
@@ -43,7 +43,7 @@
         <button 
           [class.bg-slate-800]="activeView === 'profile'"
           [disabled]="!isVerified"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40 font-medium"
           (click)="setView('profile')"
         >
           My Profile {{ !isVerified ? '(Locked)' : '' }}
@@ -94,32 +94,53 @@
       {{ errorMessage }}
     </div>
 
-    <!-- 1. OVERVIEW -->
-    <section *ngIf="!isLoading && activeView === 'overview'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('my-courses')">
-        <h3 class="text-sm font-medium text-slate-500">Enrolled Courses</h3>
-        <p class="text-3xl font-bold text-dark-900 my-2">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="text-sm text-slate-400 font-normal">/ 7 Max</span></p>
-        <span class="text-xs text-brand-600 font-semibold">View active classes →</span>
+    <!-- 1. OVERVIEW VIEW -->
+    <section *ngIf="activeView === 'overview'">
+      <!-- Overview Skeleton Loading Placeholder -->
+      <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div *ngFor="let i of [1, 2, 3]" class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm h-32 flex flex-col justify-between">
+          <p-skeleton width="8rem" height="1rem"></p-skeleton>
+          <p-skeleton width="4rem" height="2rem"></p-skeleton>
+          <p-skeleton width="6rem" height="0.8rem"></p-skeleton>
+        </div>
       </div>
-      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('available-courses')">
-        <h3 class="text-sm font-medium text-slate-500">Available Catalog</h3>
-        <p class="text-3xl font-bold text-dark-900 my-2">{{ courses.length }}</p>
-        <span class="text-xs text-brand-600 font-semibold">Browse catalog →</span>
-      </div>
-      <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('profile')">
-        <h3 class="text-sm font-medium text-slate-500">Account Status</h3>
-        <p class="text-3xl font-bold my-2" [class.text-accent-emerald]="isVerified" [class.text-amber-600]="!isVerified">
-          {{ isVerified ? 'Verified' : 'Pending' }}
-        </p>
-        <span class="text-xs text-brand-600 font-semibold">View profile →</span>
+
+      <!-- Actual Overview Metric Cards -->
+      <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('my-courses')">
+          <h3 class="text-sm font-medium text-slate-500">Enrolled Courses</h3>
+          <p class="text-3xl font-bold text-dark-900 my-2">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="text-sm text-slate-400 font-normal">/ 7 Max</span></p>
+          <span class="text-xs text-brand-600 font-semibold">View active classes →</span>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('available-courses')">
+          <h3 class="text-sm font-medium text-slate-500">Available Catalog</h3>
+          <p class="text-3xl font-bold text-dark-900 my-2">{{ courses.length }}</p>
+          <span class="text-xs text-brand-600 font-semibold">Browse catalog →</span>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('profile')">
+          <h3 class="text-sm font-medium text-slate-500">Account Status</h3>
+          <p class="text-3xl font-bold my-2" [class.text-accent-emerald]="isVerified" [class.text-amber-600]="!isVerified">
+            {{ isVerified ? 'Verified' : 'Pending' }}
+          </p>
+          <span class="text-xs text-brand-600 font-semibold">View profile →</span>
+        </div>
       </div>
     </section>
 
-    <!-- 2. MY ACTIVE COURSES -->
-    <section *ngIf="!isLoading && activeView === 'my-courses'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+    <!-- 2. MY ACTIVE COURSES VIEW -->
+    <section *ngIf="activeView === 'my-courses'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <h3 class="text-lg font-bold text-dark-900 mb-4">My Enrolled Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</h3>
 
-      <div *ngIf="studentProfile?.enrolledCourses?.length" class="flex flex-col gap-3">
+      <!-- Enrolled Courses Skeleton Loading List -->
+      <div *ngIf="isLoading" class="flex flex-col gap-3">
+        <div *ngFor="let i of [1, 2, 3]" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex justify-between items-center">
+          <p-skeleton width="12rem" height="1.2rem"></p-skeleton>
+          <p-skeleton width="8rem" height="1.8rem" borderRadius="6px"></p-skeleton>
+        </div>
+      </div>
+
+      <!-- Actual Enrolled Courses List -->
+      <div *ngIf="!isLoading && studentProfile?.enrolledCourses?.length" class="flex flex-col gap-3">
         <div *ngFor="let courseName of studentProfile?.enrolledCourses" class="flex justify-between items-center p-4 rounded-xl border border-slate-100 bg-slate-50/50">
           <div>
             <h4 class="font-bold text-dark-900">{{ courseName }}</h4>
@@ -144,13 +165,32 @@
         </div>
       </div>
 
-      <p *ngIf="!studentProfile?.enrolledCourses?.length" class="text-slate-500 text-sm py-4">You are not currently enrolled in any courses.</p>
+      <p *ngIf="!isLoading && !studentProfile?.enrolledCourses?.length" class="text-slate-500 text-sm py-4">You are not currently enrolled in any courses.</p>
     </section>
 
-    <!-- 3. COURSE CATALOG -->
-    <section *ngIf="!isLoading && activeView === 'available-courses'">
+    <!-- 3. COURSE CATALOG VIEW -->
+    <section *ngIf="activeView === 'available-courses'">
       <h3 class="text-lg font-bold text-dark-900 mb-4">Course Catalog</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Course Cards Skeleton Grid -->
+      <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let i of [1, 2, 3, 4, 5, 6]" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm flex flex-col justify-between h-48">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <p-skeleton width="10rem" height="1.2rem"></p-skeleton>
+              <p-skeleton width="4rem" height="1rem"></p-skeleton>
+            </div>
+            <p-skeleton width="6rem" height="1rem" class="mb-3"></p-skeleton>
+            <p-skeleton width="8rem" height="1rem"></p-skeleton>
+          </div>
+          <div class="pt-2 border-t border-slate-100">
+            <p-skeleton width="100%" height="2rem" borderRadius="8px"></p-skeleton>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actual Course Cards Catalog Grid -->
+      <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div 
           *ngFor="let c of courses" 
           class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm flex flex-col justify-between"

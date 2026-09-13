@@ -7,15 +7,15 @@
           SC
         </div>
         <h2 class="text-xl font-bold text-brand-500">Student Portal</h2>
-        <p *ngIf="studentProfile" class="text-xs text-slate-400 mt-1">
-          Welcome, <strong class="text-slate-200">{{ studentProfile.name }}</strong>
+        <p *ngIf="studentProfile()" class="text-xs text-slate-400 mt-1">
+          Welcome, <strong class="text-slate-200">{{ studentProfile()?.name }}</strong>
         </p>
       </div>
       
       <nav class="flex flex-col gap-1">
         <button 
-          [class.bg-slate-800]="activeView === 'overview'" 
-          [class.text-white]="activeView === 'overview'"
+          [class.bg-slate-800]="activeView() === 'overview'" 
+          [class.text-white]="activeView() === 'overview'"
           class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('overview')"
         >
@@ -25,16 +25,16 @@
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">My Academics</div>
         <button 
-          [class.bg-slate-800]="activeView === 'my-courses'"
-          [disabled]="!isVerified"
+          [class.bg-slate-800]="activeView() === 'my-courses'"
+          [disabled]="!isVerified()"
           class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40 font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('my-courses')"
         >
           <lucide-icon [img]="BookOpenIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
-          <span>My Active Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</span>
+          <span>My Active Courses ({{ enrolledCount() }}/7)</span>
         </button>
         <button 
-          [class.bg-slate-800]="activeView === 'available-courses'"
+          [class.bg-slate-800]="activeView() === 'available-courses'"
           class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('available-courses')"
         >
@@ -44,13 +44,13 @@
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Account</div>
         <button 
-          [class.bg-slate-800]="activeView === 'profile'"
-          [disabled]="!isVerified"
+          [class.bg-slate-800]="activeView() === 'profile'"
+          [disabled]="!isVerified()"
           class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition disabled:opacity-40 font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('profile')"
         >
           <lucide-icon [img]="UserIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
-          <span>My Profile {{ !isVerified ? '(Locked)' : '' }}</span>
+          <span>My Profile {{ !isVerified() ? '(Locked)' : '' }}</span>
         </button>
       </nav>
     </div>
@@ -67,12 +67,12 @@
   <!-- MAIN CONTENT AREA -->
   <main class="flex-1 p-8 overflow-y-auto">
     <!-- Notice Banners -->
-    <div *ngIf="showMaxCoursesBanner" class="bg-amber-50 text-amber-900 border border-amber-200 p-4 rounded-xl mb-6 text-sm flex items-center gap-2">
+    <div *ngIf="showMaxCoursesBanner()" class="bg-amber-50 text-amber-900 border border-amber-200 p-4 rounded-xl mb-6 text-sm flex items-center gap-2">
       <lucide-icon [img]="AlertTriangleIcon" class="w-5 h-5 text-amber-600 flex-shrink-0"></lucide-icon>
       <span><strong>Notice:</strong> You are currently enrolled in 7 courses (maximum limit). You must drop a course before registering for new ones.</span>
     </div>
 
-    <div *ngIf="!isLoading && !isVerified" class="bg-amber-50 text-amber-900 border border-amber-200 p-5 rounded-xl mb-6">
+    <div *ngIf="!isLoading() && !isVerified()" class="bg-amber-50 text-amber-900 border border-amber-200 p-5 rounded-xl mb-6">
       <div class="flex items-center gap-2 mb-1">
         <lucide-icon [img]="AlertTriangleIcon" class="w-5 h-5 text-amber-600"></lucide-icon>
         <h3 class="font-bold text-base text-amber-900">Unverified Account Status</h3>
@@ -96,17 +96,17 @@
       </div>
     </div>
 
-    <div *ngIf="statusMessage" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-4 rounded-xl mb-6 text-sm font-medium">
-      {{ statusMessage }}
+    <div *ngIf="statusMessage()" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-4 rounded-xl mb-6 text-sm font-medium">
+      {{ statusMessage() }}
     </div>
-    <div *ngIf="errorMessage" class="bg-rose-50 text-accent-rose border border-rose-200 p-4 rounded-xl mb-6 text-sm font-medium">
-      {{ errorMessage }}
+    <div *ngIf="errorMessage()" class="bg-rose-50 text-accent-rose border border-rose-200 p-4 rounded-xl mb-6 text-sm font-medium">
+      {{ errorMessage() }}
     </div>
 
     <!-- 1. OVERVIEW VIEW -->
-    <section *ngIf="activeView === 'overview'">
+    <section *ngIf="activeView() === 'overview'">
       <!-- Overview Skeleton Loading Placeholder -->
-      <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div *ngIf="isLoading()" class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div *ngFor="let i of [1, 2, 3]" class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm h-32 flex flex-col justify-between">
           <p-skeleton width="8rem" height="1rem"></p-skeleton>
           <p-skeleton width="4rem" height="2rem"></p-skeleton>
@@ -115,25 +115,25 @@
       </div>
 
       <!-- Actual Overview Metric Cards -->
-      <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('my-courses')">
           <h3 class="text-sm font-medium text-slate-500">Enrolled Courses</h3>
-          <p class="text-3xl font-bold text-dark-900 my-2">{{ studentProfile?.enrolledCourses?.length || 0 }} <span class="text-sm text-slate-400 font-normal">/ 7 Max</span></p>
+          <p class="text-3xl font-bold text-dark-900 my-2">{{ enrolledCount() }} <span class="text-sm text-slate-400 font-normal">/ 7 Max</span></p>
           <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
             View active classes <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
           </span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('available-courses')">
           <h3 class="text-sm font-medium text-slate-500">Available Catalog</h3>
-          <p class="text-3xl font-bold text-dark-900 my-2">{{ courses.length }}</p>
+          <p class="text-3xl font-bold text-dark-900 my-2">{{ courses().length }}</p>
           <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
             Browse catalog <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
           </span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('profile')">
           <h3 class="text-sm font-medium text-slate-500">Account Status</h3>
-          <p class="text-3xl font-bold my-2" [class.text-accent-emerald]="isVerified" [class.text-amber-600]="!isVerified">
-            {{ isVerified ? 'Verified' : 'Pending' }}
+          <p class="text-3xl font-bold my-2" [class.text-accent-emerald]="isVerified()" [class.text-amber-600]="!isVerified()">
+            {{ isVerified() ? 'Verified' : 'Pending' }}
           </p>
           <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
             View profile <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
@@ -143,11 +143,11 @@
     </section>
 
     <!-- 2. MY ACTIVE COURSES VIEW -->
-    <section *ngIf="activeView === 'my-courses'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
-      <h3 class="text-lg font-bold text-dark-900 mb-4">My Enrolled Courses ({{ studentProfile?.enrolledCourses?.length || 0 }}/7)</h3>
+    <section *ngIf="activeView() === 'my-courses'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+      <h3 class="text-lg font-bold text-dark-900 mb-4">My Enrolled Courses ({{ enrolledCount() }}/7)</h3>
 
       <!-- Enrolled Courses Skeleton Loading List -->
-      <div *ngIf="isLoading" class="flex flex-col gap-3">
+      <div *ngIf="isLoading()" class="flex flex-col gap-3">
         <div *ngFor="let i of [1, 2, 3]" class="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex justify-between items-center">
           <p-skeleton width="12rem" height="1.2rem"></p-skeleton>
           <p-skeleton width="8rem" height="1.8rem" borderRadius="6px"></p-skeleton>
@@ -155,8 +155,8 @@
       </div>
 
       <!-- Actual Enrolled Courses List -->
-      <div *ngIf="!isLoading && studentProfile?.enrolledCourses?.length" class="flex flex-col gap-3">
-        <div *ngFor="let courseName of studentProfile?.enrolledCourses" class="flex justify-between items-center p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+      <div *ngIf="!isLoading() && studentProfile()?.enrolledCourses?.length" class="flex flex-col gap-3">
+        <div *ngFor="let courseName of studentProfile()?.enrolledCourses" class="flex justify-between items-center p-4 rounded-xl border border-slate-100 bg-slate-50/50">
           <div>
             <h4 class="font-bold text-dark-900">{{ courseName }}</h4>
             <span class="text-xs bg-emerald-100 text-accent-emerald px-2 py-0.5 rounded font-semibold mt-1 inline-flex items-center gap-1">
@@ -183,15 +183,15 @@
         </div>
       </div>
 
-      <p *ngIf="!isLoading && !studentProfile?.enrolledCourses?.length" class="text-slate-500 text-sm py-4">You are not currently enrolled in any courses.</p>
+      <p *ngIf="!isLoading() && !studentProfile()?.enrolledCourses?.length" class="text-slate-500 text-sm py-4">You are not currently enrolled in any courses.</p>
     </section>
 
     <!-- 3. COURSE CATALOG VIEW -->
-    <section *ngIf="activeView === 'available-courses'">
+    <section *ngIf="activeView() === 'available-courses'">
       <h3 class="text-lg font-bold text-dark-900 mb-4">Course Catalog</h3>
 
       <!-- Course Cards Skeleton Grid -->
-      <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngIf="isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div *ngFor="let i of [1, 2, 3, 4, 5, 6]" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm flex flex-col justify-between h-48">
           <div>
             <div class="flex justify-between items-center mb-4">
@@ -208,9 +208,9 @@
       </div>
 
       <!-- Actual Course Cards Catalog Grid -->
-      <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div 
-          *ngFor="let c of courses" 
+          *ngFor="let c of courses()" 
           class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm flex flex-col justify-between"
           [class.opacity-60]="c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
         >
@@ -238,12 +238,12 @@
 
           <div class="flex flex-col gap-2 pt-2 border-t border-slate-100">
             <button 
-              [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
+              [disabled]="!isVerified() || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               (click)="onEnrollDirectly(c.id)"
               class="w-full bg-accent-emerald hover:bg-emerald-700 text-white font-medium text-xs py-2 rounded-lg border-none transition disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <lucide-icon [img]="UserCheckIcon" class="w-3.5 h-3.5"></lucide-icon>
-              <span>{{ isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : (!isVerified ? 'Verification Required' : 'Self-Enroll')) }}</span>
+              <span>{{ isAlreadyEnrolled(c.name) ? 'Already Enrolled' : (c.enrolledStudentsCount >= 50 ? 'Course Full' : (!isVerified() ? 'Verification Required' : 'Self-Enroll')) }}</span>
             </button>
 
             <div class="flex gap-2">
@@ -253,10 +253,10 @@
                 [(ngModel)]="enrollmentReasonMap[c.id]" 
                 placeholder="Special request note..." 
                 class="p-inputtext-sm flex-1"
-                [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
+                [disabled]="!isVerified() || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
               />
               <button 
-                [disabled]="!isVerified || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
+                [disabled]="!isVerified() || c.enrolledStudentsCount >= 50 || isAlreadyEnrolled(c.name)"
                 (click)="onRequestEnrollment(c.id)"
                 class="bg-slate-100 hover:bg-slate-200 text-dark-800 font-medium text-xs px-3 py-1.5 rounded-lg border border-slate-200 transition disabled:opacity-40 flex items-center gap-1 cursor-pointer"
               >
@@ -270,7 +270,7 @@
     </section>
 
     <!-- 4. PROFILE VIEW -->
-    <section *ngIf="!isLoading && activeView === 'profile' && studentProfile" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
+    <section *ngIf="!isLoading() && activeView() === 'profile' && studentProfile()" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-bold text-dark-900">Academic Profile</h3>
         <button 
@@ -278,26 +278,26 @@
           class="border border-slate-300 hover:bg-slate-50 text-dark-800 text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
         >
           <lucide-icon [img]="Edit3Icon" class="w-3.5 h-3.5 text-slate-600"></lucide-icon>
-          <span>{{ isEditingProfile ? 'Cancel' : 'Edit Profile' }}</span>
+          <span>{{ isEditingProfile() ? 'Cancel' : 'Edit Profile' }}</span>
         </button>
       </div>
 
-      <div *ngIf="!isEditingProfile" class="flex flex-col gap-3">
+      <div *ngIf="!isEditingProfile()" class="flex flex-col gap-3">
         <div class="flex py-2 border-b border-slate-100 text-sm">
           <span class="w-36 text-slate-500">Full Name:</span>
-          <span class="font-bold text-dark-900">{{ studentProfile.name }}</span>
+          <span class="font-bold text-dark-900">{{ studentProfile()?.name }}</span>
         </div>
         <div class="flex py-2 border-b border-slate-100 text-sm">
           <span class="w-36 text-slate-500">Email:</span>
-          <span class="text-slate-800">{{ studentProfile.email }}</span>
+          <span class="text-slate-800">{{ studentProfile()?.email }}</span>
         </div>
         <div class="flex py-2 border-b border-slate-100 text-sm">
           <span class="w-36 text-slate-500">Age:</span>
-          <span class="text-slate-800">{{ studentProfile.age }}</span>
+          <span class="text-slate-800">{{ studentProfile()?.age }}</span>
         </div>
       </div>
 
-      <form *ngIf="isEditingProfile" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="flex flex-col gap-4">
+      <form *ngIf="isEditingProfile()" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="flex flex-col gap-4">
         <div>
           <label class="block text-xs font-semibold text-dark-800 mb-1">Full Name</label>
           <input pInputText type="text" formControlName="name" class="w-full p-inputtext-sm" />

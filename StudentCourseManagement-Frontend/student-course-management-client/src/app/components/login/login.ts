@@ -1,15 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { HttpErrorResponse } from '@angular/common/http';
 import { extractErrorMessage } from '../../utils/http-error.util';
-
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, of, take } from 'rxjs';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
-
 import { LucideAngularModule, LogIn, User, Lock, ShieldAlert } from 'lucide-angular';
 
 @Component({
@@ -28,6 +28,8 @@ import { LucideAngularModule, LogIn, User, Lock, ShieldAlert } from 'lucide-angu
   styleUrl: './login.scss'
 })
 export class LoginComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+
   readonly LogInIcon = LogIn;
   readonly UserIcon = User;
   readonly LockIcon = Lock;
@@ -68,8 +70,16 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
+    this.authService.login(this.loginForm.value).pipe(
+      take(1), // Automatically unsubscribes after one emission
+      catchError((err: HttpErrorResponse) => {
+        this.isLoading = false;
+        this.errorMessage = extractErrorMessage(err, 'Invalid username or password.');
+        return of(null);
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((res) => {
+      if (res) {
         this.isLoading = false;
         const role = this.authService.getRole();
         if (role?.toLowerCase() === 'admin') {
@@ -77,10 +87,6 @@ export class LoginComponent implements OnInit {
         } else {
           this.router.navigate(['/student-dashboard']);
         }
-      },
-      error: (err: HttpErrorResponse) => {
-        this.isLoading = false;
-        this.errorMessage = extractErrorMessage(err, 'Invalid username or password.');
       }
     });
   }

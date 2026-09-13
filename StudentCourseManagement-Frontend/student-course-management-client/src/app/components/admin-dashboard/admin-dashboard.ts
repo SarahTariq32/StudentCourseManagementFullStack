@@ -1,16 +1,16 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, signal, effect, computed, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
 import { Table, TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
-
 import { 
   LucideAngularModule, 
   LogOut, 
@@ -64,6 +64,8 @@ export class AdminDashboardComponent implements OnInit {
   @ViewChild('dtStudents') dtStudents!: Table;
   @ViewChild('dtCourses') dtCourses!: Table;
 
+  private destroyRef = inject(DestroyRef);
+
   readonly LogOutIcon = LogOut;
   readonly SearchIcon = Search;
   readonly TrashIcon = Trash2;
@@ -77,38 +79,43 @@ export class AdminDashboardComponent implements OnInit {
   readonly XIcon = X;
   readonly ArrowRightIcon = ArrowRight;
 
-  activeView: AdminView = 'overview';
+  activeView = signal<AdminView>('overview');
   
-  students: any[] = [];
-  courses: any[] = [];
+  students = signal<any[]>([]);
+  courses = signal<any[]>([]);
   
-  totalStudentsCount: number = 0;
-  totalCoursesCount: number = 0;
+  totalStudentsCount = signal<number>(0);
+  totalCoursesCount = signal<number>(0);
   
-  studentsLoading: boolean = false;
-  coursesLoading: boolean = false;
+  studentsLoading = signal<boolean>(false);
+  coursesLoading = signal<boolean>(false);
 
-  registrationRequests: PendingRequest[] = [];
-  courseRequests: PendingRequest[] = [];
+  registrationRequests = signal<PendingRequest[]>([]);
+  courseRequests = signal<PendingRequest[]>([]);
+
+  registrationRequestsCount = computed(() => this.registrationRequests().length);
+  courseRequestsCount = computed(() => this.courseRequests().length);
   
-  searchedStudent: any = null;
-  searchedCourse: any = null;
-  selectedStudentId: number | null = null;
-  selectedCourseId: number | null = null;
+  searchedStudent = signal<any>(null);
+  searchedCourse = signal<any>(null);
+  selectedStudentId = signal<number | null>(null);
+  selectedCourseId = signal<number | null>(null);
+
+  statusMessage = signal<string>('');
+  errorMessage = signal<string>('');
 
   studentEditForm: FormGroup;
   courseForm: FormGroup;
-  
-  statusMessage: string = '';
-  errorMessage: string = '';
+
+  studentSearchControl = new FormControl<string | number | null>('');
+  courseSearchControl = new FormControl<string | number | null>('');
 
   constructor(
     private adminService: AdminService,
     private authService: AuthService,
     private confirmationService: ConfirmationService,
     private fb: FormBuilder,
-    private router: Router,
-    private cdr: ChangeDetectorRef
+    private router: Router
   ) {
     this.studentEditForm = this.fb.group({
       name: ['', Validators.required],
@@ -120,35 +127,108 @@ export class AdminDashboardComponent implements OnInit {
       name: ['', Validators.required],
       credits: [3, [Validators.required, Validators.min(1), Validators.max(6)]]
     });
+
+    effect(() => {
+      this.activeView();
+      this.statusMessage.set('');
+      this.errorMessage.set('');
+      this.searchedStudent.set(null);
+      this.searchedCourse.set(null);
+      this.studentSearchControl.reset('', { emitEvent: false });
+      this.courseSearchControl.reset('', { emitEvent: false });
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit(): void {
     this.refreshOverviewCounts();
     this.refreshPendingRequests();
+    this.initRxjsSearchStreams();
+  }
+
+  private initRxjsSearchStreams(): void {
+    // 1. Reactive Student Type-Ahead Search Stream
+    this.studentSearchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((val) => {
+        const rawVal = val !== null && val !== undefined ? String(val).trim() : '';
+        const id = parseInt(rawVal, 10);
+
+        if (isNaN(id) || id <= 0) {
+          this.searchedStudent.set(null);
+          this.errorMessage.set('');
+          return of(null);
+        }
+        
+        return this.adminService.getStudentById(id).pipe(
+          catchError((err: HttpErrorResponse) => {
+            this.searchedStudent.set(null);
+            this.errorMessage.set(extractErrorMessage(err, `Student ID #${id} not found.`));
+            return of(null);
+          })
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((student) => {
+      if (student) {
+        this.searchedStudent.set(student);
+        this.errorMessage.set('');
+      }
+    });
+
+    // 2. Reactive Course Type-Ahead Search Stream
+    this.courseSearchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((val) => {
+        const rawVal = val !== null && val !== undefined ? String(val).trim() : '';
+        const id = parseInt(rawVal, 10);
+
+        if (isNaN(id) || id <= 0) {
+          this.searchedCourse.set(null);
+          this.errorMessage.set('');
+          return of(null);
+        }
+
+        return this.adminService.getCourseById(id).pipe(
+          catchError((err: HttpErrorResponse) => {
+            this.searchedCourse.set(null);
+            this.errorMessage.set(extractErrorMessage(err, `Course ID #${id} not found.`));
+            return of(null);
+          })
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((course) => {
+      if (course) {
+        this.searchedCourse.set(course);
+        this.errorMessage.set('');
+      }
+    });
   }
 
   setView(view: AdminView): void {
-    this.activeView = view;
-    this.statusMessage = '';
-    this.errorMessage = '';
-    this.searchedStudent = null;
-    this.searchedCourse = null;
+    this.activeView.set(view);
   }
 
   refreshOverviewCounts(): void {
-    this.adminService.getStudents({ pageIndex: 1, pageSize: 1 }).subscribe({
-      next: (res: any) => {
-        this.totalStudentsCount = res?.totalCount ?? res?.TotalCount ?? (Array.isArray(res) ? res.length : 0);
-        this.cdr.detectChanges();
-      }
-    });
+    this.adminService.getStudents({ pageIndex: 1, pageSize: 1 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const count = res?.totalCount ?? res?.TotalCount ?? (Array.isArray(res) ? res.length : 0);
+          this.totalStudentsCount.set(count);
+        }
+      });
 
-    this.adminService.getCourses({ pageIndex: 1, pageSize: 1 }).subscribe({
-      next: (res: any) => {
-        this.totalCoursesCount = res?.totalCount ?? res?.TotalCount ?? (Array.isArray(res) ? res.length : 0);
-        this.cdr.detectChanges();
-      }
-    });
+    this.adminService.getCourses({ pageIndex: 1, pageSize: 1 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const count = res?.totalCount ?? res?.TotalCount ?? (Array.isArray(res) ? res.length : 0);
+          this.totalCoursesCount.set(count);
+        }
+      });
   }
 
   reloadStudentTable(): void {
@@ -169,8 +249,7 @@ export class AdminDashboardComponent implements OnInit {
 
   onLazyLoadStudents(event: TableLazyLoadEvent): void {
     setTimeout(() => {
-      this.studentsLoading = true;
-      this.cdr.detectChanges();
+      this.studentsLoading.set(true);
 
       const first = event.first ?? 0;
       const rows = event.rows ?? 5;
@@ -183,34 +262,34 @@ export class AdminDashboardComponent implements OnInit {
 
       const queryParams: QueryParameters = { pageIndex, pageSize, searchTerm, sortBy, isDescending };
 
-      this.adminService.getStudents(queryParams).subscribe({
-        next: (res: any) => {
-          if (Array.isArray(res)) {
-            this.students = res;
-            this.totalStudentsCount = res.length;
-          } else if (res) {
-            this.students = res.items || res.Items || res.data || res.Data || [];
-            this.totalStudentsCount = res.totalCount ?? res.TotalCount ?? res.count ?? this.students.length;
-          } else {
-            this.students = [];
-            this.totalStudentsCount = 0;
+      this.adminService.getStudents(queryParams)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res: any) => {
+            if (Array.isArray(res)) {
+              this.students.set(res);
+              this.totalStudentsCount.set(res.length);
+            } else if (res) {
+              const fetchedItems = res.items || res.Items || res.data || res.Data || [];
+              this.students.set(fetchedItems);
+              this.totalStudentsCount.set(res.totalCount ?? res.TotalCount ?? res.count ?? fetchedItems.length);
+            } else {
+              this.students.set([]);
+              this.totalStudentsCount.set(0);
+            }
+            this.studentsLoading.set(false);
+          },
+          error: (err: HttpErrorResponse) => {
+            this.errorMessage.set(extractErrorMessage(err, 'Failed to load student directory.'));
+            this.studentsLoading.set(false);
           }
-          this.studentsLoading = false;
-          this.cdr.detectChanges();
-        },
-        error: (err: HttpErrorResponse) => {
-          this.errorMessage = extractErrorMessage(err, 'Failed to load student directory.');
-          this.studentsLoading = false;
-          this.cdr.detectChanges();
-        }
-      });
+        });
     }, 0);
   }
 
   onLazyLoadCourses(event: TableLazyLoadEvent): void {
     setTimeout(() => {
-      this.coursesLoading = true;
-      this.cdr.detectChanges();
+      this.coursesLoading.set(true);
 
       const first = event.first ?? 0;
       const rows = event.rows ?? 5;
@@ -223,49 +302,50 @@ export class AdminDashboardComponent implements OnInit {
 
       const queryParams: QueryParameters = { pageIndex, pageSize, searchTerm, sortBy, isDescending };
 
-      this.adminService.getCourses(queryParams).subscribe({
-        next: (res: any) => {
-          if (Array.isArray(res)) {
-            this.courses = res;
-            this.totalCoursesCount = res.length;
-          } else if (res) {
-            this.courses = res.items || res.Items || res.data || res.Data || [];
-            this.totalCoursesCount = res.totalCount ?? res.TotalCount ?? res.count ?? this.courses.length;
-          } else {
-            this.courses = [];
-            this.totalCoursesCount = 0;
+      this.adminService.getCourses(queryParams)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res: any) => {
+            if (Array.isArray(res)) {
+              this.courses.set(res);
+              this.totalCoursesCount.set(res.length);
+            } else if (res) {
+              const fetchedItems = res.items || res.Items || res.data || res.Data || [];
+              this.courses.set(fetchedItems);
+              this.totalCoursesCount.set(res.totalCount ?? res.TotalCount ?? res.count ?? fetchedItems.length);
+            } else {
+              this.courses.set([]);
+              this.totalCoursesCount.set(0);
+            }
+            this.coursesLoading.set(false);
+          },
+          error: (err: HttpErrorResponse) => {
+            this.errorMessage.set(extractErrorMessage(err, 'Failed to load course catalog.'));
+            this.coursesLoading.set(false);
           }
-          this.coursesLoading = false;
-          this.cdr.detectChanges();
-        },
-        error: (err: HttpErrorResponse) => {
-          this.errorMessage = extractErrorMessage(err, 'Failed to load course catalog.');
-          this.coursesLoading = false;
-          this.cdr.detectChanges();
-        }
-      });
+        });
     }, 0);
   }
 
   refreshPendingRequests(): void {
-    this.adminService.getPendingRequests().subscribe({
-      next: (requests: PendingRequest[]) => {
-        const allReqs = requests || [];
+    this.adminService.getPendingRequests()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (requests: PendingRequest[]) => {
+          const allReqs = requests || [];
 
-        this.registrationRequests = allReqs.filter(r => 
-          r.requestType?.toLowerCase().includes('register') || 
-          r.reason?.includes('ACCOUNT_CREATION_REQUEST')
-        );
+          this.registrationRequests.set(allReqs.filter(r => 
+            r.requestType?.toLowerCase().includes('register') || 
+            r.reason?.includes('ACCOUNT_CREATION_REQUEST')
+          ));
 
-        this.courseRequests = allReqs.filter(r => 
-          r.requestType?.toLowerCase().includes('enroll') || 
-          r.requestType?.toLowerCase().includes('unenroll')
-        );
-
-        this.cdr.detectChanges();
-      },
-      error: (err: HttpErrorResponse) => console.error('Requests fetch error:', err)
-    });
+          this.courseRequests.set(allReqs.filter(r => 
+            r.requestType?.toLowerCase().includes('enroll') || 
+            r.requestType?.toLowerCase().includes('unenroll')
+          ));
+        },
+        error: (err: HttpErrorResponse) => console.error('Requests fetch error:', err)
+      });
   }
 
   onDeleteStudent(id: number): void {
@@ -277,16 +357,18 @@ export class AdminDashboardComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
       rejectButtonStyleClass: 'p-button-outlined p-button-secondary p-button-sm',
       accept: () => {
-        this.adminService.deleteStudent(id).subscribe({
-          next: () => {
-            this.statusMessage = `Student #${id} deleted successfully.`;
-            this.searchedStudent = null;
-            this.refreshOverviewCounts();
-            this.reloadStudentTable();
-            this.setView('students-list');
-          },
-          error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Delete operation failed.')
-        });
+        this.adminService.deleteStudent(id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.statusMessage.set(`Student #${id} deleted successfully.`);
+              this.searchedStudent.set(null);
+              this.refreshOverviewCounts();
+              this.reloadStudentTable();
+              this.setView('students-list');
+            },
+            error: (err: HttpErrorResponse) => this.errorMessage.set(extractErrorMessage(err, 'Delete operation failed.'))
+          });
       }
     });
   }
@@ -300,81 +382,50 @@ export class AdminDashboardComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
       rejectButtonStyleClass: 'p-button-outlined p-button-secondary p-button-sm',
       accept: () => {
-        this.adminService.deleteCourse(id).subscribe({
-          next: () => {
-            this.statusMessage = `Course #${id} deleted successfully.`;
-            this.searchedCourse = null;
-            this.refreshOverviewCounts();
-            this.reloadCourseTable();
-            this.setView('courses-list');
-          },
-          error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Delete operation failed.')
-        });
-      }
-    });
-  }
-
-  onSearchStudent(idInput: string): void {
-    const id = parseInt(idInput, 10);
-    if (!id) return;
-
-    this.adminService.getStudentById(id).subscribe({
-      next: (res) => {
-        this.searchedStudent = res;
-        this.errorMessage = '';
-        this.cdr.detectChanges();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.searchedStudent = null;
-        this.errorMessage = extractErrorMessage(err, `Student ID #${id} not found.`);
-        this.cdr.detectChanges();
+        this.adminService.deleteCourse(id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.statusMessage.set(`Course #${id} deleted successfully.`);
+              this.searchedCourse.set(null);
+              this.refreshOverviewCounts();
+              this.reloadCourseTable();
+              this.setView('courses-list');
+            },
+            error: (err: HttpErrorResponse) => this.errorMessage.set(extractErrorMessage(err, 'Delete operation failed.'))
+          });
       }
     });
   }
 
   openEditStudent(student: any): void {
-    this.selectedStudentId = student.id;
+    this.selectedStudentId.set(student.id);
     this.studentEditForm.patchValue({ name: student.name, email: student.email, age: student.age });
     this.setView('student-edit');
   }
 
   onUpdateStudent(): void {
-    if (this.studentEditForm.invalid || !this.selectedStudentId) {
+    const studentId = this.selectedStudentId();
+    if (this.studentEditForm.invalid || !studentId) {
       this.studentEditForm.markAllAsTouched();
       return;
     }
 
-    this.adminService.updateStudent(this.selectedStudentId, this.studentEditForm.value).subscribe({
-      next: () => {
-        this.statusMessage = 'Student profile updated successfully!';
-        this.refreshOverviewCounts();
-        this.reloadStudentTable();
-        this.setView('students-list');
-      },
-      error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Update failed.')
-    });
-  }
-
-  onSearchCourse(idInput: string): void {
-    const id = parseInt(idInput, 10);
-    if (!id) return;
-
-    this.adminService.getCourseById(id).subscribe({
-      next: (res) => {
-        this.searchedCourse = res;
-        this.errorMessage = '';
-        this.cdr.detectChanges();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.searchedCourse = null;
-        this.errorMessage = extractErrorMessage(err, `Course ID #${id} not found.`);
-        this.cdr.detectChanges();
-      }
-    });
+    this.adminService.updateStudent(studentId, this.studentEditForm.value)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.statusMessage.set('Student profile updated successfully!');
+          this.refreshOverviewCounts();
+          this.reloadStudentTable();
+          this.setView('students-list');
+        },
+        error: (err: HttpErrorResponse) => this.errorMessage.set(extractErrorMessage(err, 'Update failed.'))
+      });
   }
 
   openEditCourse(course: any): void {
-    this.selectedCourseId = course.id;
+    this.selectedCourseId.set(course.id);
     this.courseForm.patchValue({ name: course.name, credits: course.credits });
     this.setView('course-form');
   }
@@ -385,40 +436,48 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    if (this.selectedCourseId) {
-      this.adminService.updateCourse(this.selectedCourseId, this.courseForm.value).subscribe({
-        next: () => {
-          this.statusMessage = 'Course updated successfully!';
-          this.refreshOverviewCounts();
-          this.reloadCourseTable();
-          this.setView('courses-list');
-        },
-        error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Update failed.')
-      });
+    const courseId = this.selectedCourseId();
+
+    if (courseId) {
+      this.adminService.updateCourse(courseId, this.courseForm.value)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.statusMessage.set('Course updated successfully!');
+            this.refreshOverviewCounts();
+            this.reloadCourseTable();
+            this.setView('courses-list');
+          },
+          error: (err: HttpErrorResponse) => this.errorMessage.set(extractErrorMessage(err, 'Update failed.'))
+        });
     } else {
-      this.adminService.createCourse(this.courseForm.value).subscribe({
-        next: () => {
-          this.statusMessage = 'New course created successfully!';
-          this.refreshOverviewCounts();
-          this.reloadCourseTable();
-          this.setView('courses-list');
-        },
-        error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Creation failed.')
-      });
+      this.adminService.createCourse(this.courseForm.value)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.statusMessage.set('New course created successfully!');
+            this.refreshOverviewCounts();
+            this.reloadCourseTable();
+            this.setView('courses-list');
+          },
+          error: (err: HttpErrorResponse) => this.errorMessage.set(extractErrorMessage(err, 'Creation failed.'))
+        });
     }
   }
 
   onProcessRequest(requestId: number, approve: boolean): void {
-    this.adminService.processRequest(requestId, approve).subscribe({
-      next: (res) => {
-        this.statusMessage = res.message || (approve ? 'Approved successfully.' : 'Rejected.');
-        this.refreshOverviewCounts();
-        this.refreshPendingRequests();
-        this.reloadStudentTable();
-        this.reloadCourseTable();
-      },
-      error: (err: HttpErrorResponse) => this.errorMessage = extractErrorMessage(err, 'Processing failed.')
-    });
+    this.adminService.processRequest(requestId, approve)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.statusMessage.set(res.message || (approve ? 'Approved successfully.' : 'Rejected.'));
+          this.refreshOverviewCounts();
+          this.refreshPendingRequests();
+          this.reloadStudentTable();
+          this.reloadCourseTable();
+        },
+        error: (err: HttpErrorResponse) => this.errorMessage.set(extractErrorMessage(err, 'Processing failed.'))
+      });
   }
 
   onLogout(): void {

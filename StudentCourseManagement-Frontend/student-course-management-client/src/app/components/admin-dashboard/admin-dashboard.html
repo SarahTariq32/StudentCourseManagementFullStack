@@ -1,4 +1,3 @@
-
 <p-confirmDialog 
   [style]="{width: '420px'}" 
   styleClass="custom-confirm-dialog"
@@ -20,9 +19,9 @@
       
       <nav class="flex flex-col gap-1">
         <button 
-          [class.bg-slate-800]="activeView === 'overview'" 
-          [class.text-white]="activeView === 'overview'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
+          [class.bg-slate-800]="activeView() === 'overview'" 
+          [class.text-white]="activeView() === 'overview'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('overview')"
         >
           <lucide-icon [img]="BookOpenIcon" class="w-4 h-4 text-brand-500"></lucide-icon>
@@ -31,16 +30,16 @@
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Students</div>
         <button 
-          [class.bg-slate-800]="activeView === 'students-list'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
+          [class.bg-slate-800]="activeView() === 'students-list'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('students-list')"
         >
           <lucide-icon [img]="UsersIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
           <span>View All Students</span>
         </button>
         <button 
-          [class.bg-slate-800]="activeView === 'student-search'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
+          [class.bg-slate-800]="activeView() === 'student-search'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('student-search')"
         >
           <lucide-icon [img]="SearchIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
@@ -49,16 +48,16 @@
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Courses</div>
         <button 
-          [class.bg-slate-800]="activeView === 'courses-list'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
+          [class.bg-slate-800]="activeView() === 'courses-list'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('courses-list')"
         >
           <lucide-icon [img]="BookPlusIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
           <span>View All Courses</span>
         </button>
         <button 
-          [class.bg-slate-800]="activeView === 'course-search'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5"
+          [class.bg-slate-800]="activeView() === 'course-search'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
           (click)="setView('course-search')"
         >
           <lucide-icon [img]="SearchIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
@@ -67,26 +66,26 @@
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Pending Approvals</div>
         <button 
-          [class.bg-slate-800]="activeView === 'registration-requests'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center font-medium"
+          [class.bg-slate-800]="activeView() === 'registration-requests'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center font-medium cursor-pointer"
           (click)="setView('registration-requests')"
         >
           <div class="flex items-center gap-2.5">
             <lucide-icon [img]="UserCheckIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
             <span>Student Registrations</span>
           </div>
-          <span class="bg-amber-500/20 text-accent-amber text-xs px-2 py-0.5 rounded-full font-bold">{{ registrationRequests.length }}</span>
+          <span class="bg-amber-500/20 text-accent-amber text-xs px-2 py-0.5 rounded-full font-bold">{{ registrationRequestsCount() }}</span>
         </button>
         <button 
-          [class.bg-slate-800]="activeView === 'course-requests'"
-          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center font-medium"
+          [class.bg-slate-800]="activeView() === 'course-requests'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition flex justify-between items-center font-medium cursor-pointer"
           (click)="setView('course-requests')"
         >
           <div class="flex items-center gap-2.5">
             <lucide-icon [img]="UserPlusIcon" class="w-4 h-4 text-slate-400"></lucide-icon>
             <span>Enrollment Requests</span>
           </div>
-          <span class="bg-amber-500/20 text-accent-amber text-xs px-2 py-0.5 rounded-full font-bold">{{ courseRequests.length }}</span>
+          <span class="bg-amber-500/20 text-accent-amber text-xs px-2 py-0.5 rounded-full font-bold">{{ courseRequestsCount() }}</span>
         </button>
       </nav>
     </div>
@@ -103,39 +102,39 @@
   <!-- MAIN CONTENT AREA -->
   <main class="flex-1 p-8 overflow-y-auto">
     <!-- Status Notifications -->
-    <div *ngIf="statusMessage" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-4 rounded-xl mb-6 text-sm font-medium">
-      {{ statusMessage }}
+    <div *ngIf="statusMessage()" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-4 rounded-xl mb-6 text-sm font-medium">
+      {{ statusMessage() }}
     </div>
-    <div *ngIf="errorMessage" class="bg-rose-50 text-accent-rose border border-rose-200 p-4 rounded-xl mb-6 text-sm font-medium">
-      {{ errorMessage }}
+    <div *ngIf="errorMessage()" class="bg-rose-50 text-accent-rose border border-rose-200 p-4 rounded-xl mb-6 text-sm font-medium">
+      {{ errorMessage() }}
     </div>
 
     <!-- 1. DASHBOARD OVERVIEW -->
-    <section *ngIf="activeView === 'overview'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section *ngIf="activeView() === 'overview'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('students-list')">
         <h3 class="text-sm font-medium text-slate-500">Total Students Records</h3>
-        <p class="text-3xl font-bold text-dark-900 my-2">{{ totalStudentsCount }}</p>
+        <p class="text-3xl font-bold text-dark-900 my-2">{{ totalStudentsCount() }}</p>
         <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
           Manage directory <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
         </span>
       </div>
       <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('courses-list')">
         <h3 class="text-sm font-medium text-slate-500">Total Catalog Courses</h3>
-        <p class="text-3xl font-bold text-dark-900 my-2">{{ totalCoursesCount }}</p>
+        <p class="text-3xl font-bold text-dark-900 my-2">{{ totalCoursesCount() }}</p>
         <span class="text-xs text-brand-600 font-semibold flex items-center gap-1">
           Manage catalog <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
         </span>
       </div>
       <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('registration-requests')">
         <h3 class="text-sm font-medium text-slate-500">Registration Requests</h3>
-        <p class="text-3xl font-bold text-accent-amber my-2">{{ registrationRequests.length }}</p>
+        <p class="text-3xl font-bold text-accent-amber my-2">{{ registrationRequestsCount() }}</p>
         <span class="text-xs text-accent-amber font-semibold flex items-center gap-1">
           Approve accounts <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
         </span>
       </div>
       <div class="bg-white p-6 rounded-2xl border border-brand-100 shadow-sm cursor-pointer hover:-translate-y-1 transition" (click)="setView('course-requests')">
         <h3 class="text-sm font-medium text-slate-500">Enrollment Requests</h3>
-        <p class="text-3xl font-bold text-accent-amber my-2">{{ courseRequests.length }}</p>
+        <p class="text-3xl font-bold text-accent-amber my-2">{{ courseRequestsCount() }}</p>
         <span class="text-xs text-accent-amber font-semibold flex items-center gap-1">
           Review course changes <lucide-icon [img]="ArrowRightIcon" class="w-3.5 h-3.5"></lucide-icon>
         </span>
@@ -143,7 +142,7 @@
     </section>
 
     <!-- 2. LAZY-LOADED STUDENT TABLE -->
-    <section *ngIf="activeView === 'students-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+    <section *ngIf="activeView() === 'students-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <div>
           <h3 class="text-lg font-bold text-dark-900">Student Directory (Database Processed)</h3>
@@ -153,13 +152,13 @@
 
       <p-table 
         #dtStudents
-        [value]="students" 
+        [value]="students()" 
         [lazy]="true"
         (onLazyLoad)="onLazyLoadStudents($event)"
         [paginator]="true" 
         [rows]="5" 
-        [totalRecords]="totalStudentsCount"
-        [loading]="studentsLoading"
+        [totalRecords]="totalStudentsCount()"
+        [loading]="studentsLoading()"
         [rowsPerPageOptions]="[5, 10, 20]"
         responsiveLayout="scroll"
       >
@@ -254,43 +253,49 @@
     </section>
 
     <!-- 3. FIND / UPDATE / DELETE STUDENT -->
-    <section *ngIf="activeView === 'student-search'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-2xl">
+    <section *ngIf="activeView() === 'student-search'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-2xl">
       <h3 class="text-lg font-bold text-dark-900 mb-2">Find Student by Specific ID</h3>
-      <p class="text-xs text-slate-500 mb-4">Enter the exact numeric Student ID below to retrieve, update, or remove their profile directly.</p>
+      <p class="text-xs text-slate-500 mb-4">Type a numeric Student ID below for instant live lookup.</p>
 
       <div class="flex gap-3 mb-6">
-        <input #sIdInput type="number" placeholder="Enter Numeric Student ID (e.g. 1016)..." pInputText class="p-inputtext-sm flex-1" />
+        <input 
+          type="number" 
+          [formControl]="studentSearchControl" 
+          placeholder="Type Student ID (e.g. 1016)..." 
+          pInputText 
+          class="p-inputtext-sm flex-1" 
+        />
         <button 
-          (click)="onSearchStudent(sIdInput.value)" 
+          (click)="studentSearchControl.updateValueAndValidity()" 
           class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
         >
           <lucide-icon [img]="SearchIcon" class="w-3.5 h-3.5"></lucide-icon>
-          <span>Search ID</span>
+          <span>Search</span>
         </button>
       </div>
 
-      <div *ngIf="searchedStudent" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+      <div *ngIf="searchedStudent()" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
         <div class="flex justify-between items-start mb-3">
           <div>
-            <h4 class="text-base font-bold text-brand-600">{{ searchedStudent.name }}</h4>
-            <span class="text-xs text-slate-500 font-semibold">Student ID: #{{ searchedStudent.id }}</span>
+            <h4 class="text-base font-bold text-brand-600">{{ searchedStudent().name }}</h4>
+            <span class="text-xs text-slate-500 font-semibold">Student ID: #{{ searchedStudent().id }}</span>
           </div>
-          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">Age: {{ searchedStudent.age }}</span>
+          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">Age: {{ searchedStudent().age }}</span>
         </div>
 
-        <p class="text-sm text-slate-700 my-1"><strong>Email Address:</strong> {{ searchedStudent.email }}</p>
-        <p class="text-sm text-slate-700 my-1"><strong>Enrolled Courses:</strong> {{ searchedStudent.enrolledCourses?.join(', ') || 'None' }}</p>
+        <p class="text-sm text-slate-700 my-1"><strong>Email Address:</strong> {{ searchedStudent().email }}</p>
+        <p class="text-sm text-slate-700 my-1"><strong>Enrolled Courses:</strong> {{ searchedStudent().enrolledCourses?.join(', ') || 'None' }}</p>
         
         <div class="flex gap-3 mt-5 pt-3 border-t border-slate-200">
           <button 
-            (click)="openEditStudent(searchedStudent)" 
+            (click)="openEditStudent(searchedStudent())" 
             class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
           >
             <lucide-icon [img]="EditIcon" class="w-3.5 h-3.5"></lucide-icon>
             <span>Update Profile</span>
           </button>
           <button 
-            (click)="onDeleteStudent(searchedStudent.id)" 
+            (click)="onDeleteStudent(searchedStudent().id)" 
             class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
           >
             <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>
@@ -301,8 +306,8 @@
     </section>
 
     <!-- 4. EDIT STUDENT FORM -->
-    <section *ngIf="activeView === 'student-edit'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
-      <h3 class="text-lg font-bold text-dark-900 mb-4">Update Student Profile (ID: #{{ selectedStudentId }})</h3>
+    <section *ngIf="activeView() === 'student-edit'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
+      <h3 class="text-lg font-bold text-dark-900 mb-4">Update Student Profile (ID: #{{ selectedStudentId() }})</h3>
       <form [formGroup]="studentEditForm" (ngSubmit)="onUpdateStudent()" class="flex flex-col gap-4">
         <div>
           <label class="block text-xs font-semibold text-dark-800 mb-1">Full Name</label>
@@ -324,7 +329,7 @@
     </section>
 
     <!-- 5. LAZY-LOADED COURSE TABLE -->
-    <section *ngIf="activeView === 'courses-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+    <section *ngIf="activeView() === 'courses-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <div>
           <h3 class="text-lg font-bold text-dark-900">Course Catalog (Database Processed)</h3>
@@ -341,13 +346,13 @@
 
       <p-table 
         #dtCourses
-        [value]="courses" 
+        [value]="courses()" 
         [lazy]="true"
         (onLazyLoad)="onLazyLoadCourses($event)"
         [paginator]="true" 
         [rows]="5" 
-        [totalRecords]="totalCoursesCount"
-        [loading]="coursesLoading"
+        [totalRecords]="totalCoursesCount()"
+        [loading]="coursesLoading()"
         [rowsPerPageOptions]="[5, 10, 20]"
         responsiveLayout="scroll"
       >
@@ -437,42 +442,48 @@
     </section>
 
     <!-- 6. FIND / UPDATE / DELETE COURSE -->
-    <section *ngIf="activeView === 'course-search'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-2xl">
+    <section *ngIf="activeView() === 'course-search'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-2xl">
       <h3 class="text-lg font-bold text-dark-900 mb-2">Find Course by Specific ID</h3>
-      <p class="text-xs text-slate-500 mb-4">Enter the exact numeric Course ID below to inspect, edit, or delete a catalog item.</p>
+      <p class="text-xs text-slate-500 mb-4">Type a numeric Course ID below for instant live lookup.</p>
 
       <div class="flex gap-3 mb-6">
-        <input #cIdInput type="number" placeholder="Enter Numeric Course ID..." pInputText class="p-inputtext-sm flex-1" />
+        <input 
+          type="number" 
+          [formControl]="courseSearchControl" 
+          placeholder="Type Course ID..." 
+          pInputText 
+          class="p-inputtext-sm flex-1" 
+        />
         <button 
-          (click)="onSearchCourse(cIdInput.value)" 
+          (click)="courseSearchControl.updateValueAndValidity()" 
           class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
         >
           <lucide-icon [img]="SearchIcon" class="w-3.5 h-3.5"></lucide-icon>
-          <span>Get Course</span>
+          <span>Search</span>
         </button>
       </div>
 
-      <div *ngIf="searchedCourse" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+      <div *ngIf="searchedCourse()" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
         <div class="flex justify-between items-start mb-3">
           <div>
-            <h4 class="text-base font-bold text-brand-600">{{ searchedCourse.name }}</h4>
-            <span class="text-xs text-slate-500 font-semibold">Course ID: #{{ searchedCourse.id }}</span>
+            <h4 class="text-base font-bold text-brand-600">{{ searchedCourse().name }}</h4>
+            <span class="text-xs text-slate-500 font-semibold">Course ID: #{{ searchedCourse().id }}</span>
           </div>
-          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">{{ searchedCourse.credits }} Credits</span>
+          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">{{ searchedCourse().credits }} Credits</span>
         </div>
 
-        <p class="text-sm text-slate-700 my-1"><strong>Capacity Status:</strong> {{ searchedCourse.enrolledStudentsCount || 0 }}/50 Seats Enrolled</p>
+        <p class="text-sm text-slate-700 my-1"><strong>Capacity Status:</strong> {{ searchedCourse().enrolledStudentsCount || 0 }}/50 Seats Enrolled</p>
         
         <div class="flex gap-3 mt-5 pt-3 border-t border-slate-200">
           <button 
-            (click)="openEditCourse(searchedCourse)" 
+            (click)="openEditCourse(searchedCourse())" 
             class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
           >
             <lucide-icon [img]="EditIcon" class="w-3.5 h-3.5"></lucide-icon>
             <span>Update Course</span>
           </button>
           <button 
-            (click)="onDeleteCourse(searchedCourse.id)" 
+            (click)="onDeleteCourse(searchedCourse().id)" 
             class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
           >
             <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>
@@ -483,8 +494,8 @@
     </section>
 
     <!-- 7. ADD / EDIT COURSE FORM -->
-    <section *ngIf="activeView === 'course-form'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
-      <h3 class="text-lg font-bold text-dark-900 mb-4">{{ selectedCourseId ? 'Update Course #' + selectedCourseId : 'Create New Course' }}</h3>
+    <section *ngIf="activeView() === 'course-form'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
+      <h3 class="text-lg font-bold text-dark-900 mb-4">{{ selectedCourseId() ? 'Update Course #' + selectedCourseId() : 'Create New Course' }}</h3>
       <form [formGroup]="courseForm" (ngSubmit)="onSaveCourse()" class="flex flex-col gap-4">
         <div>
           <label class="block text-xs font-semibold text-dark-800 mb-1">Course Title</label>
@@ -502,9 +513,9 @@
     </section>
 
     <!-- 8. STUDENT REGISTRATION REQUESTS -->
-    <section *ngIf="activeView === 'registration-requests'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+    <section *ngIf="activeView() === 'registration-requests'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <h3 class="text-lg font-bold text-dark-900 mb-4">Pending Student Account Registration Requests</h3>
-      <div *ngFor="let req of registrationRequests" class="flex justify-between items-center py-4 border-b border-slate-100">
+      <div *ngFor="let req of registrationRequests()" class="flex justify-between items-center py-4 border-b border-slate-100">
         <div>
           <h4 class="font-bold text-dark-900">{{ req.studentName }}</h4>
           <p class="text-xs text-slate-500 mt-1"><strong>Details:</strong> {{ req.reason || 'Requested account verification.' }}</p>
@@ -526,13 +537,13 @@
           </button>
         </div>
       </div>
-      <p *ngIf="registrationRequests.length === 0" class="text-slate-500 text-sm py-4">No pending student registration requests.</p>
+      <p *ngIf="registrationRequestsCount() === 0" class="text-slate-500 text-sm py-4">No pending student registration requests.</p>
     </section>
 
     <!-- 9. COURSE ENROLLMENT REQUESTS -->
-    <section *ngIf="activeView === 'course-requests'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
+    <section *ngIf="activeView() === 'course-requests'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <h3 class="text-lg font-bold text-dark-900 mb-4">Pending Course Enrollment & Unenrollment Requests</h3>
-      <div *ngFor="let req of courseRequests" class="flex justify-between items-center py-4 border-b border-slate-100">
+      <div *ngFor="let req of courseRequests()" class="flex justify-between items-center py-4 border-b border-slate-100">
         <div>
           <h4 class="font-bold text-dark-900">{{ req.studentName }} — <em class="text-brand-600 font-normal">{{ req.requestType }}</em></h4>
           <p class="text-xs text-slate-600 mt-1"><strong>Course:</strong> {{ req.courseName }}</p>
@@ -555,7 +566,7 @@
           </button>
         </div>
       </div>
-      <p *ngIf="courseRequests.length === 0" class="text-slate-500 text-sm py-4">No pending enrollment or unenrollment requests.</p>
+      <p *ngIf="courseRequestsCount() === 0" class="text-slate-500 text-sm py-4">No pending enrollment or unenrollment requests.</p>
     </section>
   </main>
 </div>

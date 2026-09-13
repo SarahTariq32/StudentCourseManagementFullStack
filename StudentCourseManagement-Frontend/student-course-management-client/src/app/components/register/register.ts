@@ -1,16 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { HttpErrorResponse } from '@angular/common/http';
 import { extractErrorMessage } from '../../utils/http-error.util';
-
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, of, take } from 'rxjs';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
-
 import { 
   LucideAngularModule, 
   UserPlus, 
@@ -39,6 +39,7 @@ import {
   styleUrl: './register.scss'
 })
 export class RegisterComponent {
+  private destroyRef = inject(DestroyRef);
   readonly UserPlusIcon = UserPlus;
   readonly UserIcon = User;
   readonly MailIcon = Mail;
@@ -89,16 +90,20 @@ export class RegisterComponent {
       role: this.registerForm.value.role
     };
 
-    this.authService.register(payload).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.successMessage = 'Registration successful! Redirecting to login...';
-        setTimeout(() => this.router.navigate(['/login']), 1500);
-      },
-      error: (err: HttpErrorResponse) => {
+    this.authService.register(payload).pipe(
+      take(1),
+      catchError((err: HttpErrorResponse) => {
         this.isLoading = false;
         console.error('Registration API Error:', err);
         this.errorMessage = extractErrorMessage(err, 'Registration failed. Check server logs.');
+        return of(null);
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((res) => {
+      if (res !== null) {
+        this.isLoading = false;
+        this.successMessage = 'Registration successful! Redirecting to login...';
+        setTimeout(() => this.router.navigate(['/login']), 1500);
       }
     });
   }

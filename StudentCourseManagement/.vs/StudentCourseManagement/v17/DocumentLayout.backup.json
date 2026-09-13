@@ -84,7 +84,7 @@
               "RelativeDocumentMoniker": "StudentCourseManagement.API\\Controllers\\CoursesController.cs",
               "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\Controllers\\CoursesController.cs",
               "RelativeToolTip": "StudentCourseManagement.API\\Controllers\\CoursesController.cs",
-              "ViewState": "AgIAAB4AAAAAAAAAAAAowCkAAAAfAAAAAAAAAA==",
+              "ViewState": "AgIAACcAAAAAAAAAAAAowCkAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-09-10T19:39:37.397Z",
               "EditorCaption": ""
@@ -99,8 +99,7 @@
               "RelativeToolTip": "StudentCourseManagement.API\\Controllers\\AuthController.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAACMAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-03T09:38:05.305Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-03T09:38:05.305Z"
             },
             {
               "$type": "Document",
@@ -124,8 +123,7 @@
               "RelativeToolTip": "StudentCourseManagement.Infrastructure\\Repositories\\CourseRepository.cs",
               "ViewState": "AgIAABMAAAAAAAAAAAAgwOkAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-03T06:37:15.894Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-03T06:37:15.894Z"
             },
             {
               "$type": "Document",
@@ -269,8 +267,7 @@
               "RelativeToolTip": "StudentCourseManagement.API\\Controllers\\StudentsController.cs",
               "ViewState": "AgIAABYAAAAAAAAAAAAgwAkAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-02T10:42:58.645Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-02T10:42:58.645Z"
             }
           ]
         }

@@ -5,6 +5,48 @@
     "version": "v1"
   },
   "paths": {
+    "/api/AiCourse/search/strict": {
+      "get": {
+        "tags": [
+          "AiCourse"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/AiCourse/search/free": {
+      "get": {
+        "tags": [
+          "AiCourse"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Auth/register": {
       "post": {
         "tags": [

@@ -23,6 +23,18 @@
           <span>Dashboard Overview</span>
         </button>
 
+        <!-- AI ADVISOR NAVIGATION TAB -->
+        <button 
+          [class.bg-slate-800]="activeView() === 'ai-advisor'" 
+          [class.text-white]="activeView() === 'ai-advisor'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
+          (click)="setView('ai-advisor')"
+        >
+          <lucide-icon [img]="BotIcon" class="w-4 h-4 text-brand-400"></lucide-icon>
+          <span>AI Course Advisor</span>
+          <span class="ml-auto bg-brand-500/20 text-brand-400 text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
+        </button>
+
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">My Academics</div>
         <button 
           [class.bg-slate-800]="activeView() === 'my-courses'"
@@ -142,7 +154,172 @@
       </div>
     </section>
 
-    <!-- 2. MY ACTIVE COURSES VIEW -->
+    <!-- 2. AI COURSE ADVISOR VIEW (CONVERSATIONAL CHAT THREAD) -->
+  
+    <section *ngIf="activeView() === 'ai-advisor'" class="max-w-4xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col h-full">
+        
+        <!-- FIXED CHAT HEADER -->
+        <div class="bg-dark-900 text-white p-4 px-6 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-400">
+              <lucide-icon [img]="BotIcon" class="w-5 h-5"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                Academic Assistant Thread
+                <span class="bg-emerald-500/20 text-accent-emerald text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">Online</span>
+              </h3>
+              <p class="text-[11px] text-slate-400">Active mode: {{ isAiStrictMode() ? 'Strict (Enrolled Schedule)' : 'Freeform (Global Catalog)' }}</p>
+            </div>
+          </div>
+
+          <button 
+            *ngIf="chatHistory().length" 
+            (click)="clearChatHistory()"
+            class="text-xs text-slate-400 hover:text-rose-400 flex items-center gap-1.5 transition cursor-pointer bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg"
+          >
+            <lucide-icon [img]="Trash2Icon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Clear Chat</span>
+          </button>
+        </div>
+
+        <!-- FIXED MODE TOGGLE TOOLBAR -->
+        <div class="bg-slate-50 p-2.5 px-6 border-b border-slate-200/80 flex items-center justify-between flex-shrink-0">
+          <div class="inline-flex bg-slate-200/60 p-1 rounded-xl gap-1">
+            <button 
+              [class.bg-white]="isAiStrictMode()"
+              [class.text-dark-900]="isAiStrictMode()"
+              [class.shadow-xs]="isAiStrictMode()"
+              [class.text-slate-600]="!isAiStrictMode()"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border-none"
+              (click)="setAiMode(true)"
+            >
+              <lucide-icon [img]="BookOpenIcon" class="w-3.5 h-3.5 text-brand-500"></lucide-icon>
+              <span>Strict Mode (Enrolled)</span>
+            </button>
+
+            <button 
+              [class.bg-white]="!isAiStrictMode()"
+              [class.text-dark-900]="!isAiStrictMode()"
+              [class.shadow-xs]="!isAiStrictMode()"
+              [class.text-slate-600]="isAiStrictMode()"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border-none"
+              (click)="setAiMode(false)"
+            >
+              <lucide-icon [img]="CompassIcon" class="w-3.5 h-3.5 text-brand-500"></lucide-icon>
+              <span>Freeform Mode (Catalog)</span>
+            </button>
+          </div>
+
+          <span class="text-[11px] text-slate-500 hidden sm:inline">Search input clears on submit</span>
+        </div>
+
+        <!-- ONLY THIS CONTAINER SCROLLS (flex-1 overflow-y-auto) -->
+        <div #chatContainer class="flex-1 p-6 overflow-y-auto space-y-6 bg-slate-50/50">
+          
+          <!-- EMPTY WELCOME STATE -->
+          <div *ngIf="!chatHistory().length && !isAiThinking()" class="text-center py-12 px-4">
+            <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-brand-500">
+              <lucide-icon [img]="SparklesIcon" class="w-8 h-8"></lucide-icon>
+            </div>
+            <h4 class="font-bold text-dark-900 text-base mb-1">How can I assist your academic journey?</h4>
+            <p class="text-xs text-slate-500 max-w-md mx-auto mb-6">Select a search mode above and ask any question regarding your active classes or future catalog options.</p>
+            
+            <div class="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
+              <button (click)="aiQuery.set('What courses am I currently enrolled in?'); setAiMode(true); onAskAi()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">
+                "What courses am I currently enrolled in?"
+              </button>
+              <button (click)="aiQuery.set('What skills do I need to learn Web Development?'); setAiMode(false); onAskAi()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">
+                "How to learn Web Development?"
+              </button>
+            </div>
+          </div>
+
+          <!-- CONVERSATION HISTORY BUBBLES -->
+          <div *ngFor="let msg of chatHistory()" [ngClass]="msg.sender === 'user' ? 'justify-end' : 'justify-start'" class="flex gap-3">
+            
+            <!-- AI AVATAR -->
+            <div *ngIf="msg.sender === 'ai'" class="w-8 h-8 rounded-lg bg-dark-900 text-white flex items-center justify-center flex-shrink-0 text-xs mt-1">
+              <lucide-icon [img]="BotIcon" class="w-4 h-4 text-brand-400"></lucide-icon>
+            </div>
+
+            <!-- MESSAGE CONTENT -->
+            <div [ngClass]="msg.sender === 'user' ? 'max-w-[80%]' : 'max-w-[90%]'" class="space-y-3">
+              
+              <!-- USER BUBBLE -->
+              <div *ngIf="msg.sender === 'user'" class="bg-brand-500 text-white p-3.5 px-4 rounded-2xl rounded-tr-xs text-sm shadow-xs">
+                <p class="mb-0">{{ msg.text }}</p>
+              </div>
+
+              <!-- AI RESPONSE CARD THREAD -->
+              <div *ngIf="msg.sender === 'ai'" class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs text-sm text-slate-800 space-y-4">
+                
+                <!-- ADVISOR SUMMARY NOTE -->
+                <div class="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs leading-relaxed border border-slate-800">
+                  <span class="text-brand-400 font-bold block mb-1 uppercase tracking-wider text-[10px]">Advisor Summary</span>
+                  {{ msg.data?.advisorNote }}
+                </div>
+
+                <!-- MATCHED COURSES CARDS -->
+                <div *ngIf="msg.data?.matchedCourses?.length">
+                  <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 block mb-2">Recommendations</span>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div *ngFor="let course of msg.data?.matchedCourses" class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                      <div class="flex justify-between items-center mb-1">
+                        <h6 class="font-bold text-dark-900 text-xs">{{ course.name }}</h6>
+                        <span *ngIf="course.id > 0" class="text-[10px] bg-brand-50 text-brand-600 font-mono px-1.5 py-0.5 rounded font-bold">#{{ course.id }}</span>
+                      </div>
+                      <p class="text-[11px] text-slate-600 mb-0 leading-snug">{{ course.reason }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LOADING THINKING INDICATOR -->
+          <div *ngIf="isAiThinking()" class="flex gap-3">
+            <div class="w-8 h-8 rounded-lg bg-dark-900 text-white flex items-center justify-center flex-shrink-0 text-xs">
+              <lucide-icon [img]="BotIcon" class="w-4 h-4 text-brand-400"></lucide-icon>
+            </div>
+            <div class="bg-white border border-slate-200 p-4 rounded-2xl w-64 shadow-xs">
+              <p-skeleton width="10rem" height="1rem" class="mb-2"></p-skeleton>
+              <p-skeleton width="6rem" height="0.8rem"></p-skeleton>
+            </div>
+          </div>
+
+          <!-- ERROR MESSAGE -->
+          <div *ngIf="aiErrorMessage()" class="bg-rose-50 text-accent-rose border border-rose-200 p-3 px-4 rounded-xl text-xs font-medium">
+            {{ aiErrorMessage() }}
+          </div>
+        </div>
+
+        <!-- PINNED CHAT INPUT COMPOSER BAR (flex-shrink-0) -->
+        <div class="p-4 bg-white border-t border-slate-200/80 flex-shrink-0">
+          <div class="relative flex items-center">
+            <input 
+              pInputText 
+              type="text" 
+              [ngModel]="aiQuery()" 
+              (ngModelChange)="aiQuery.set($event)"
+              [placeholder]="isAiStrictMode() ? 'Ask about your enrolled schedule...' : 'Ask about university courses or general advice...'"
+              class="w-full pl-4 pr-28 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-brand-500/20 transition"
+              (keyup.enter)="onAskAi()"
+            />
+            <button 
+              (click)="onAskAi()" 
+              [disabled]="isAiThinking() || !aiQuery().trim()"
+              class="absolute right-1.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 transition border-none cursor-pointer"
+            >
+              <lucide-icon *ngIf="!isAiThinking()" [img]="SendIcon" class="w-3.5 h-3.5"></lucide-icon>
+              <span>Send</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- 3. MY ACTIVE COURSES VIEW -->
     <section *ngIf="activeView() === 'my-courses'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <h3 class="text-lg font-bold text-dark-900 mb-4">My Enrolled Courses ({{ enrolledCount() }}/7)</h3>
 
@@ -186,7 +363,7 @@
       <p *ngIf="!isLoading() && !studentProfile()?.enrolledCourses?.length" class="text-slate-500 text-sm py-4">You are not currently enrolled in any courses.</p>
     </section>
 
-    <!-- 3. COURSE CATALOG VIEW -->
+    <!-- 4. COURSE CATALOG VIEW -->
     <section *ngIf="activeView() === 'available-courses'">
       <h3 class="text-lg font-bold text-dark-900 mb-4">Course Catalog</h3>
 
@@ -269,7 +446,7 @@
       </div>
     </section>
 
-    <!-- 4. PROFILE VIEW -->
+    <!-- 5. PROFILE VIEW -->
     <section *ngIf="!isLoading() && activeView() === 'profile' && studentProfile()" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-bold text-dark-900">Academic Profile</h3>

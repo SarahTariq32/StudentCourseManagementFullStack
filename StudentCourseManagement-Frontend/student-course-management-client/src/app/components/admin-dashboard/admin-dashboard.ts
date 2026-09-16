@@ -146,7 +146,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private initRxjsSearchStreams(): void {
-    // 1. Reactive Student Type-Ahead Search Stream
+
     this.studentSearchControl.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -176,7 +176,6 @@ export class AdminDashboardComponent implements OnInit {
       }
     });
 
-    // 2. Reactive Course Type-Ahead Search Stream
     this.courseSearchControl.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),

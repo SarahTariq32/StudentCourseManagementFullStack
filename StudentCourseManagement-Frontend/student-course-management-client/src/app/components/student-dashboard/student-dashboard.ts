@@ -21,17 +21,32 @@ import {
   Edit3, 
   AlertTriangle,
   ArrowRight,
-  UserCheck
+  UserCheck,
+  Bot,
+  Sparkles,
+  Compass,
+  HelpCircle,
+  Trash2
 } from 'lucide-angular';
 
 import { CourseService } from '../../services/course';
 import { StudentService } from '../../services/student';
 import { AuthService } from '../../services/auth';
+import { AiCourseService, CourseRecommendationResponse } from '../../services/ai-course';
 import { StudentProfile } from '../../models/student.model';
 import { Course } from '../../models/course.model';
 import { extractErrorMessage } from '../../utils/http-error.util';
 
-type StudentView = 'overview' | 'my-courses' | 'available-courses' | 'profile';
+type StudentView = 'overview' | 'my-courses' | 'available-courses' | 'ai-advisor' | 'profile';
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'ai';
+  text: string;
+  timestamp: Date;
+  mode: 'strict' | 'freeform';
+  data?: CourseRecommendationResponse;
+}
 
 @Component({
   selector: 'app-student-dashboard',
@@ -63,6 +78,11 @@ export class StudentDashboardComponent implements OnInit {
   readonly AlertTriangleIcon = AlertTriangle;
   readonly ArrowRightIcon = ArrowRight;
   readonly UserCheckIcon = UserCheck;
+  readonly BotIcon = Bot;
+  readonly SparklesIcon = Sparkles;
+  readonly CompassIcon = Compass;
+  readonly HelpCircleIcon = HelpCircle;
+  readonly Trash2Icon = Trash2;
 
   activeView = signal<StudentView>('overview');
   
@@ -81,6 +101,13 @@ export class StudentDashboardComponent implements OnInit {
   enrolledCount = computed(() => this.studentProfile()?.enrolledCourses?.length || 0);
   maxCoursesReached = computed(() => this.enrolledCount() >= 7);
 
+  // --- AI Advisor Chat Signals ---
+  aiQuery = signal<string>('');
+  isAiStrictMode = signal<boolean>(true);
+  isAiThinking = signal<boolean>(false);
+  chatHistory = signal<ChatMessage[]>([]);
+  aiErrorMessage = signal<string>('');
+
   profileForm: FormGroup;
   
   accountRequestReason: string = '';
@@ -91,6 +118,7 @@ export class StudentDashboardComponent implements OnInit {
     private courseService: CourseService,
     private studentService: StudentService,
     private authService: AuthService,
+    private aiCourseService: AiCourseService,
     private fb: FormBuilder,
     private router: Router
   ) {
@@ -115,6 +143,63 @@ export class StudentDashboardComponent implements OnInit {
 
   setView(view: StudentView): void {
     this.activeView.set(view);
+  }
+
+  // --- AI Advisory Conversational Handler ---
+  onAskAi(): void {
+    const query = this.aiQuery().trim();
+    if (!query || this.isAiThinking()) return;
+
+    const currentMode = this.isAiStrictMode() ? 'strict' : 'freeform';
+
+    // Add user message to history
+    const userMsg: ChatMessage = {
+      id: Date.now().toString(),
+      sender: 'user',
+      text: query,
+      timestamp: new Date(),
+      mode: currentMode
+    };
+
+    this.chatHistory.update(history => [...history, userMsg]);
+    this.aiQuery.set(''); // Clears input immediately
+    this.isAiThinking.set(true);
+    this.aiErrorMessage.set('');
+
+    const apiCall$ = this.isAiStrictMode()
+      ? this.aiCourseService.searchStrict(query)
+      : this.aiCourseService.searchFreeform(query);
+
+    apiCall$.pipe(
+      catchError((err: HttpErrorResponse) => {
+        this.aiErrorMessage.set(extractErrorMessage(err, 'Failed to fetch AI recommendations.'));
+        return of(null);
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((res) => {
+      if (res) {
+        const aiMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: 'ai',
+          text: res.advisorNote || 'Here are my course recommendations for you:',
+          timestamp: new Date(),
+          mode: currentMode,
+          data: res
+        };
+        this.chatHistory.update(history => [...history, aiMsg]);
+      }
+      this.isAiThinking.set(false);
+    });
+  }
+
+  setAiMode(strict: boolean): void {
+    this.isAiStrictMode.set(strict);
+    this.aiQuery.set(''); // Clears search bar upon mode switch
+  }
+
+  clearChatHistory(): void {
+    this.chatHistory.set([]);
+    this.aiErrorMessage.set('');
   }
 
   checkVerificationAndLoadData(): void {

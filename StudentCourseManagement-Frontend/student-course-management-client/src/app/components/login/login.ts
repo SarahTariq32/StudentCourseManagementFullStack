@@ -71,7 +71,7 @@ export class LoginComponent implements OnInit {
     this.errorMessage = '';
 
     this.authService.login(this.loginForm.value).pipe(
-      take(1), // Automatically unsubscribes after one emission
+      take(1), 
       catchError((err: HttpErrorResponse) => {
         this.isLoading = false;
         this.errorMessage = extractErrorMessage(err, 'Invalid username or password.');

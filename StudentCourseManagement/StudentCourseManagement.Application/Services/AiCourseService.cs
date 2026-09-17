@@ -25,15 +25,13 @@ public class AiCourseService : IAiCourseService
 
     public async Task<CourseRecommendationResponseDto> SearchStrictAsync(string username, string query)
     {
-
         var student = await _studentRepository.GetByNameAsync(username);
 
         if (student == null)
         {
             return new CourseRecommendationResponseDto
             {
-                AdvisorNote = "Could not find a student record linked to your account. " +
-                              "Please contact an administrator."
+                AdvisorNote = "Could not find a student record linked to your account."
             };
         }
 
@@ -48,34 +46,42 @@ public class AiCourseService : IAiCourseService
                 enrolledCourses.Add(new { course.Id, course.Name, course.Credits });
             }
         }
+
         string enrolledDataJson = JsonSerializer.Serialize(enrolledCourses);
 
-        string prompt = @"You are a personal academic advisor for a student.
-Below is the SINGLE SOURCE OF TRUTH containing ONLY the courses this student is currently ENROLLED in:
+        // REFINED, NATURAL PROMPT
+        string prompt = @"You are a helpful, natural academic assistant for a logged-in student.
+Below is the list of courses this student is currently ENROLLED in:
 
 <STUDENT_ENROLLED_COURSES>
 " + enrolledDataJson + @"
 </STUDENT_ENROLLED_COURSES>
 
-CRITICAL RULES:
-1. Base your response ONLY on the courses listed in <STUDENT_ENROLLED_COURSES>.
-2. State clearly how many courses they are enrolled in based strictly on <STUDENT_ENROLLED_COURSES>.
-3. If <STUDENT_ENROLLED_COURSES> is empty or '[]', state: 'You are not currently enrolled in any courses.'
-4. Return your response strictly as a JSON object matching this schema (no markdown, no extra text):
+RULES FOR YOUR RESPONSE:
+1. Answer the student's question directly, naturally, and conversationally.
+2. Ground your answer ONLY in <STUDENT_ENROLLED_COURSES>. Do NOT mention, recommend, or discuss any course that is NOT in <STUDENT_ENROLLED_COURSES>.
+3. Do NOT repeat boilerplate stats (e.g. 'You are enrolled in X courses totaling Y credits') unless the user explicitly asks for a summary of their total course load.
+4. If the user asks about a topic or course that is NOT in their enrolled list, naturally explain that they aren't currently taking a course on that topic.
+5. Return your response strictly as a JSON object matching this schema (no markdown, no extra text):
    {
      ""matchedCourses"": [
        {
          ""id"": 1,
          ""name"": ""Course Title"",
-         ""reason"": ""Why this course is relevant to the student's question""
+         ""reason"": ""Specific answer addressing their question""
        }
      ],
-     ""advisorNote"": ""Summary advice regarding their active enrolled courses""
+     ""advisorNote"": ""Direct, natural answer to the student's question""
    }
 
-Student Query: """ + query + @"""";
+Student Question: """ + query + @"""";
 
-        var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.1 };
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            Temperature = 0.2,
+            MaxTokens = 350    
+        };
+
         var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
         var result = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
 

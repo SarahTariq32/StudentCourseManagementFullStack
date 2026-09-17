@@ -154,8 +154,7 @@
       </div>
     </section>
 
-    <!-- 2. AI COURSE ADVISOR VIEW (CONVERSATIONAL CHAT THREAD) -->
-  
+    <!-- 2. AI COURSE ADVISOR VIEW (CONVERSATIONAL CHAT THREAD WITH PINNED INPUT & AUTO-SCROLL) -->
     <section *ngIf="activeView() === 'ai-advisor'" class="max-w-4xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col h-full">
         
@@ -212,10 +211,9 @@
             </button>
           </div>
 
-          <span class="text-[11px] text-slate-500 hidden sm:inline">Search input clears on submit</span>
         </div>
 
-        <!-- ONLY THIS CONTAINER SCROLLS (flex-1 overflow-y-auto) -->
+        <!-- CHAT MESSAGES THREAD CONTAINER (#chatContainer for Auto-Scroll) -->
         <div #chatContainer class="flex-1 p-6 overflow-y-auto space-y-6 bg-slate-50/50">
           
           <!-- EMPTY WELCOME STATE -->
@@ -295,7 +293,7 @@
           </div>
         </div>
 
-        <!-- PINNED CHAT INPUT COMPOSER BAR (flex-shrink-0) -->
+        <!-- PINNED CHAT INPUT COMPOSER BAR -->
         <div class="p-4 bg-white border-t border-slate-200/80 flex-shrink-0">
           <div class="relative flex items-center">
             <input 
@@ -319,6 +317,7 @@
         </div>
       </div>
     </section>
+
     <!-- 3. MY ACTIVE COURSES VIEW -->
     <section *ngIf="activeView() === 'my-courses'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <h3 class="text-lg font-bold text-dark-900 mb-4">My Enrolled Courses ({{ enrolledCount() }}/7)</h3>

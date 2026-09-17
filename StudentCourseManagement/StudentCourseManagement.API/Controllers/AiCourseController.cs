@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentCourseManagement.Application.Interfaces;
 using System.Security.Claims;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace StudentCourseManagement.API.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
+[EnableRateLimiting("AiSearchLimit")]
 public class AiCourseController : ControllerBase
 {
     private readonly IAiCourseService _aiCourseService;

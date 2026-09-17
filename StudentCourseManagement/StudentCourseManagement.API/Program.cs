@@ -1,21 +1,29 @@
-using Microsoft.EntityFrameworkCore;
-using StudentCourseManagement.Infrastructure.Data;
-using StudentCourseManagement.Application.Interfaces;
-using StudentCourseManagement.Application.Services;
-using StudentCourseManagement.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.OpenApi.Models;
+using System.Threading.RateLimiting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using StudentCourseManagement.Application.Validators;
-using StudentCourseManagement.API.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
+using StudentCourseManagement.API.Middleware;
+using StudentCourseManagement.Application.Interfaces;
+using StudentCourseManagement.Application.Services;
+using StudentCourseManagement.Application.Validators;
+using StudentCourseManagement.Infrastructure.Data;
+using StudentCourseManagement.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+// --- CONTROLLERS & FLUENT VALIDATION ---
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
 
@@ -51,14 +59,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // --- DATABASE CONTEXT ---
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-    });
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // --- REPOSITORIES DEPENDENCY INJECTION ---
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
@@ -71,17 +72,24 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAiCourseService, AiCourseService>();
 
+// --- HTTP CLIENT FOR OPENROUTER ---
+builder.Services.AddHttpClient("OpenRouterClient", client =>
+{
+    client.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:4200");
+    client.DefaultRequestHeaders.Add("X-Title", "Student Course Management");
+});
+
 // --- SEMANTIC KERNEL & OPENROUTER AI CONFIGURATION ---
 var openRouterKey = builder.Configuration["OpenRouter:ApiKey"]
     ?? throw new InvalidOperationException("OpenRouter API Key 'OpenRouter:ApiKey' is not configured. Run 'dotnet user-secrets set OpenRouter:ApiKey <key>' in StudentCourseManagement.API.");
 
 string modelId = "openrouter/free";
-var httpClient = new HttpClient();
-httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:4200");
-httpClient.DefaultRequestHeaders.Add("X-Title", "Student Course Management");
 
-builder.Services.AddSingleton<Kernel>(sp =>
+builder.Services.AddScoped<Kernel>(sp =>
 {
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = httpClientFactory.CreateClient("OpenRouterClient");
+
     var kernelBuilder = Kernel.CreateBuilder();
     kernelBuilder.AddOpenAIChatCompletion(
         modelId: modelId,
@@ -93,6 +101,7 @@ builder.Services.AddSingleton<Kernel>(sp =>
     return kernelBuilder.Build();
 });
 
+// --- JWT AUTHENTICATION CONFIGURATION ---
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT Secret Key 'Jwt:Key' is not configured. Please define it in appsettings.json or as an environment variable.");
 
@@ -102,8 +111,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = true,
@@ -119,6 +127,26 @@ builder.Services.AddCors(options =>
         p.WithOrigins("http://localhost:4200")
          .AllowAnyMethod()
          .AllowAnyHeader()));
+
+// --- FIXED WINDOW RATE LIMITING (5 REQUESTS / 1 MINUTE) ---
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("AiSearchLimit", httpContext =>
+    {
+        var username = httpContext.User.Identity?.Name
+                       ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                       ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(username, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
+    });
+});
 
 var app = builder.Build();
 
@@ -137,6 +165,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 

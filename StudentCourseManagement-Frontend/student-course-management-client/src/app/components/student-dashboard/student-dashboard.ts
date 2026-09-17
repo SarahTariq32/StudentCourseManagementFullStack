@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, effect, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, effect, DestroyRef, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -66,6 +66,8 @@ export interface ChatMessage {
 })
 export class StudentDashboardComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
+
+  @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
   readonly LogOutIcon = LogOut;
   readonly BookOpenIcon = BookOpen;
@@ -145,6 +147,17 @@ export class StudentDashboardComponent implements OnInit {
     this.activeView.set(view);
   }
 
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      if (this.chatContainer?.nativeElement) {
+        this.chatContainer.nativeElement.scrollTo({
+          top: this.chatContainer.nativeElement.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 50);
+  }
+
   // --- AI Advisory Conversational Handler ---
   onAskAi(): void {
     const query = this.aiQuery().trim();
@@ -166,6 +179,8 @@ export class StudentDashboardComponent implements OnInit {
     this.isAiThinking.set(true);
     this.aiErrorMessage.set('');
 
+    this.scrollToBottom(); // Scroll down to show user bubble & skeleton
+
     const apiCall$ = this.isAiStrictMode()
       ? this.aiCourseService.searchStrict(query)
       : this.aiCourseService.searchFreeform(query);
@@ -173,6 +188,8 @@ export class StudentDashboardComponent implements OnInit {
     apiCall$.pipe(
       catchError((err: HttpErrorResponse) => {
         this.aiErrorMessage.set(extractErrorMessage(err, 'Failed to fetch AI recommendations.'));
+        this.isAiThinking.set(false);
+        this.scrollToBottom();
         return of(null);
       }),
       takeUntilDestroyed(this.destroyRef)
@@ -189,6 +206,7 @@ export class StudentDashboardComponent implements OnInit {
         this.chatHistory.update(history => [...history, aiMsg]);
       }
       this.isAiThinking.set(false);
+      this.scrollToBottom(); // Scroll down to show AI response
     });
   }
 

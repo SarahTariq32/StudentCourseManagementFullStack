@@ -30,5 +30,12 @@ export function extractErrorMessage(
     return 'Unable to reach the server. Please check your connection.';
   }
 
+  if (err.status === 429) {
+    return '⏱️ Rate limit exceeded: You are asking questions too fast. Please wait a minute before sending another request.';
+  }
+  if (err.error && typeof err.error === 'object' && err.error.message) {
+    return err.error.message;
+  }
+  
   return fallback;
 }

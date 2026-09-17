@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StudentCourseManagement.Application.Interfaces;
-using System.Security.Claims;
 using Microsoft.AspNetCore.RateLimiting;
+using StudentCourseManagement.Application.Interfaces;
 
 namespace StudentCourseManagement.API.Controllers;
 
 [ApiController]
-[Authorize]
 [Route("api/[controller]")]
 [EnableRateLimiting("AiSearchLimit")]
 public class AiCourseController : ControllerBase
@@ -18,7 +17,9 @@ public class AiCourseController : ControllerBase
     {
         _aiCourseService = aiCourseService;
     }
+
     [HttpGet("search/strict")]
+    [Authorize]
     public async Task<IActionResult> SearchStrict([FromQuery] string query)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -34,6 +35,7 @@ public class AiCourseController : ControllerBase
     }
 
     [HttpGet("search/free")]
+    [Authorize]
     public async Task<IActionResult> SearchFreeform([FromQuery] string query)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -41,5 +43,13 @@ public class AiCourseController : ControllerBase
 
         var result = await _aiCourseService.SearchFreeformAsync(query);
         return Ok(result);
+    }
+
+    [HttpGet("enrollmentrequests/ai-summary")]
+    [Authorize(Roles = "Admin,admin")]
+    public async Task<IActionResult> GetPendingRequestsSummary()
+    {
+        var summary = await _aiCourseService.GetPendingRequestsSummaryAsync();
+        return Ok(summary);
     }
 }

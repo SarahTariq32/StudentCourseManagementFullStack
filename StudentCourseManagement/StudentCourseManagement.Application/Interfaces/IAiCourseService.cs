@@ -8,4 +8,5 @@ public interface IAiCourseService
     Task<CourseRecommendationResponseDto> SearchStrictAsync(string username, string query);
 
     Task<CourseRecommendationResponseDto> SearchFreeformAsync(string query);
+    Task<EnrollmentRequestAiSummaryDto> GetPendingRequestsSummaryAsync();
 }

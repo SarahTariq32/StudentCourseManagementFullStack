@@ -47,6 +47,18 @@
         }
       }
     },
+    "/api/AiCourse/enrollmentrequests/ai-summary": {
+      "get": {
+        "tags": [
+          "AiCourse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Auth/register": {
       "post": {
         "tags": [
@@ -410,6 +422,60 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/enrollmentrequests/pending": {
+      "get": {
+        "tags": [
+          "EnrollmentRequests"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/enrollmentrequests/process/{requestId}": {
+      "post": {
+        "tags": [
+          "EnrollmentRequests"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "approve",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/enrollmentrequests/ai-summary": {
+      "get": {
+        "tags": [
+          "EnrollmentRequests"
+        ],
         "responses": {
           "200": {
             "description": "OK"

@@ -14,6 +14,17 @@ export interface CourseRecommendationResponse {
   advisorNote: string;
 }
 
+export interface RequestCategoryCount {
+  category: string;
+  count: number;
+}
+
+export interface EnrollmentRequestAiSummary {
+  totalPendingRequests: number;
+  categories: RequestCategoryCount[];
+  summaryNote: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -31,4 +42,12 @@ export class AiCourseService {
     const params = new HttpParams().set('query', query);
     return this.http.get<CourseRecommendationResponse>(`${this.apiUrl}/search/free`, { params });
   }
+
+  
+  getPendingRequestsSummary(): Observable<EnrollmentRequestAiSummary> {
+    return this.http.get<EnrollmentRequestAiSummary>(`${this.apiUrl}/enrollmentrequests/ai-summary`);
+  }
 }
+
+
+

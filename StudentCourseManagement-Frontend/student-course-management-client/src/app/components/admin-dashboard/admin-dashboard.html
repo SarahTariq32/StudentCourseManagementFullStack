@@ -28,6 +28,18 @@
           <span>Dashboard Overview</span>
         </button>
 
+        <!-- DEDICATED AI REQUESTS SUMMARIZER TAB -->
+        <button 
+          [class.bg-slate-800]="activeView() === 'ai-summary'" 
+          [class.text-white]="activeView() === 'ai-summary'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
+          (click)="setView('ai-summary')"
+        >
+          <lucide-icon [img]="SparklesIcon" class="w-4 h-4 text-brand-400"></lucide-icon>
+          <span>AI Requests Summarizer</span>
+          <span class="ml-auto bg-brand-500/20 text-brand-400 text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
+        </button>
+
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Students</div>
         <button 
           [class.bg-slate-800]="activeView() === 'students-list'"
@@ -141,7 +153,82 @@
       </div>
     </section>
 
-    <!-- 2. LAZY-LOADED STUDENT TABLE -->
+    <!-- 2. DEDICATED AI REQUESTS SUMMARIZER VIEW -->
+    <section *ngIf="activeView() === 'ai-summary'" class="max-w-4xl mx-auto space-y-6">
+      <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30">
+              <lucide-icon [img]="SparklesIcon" class="w-5 h-5"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white">AI Executive Requests Summarizer</h3>
+              <p class="text-xs text-slate-400">Grounded analysis of all active pending registration & course requests ({{ totalPendingRequestsCount() }} total)</p>
+            </div>
+          </div>
+          <button 
+            (click)="loadAiSummary()" 
+            [disabled]="isSummaryLoading()" 
+            class="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-2 rounded-lg cursor-pointer"
+          >
+            <lucide-icon [img]="RefreshCwIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Re-Generate Summary</span>
+          </button>
+        </div>
+
+        <!-- Styled Dark Mode Skeleton Loading Placeholder -->
+        <div *ngIf="isSummaryLoading()" class="space-y-4 py-4">
+          <p-skeleton 
+            width="100%" 
+            height="2.5rem" 
+            styleClass="!bg-slate-800/80 !border !border-slate-700/50"
+          ></p-skeleton>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <p-skeleton 
+              height="4rem" 
+              borderRadius="12px" 
+              styleClass="!bg-slate-800/80 !border !border-slate-700/50"
+            ></p-skeleton>
+            <p-skeleton 
+              height="4rem" 
+              borderRadius="12px" 
+              styleClass="!bg-slate-800/80 !border !border-slate-700/50"
+            ></p-skeleton>
+            <p-skeleton 
+              height="4rem" 
+              borderRadius="12px" 
+              styleClass="!bg-slate-800/80 !border !border-slate-700/50"
+            ></p-skeleton>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="!isSummaryLoading() && summaryError()" class="bg-rose-500/10 text-rose-400 border border-rose-500/20 p-4 rounded-xl text-xs font-medium my-4">
+          {{ summaryError() }}
+        </div>
+
+        <!-- AI Executive Content -->
+        <div *ngIf="!isSummaryLoading() && aiSummary()" class="space-y-6">
+          <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700/50">
+            <span class="text-brand-400 font-bold block mb-1 uppercase tracking-wider text-[10px]">Executive Note</span>
+            <p class="text-sm text-slate-200 leading-relaxed m-0">{{ aiSummary()?.summaryNote }}</p>
+          </div>
+
+          <div *ngIf="aiSummary()?.categories?.length">
+            <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 block mb-3">Categorized Breakdown</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div *ngFor="let cat of aiSummary()?.categories" class="p-4 bg-slate-800 border border-slate-700 rounded-xl">
+                <span class="text-xs text-slate-400 font-medium block truncate mb-1">{{ cat.category }}</span>
+                <span class="text-2xl font-bold text-white">{{ cat.count }} <span class="text-xs text-slate-400 font-normal">requests</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. LAZY-LOADED STUDENT TABLE -->
     <section *ngIf="activeView() === 'students-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <div>
@@ -252,7 +339,7 @@
       </p-table>
     </section>
 
-    <!-- 3. FIND / UPDATE / DELETE STUDENT -->
+    <!-- 4. FIND / UPDATE / DELETE STUDENT -->
     <section *ngIf="activeView() === 'student-search'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-2xl">
       <h3 class="text-lg font-bold text-dark-900 mb-2">Find Student by Specific ID</h3>
       <p class="text-xs text-slate-500 mb-4">Type a numeric Student ID below for instant live lookup.</p>
@@ -305,7 +392,7 @@
       </div>
     </section>
 
-    <!-- 4. EDIT STUDENT FORM -->
+    <!-- 5. EDIT STUDENT FORM -->
     <section *ngIf="activeView() === 'student-edit'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
       <h3 class="text-lg font-bold text-dark-900 mb-4">Update Student Profile (ID: #{{ selectedStudentId() }})</h3>
       <form [formGroup]="studentEditForm" (ngSubmit)="onUpdateStudent()" class="flex flex-col gap-4">
@@ -328,7 +415,7 @@
       </form>
     </section>
 
-    <!-- 5. LAZY-LOADED COURSE TABLE -->
+    <!-- 6. LAZY-LOADED COURSE TABLE -->
     <section *ngIf="activeView() === 'courses-list'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <div>
@@ -441,7 +528,7 @@
       </p-table>
     </section>
 
-    <!-- 6. FIND / UPDATE / DELETE COURSE -->
+    <!-- 7. FIND / UPDATE / DELETE COURSE -->
     <section *ngIf="activeView() === 'course-search'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-2xl">
       <h3 class="text-lg font-bold text-dark-900 mb-2">Find Course by Specific ID</h3>
       <p class="text-xs text-slate-500 mb-4">Type a numeric Course ID below for instant live lookup.</p>
@@ -493,7 +580,7 @@
       </div>
     </section>
 
-    <!-- 7. ADD / EDIT COURSE FORM -->
+    <!-- 8. ADD / EDIT COURSE FORM -->
     <section *ngIf="activeView() === 'course-form'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm max-w-lg">
       <h3 class="text-lg font-bold text-dark-900 mb-4">{{ selectedCourseId() ? 'Update Course #' + selectedCourseId() : 'Create New Course' }}</h3>
       <form [formGroup]="courseForm" (ngSubmit)="onSaveCourse()" class="flex flex-col gap-4">
@@ -512,7 +599,7 @@
       </form>
     </section>
 
-    <!-- 8. STUDENT REGISTRATION REQUESTS -->
+    <!-- 9. STUDENT REGISTRATION REQUESTS LIST -->
     <section *ngIf="activeView() === 'registration-requests'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <h3 class="text-lg font-bold text-dark-900 mb-4">Pending Student Account Registration Requests</h3>
       <div *ngFor="let req of registrationRequests()" class="flex justify-between items-center py-4 border-b border-slate-100">
@@ -540,7 +627,7 @@
       <p *ngIf="registrationRequestsCount() === 0" class="text-slate-500 text-sm py-4">No pending student registration requests.</p>
     </section>
 
-    <!-- 9. COURSE ENROLLMENT REQUESTS -->
+    <!-- 10. COURSE ENROLLMENT REQUESTS LIST -->
     <section *ngIf="activeView() === 'course-requests'" class="bg-white rounded-2xl border border-brand-100 p-6 shadow-sm">
       <h3 class="text-lg font-bold text-dark-900 mb-4">Pending Course Enrollment & Unenrollment Requests</h3>
       <div *ngFor="let req of courseRequests()" class="flex justify-between items-center py-4 border-b border-slate-100">

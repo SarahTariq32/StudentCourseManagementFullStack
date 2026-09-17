@@ -24,11 +24,14 @@ import {
   UserCheck, 
   Check, 
   X,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  RefreshCw
 } from 'lucide-angular';
 
 import { AdminService, QueryParameters } from '../../services/admin';
 import { AuthService } from '../../services/auth';
+import { AiCourseService, EnrollmentRequestAiSummary } from '../../services/ai-course';
 import { PendingRequest } from '../../models/admin.model';
 import { extractErrorMessage } from '../../utils/http-error.util';
 
@@ -41,7 +44,8 @@ type AdminView =
   | 'course-search'
   | 'course-form' 
   | 'registration-requests'
-  | 'course-requests';
+  | 'course-requests'
+  | 'ai-summary';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -78,6 +82,8 @@ export class AdminDashboardComponent implements OnInit {
   readonly CheckIcon = Check;
   readonly XIcon = X;
   readonly ArrowRightIcon = ArrowRight;
+  readonly SparklesIcon = Sparkles;
+  readonly RefreshCwIcon = RefreshCw;
 
   activeView = signal<AdminView>('overview');
   
@@ -95,6 +101,7 @@ export class AdminDashboardComponent implements OnInit {
 
   registrationRequestsCount = computed(() => this.registrationRequests().length);
   courseRequestsCount = computed(() => this.courseRequests().length);
+  totalPendingRequestsCount = computed(() => this.registrationRequestsCount() + this.courseRequestsCount());
   
   searchedStudent = signal<any>(null);
   searchedCourse = signal<any>(null);
@@ -103,6 +110,11 @@ export class AdminDashboardComponent implements OnInit {
 
   statusMessage = signal<string>('');
   errorMessage = signal<string>('');
+
+  // --- AI Summary State Signals ---
+  aiSummary = signal<EnrollmentRequestAiSummary | null>(null);
+  isSummaryLoading = signal<boolean>(false);
+  summaryError = signal<string>('');
 
   studentEditForm: FormGroup;
   courseForm: FormGroup;
@@ -113,6 +125,7 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private authService: AuthService,
+    private aiCourseService: AiCourseService,
     private confirmationService: ConfirmationService,
     private fb: FormBuilder,
     private router: Router
@@ -129,13 +142,18 @@ export class AdminDashboardComponent implements OnInit {
     });
 
     effect(() => {
-      this.activeView();
+      const currentView = this.activeView();
       this.statusMessage.set('');
       this.errorMessage.set('');
       this.searchedStudent.set(null);
       this.searchedCourse.set(null);
       this.studentSearchControl.reset('', { emitEvent: false });
       this.courseSearchControl.reset('', { emitEvent: false });
+
+      // Automatically fetch AI summary ONLY when user specifically selects the AI Summary view
+      if (currentView === 'ai-summary' && !this.aiSummary() && !this.isSummaryLoading()) {
+        this.loadAiSummary();
+      }
     }, { allowSignalWrites: true });
   }
 
@@ -146,7 +164,6 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private initRxjsSearchStreams(): void {
-
     this.studentSearchControl.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -208,6 +225,26 @@ export class AdminDashboardComponent implements OnInit {
 
   setView(view: AdminView): void {
     this.activeView.set(view);
+  }
+
+  // --- Load AI Summary for Pending Requests ---
+  loadAiSummary(): void {
+    this.isSummaryLoading.set(true);
+    this.summaryError.set('');
+
+    this.aiCourseService.getPendingRequestsSummary().pipe(
+      catchError((err: HttpErrorResponse) => {
+        this.summaryError.set(extractErrorMessage(err, 'Failed to generate AI executive summary.'));
+        this.isSummaryLoading.set(false);
+        return of(null);
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((res) => {
+      if (res) {
+        this.aiSummary.set(res);
+      }
+      this.isSummaryLoading.set(false);
+    });
   }
 
   refreshOverviewCounts(): void {

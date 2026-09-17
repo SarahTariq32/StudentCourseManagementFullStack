@@ -1,6 +1,16 @@
 [
   {
     "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
+    "Method": "GetPendingRequestsSummary",
+    "RelativePath": "api/AiCourse/enrollmentrequests/ai-summary",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
     "Method": "SearchFreeform",
     "RelativePath": "api/AiCourse/search/free",
     "HttpMethod": "GET",
@@ -244,6 +254,47 @@
     "ContainingType": "StudentCourseManagement.API.Controllers.CoursesController",
     "Method": "ProcessRequest",
     "RelativePath": "api/Courses/requests/{requestId}/process",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "approve",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.EnrollmentRequestsController",
+    "Method": "GetAiSummary",
+    "RelativePath": "api/enrollmentrequests/ai-summary",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.EnrollmentRequestsController",
+    "Method": "GetPendingRequests",
+    "RelativePath": "api/enrollmentrequests/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.EnrollmentRequestsController",
+    "Method": "ProcessRequest",
+    "RelativePath": "api/enrollmentrequests/process/{requestId}",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,

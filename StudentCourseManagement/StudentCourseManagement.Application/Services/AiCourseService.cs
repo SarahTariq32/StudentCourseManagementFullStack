@@ -23,19 +23,9 @@ public class AiCourseService : IAiCourseService
         _studentRepository = studentRepository;
     }
 
-    /// <summary>
-    /// STRICT MODE: Evaluates ONLY courses the logged-in student is actually enrolled in.
-    ///
-    /// Why username instead of ID:
-    ///   The JWT only stores the UsersData.Id (User table), NOT the Students.Id.
-    ///   These are two separate tables with different IDs.
-    ///   We resolve the real Student record via IStudentRepository.GetByNameAsync(username),
-    ///   which gives us the correct Students.Id for enrollment lookups —
-    ///   all without touching AuthService or any module outside the AI layer.
-    /// </summary>
     public async Task<CourseRecommendationResponseDto> SearchStrictAsync(string username, string query)
     {
-        // Step 1: Resolve the real Student record from the username in the JWT
+
         var student = await _studentRepository.GetByNameAsync(username);
 
         if (student == null)
@@ -47,7 +37,6 @@ public class AiCourseService : IAiCourseService
             };
         }
 
-        // Step 2: Find all courses this student is actually enrolled in
         var allCourses = await _courseRepository.GetAllAsync();
         var enrolledCourses = new List<object>();
 
@@ -59,8 +48,6 @@ public class AiCourseService : IAiCourseService
                 enrolledCourses.Add(new { course.Id, course.Name, course.Credits });
             }
         }
-
-        // Step 3: Build grounded prompt with ONLY the student's real enrolled courses
         string enrolledDataJson = JsonSerializer.Serialize(enrolledCourses);
 
         string prompt = @"You are a personal academic advisor for a student.
@@ -95,15 +82,8 @@ Student Query: """ + query + @"""";
         return CleanAndParseJsonResponse(result.ToString());
     }
 
-    /// <summary>
-    /// FREEFORM MODE: General advice using the full course catalog.
-    /// No student identity needed — the catalog is the same for all users.
-    /// Temperature is higher (0.7) to allow more creative recommendations,
-    /// contrasting with Strict Mode's grounded, low-temperature responses.
-    /// </summary>
     public async Task<CourseRecommendationResponseDto> SearchFreeformAsync(string query)
     {
-        // Ground the freeform response with real catalog data so it doesn't invent courses
         var catalogCourses = await _courseRepository.GetAvailableCoursesForStudentsAsync();
         var simplifiedCatalog = catalogCourses.Select(c => new { c.Id, c.Name, c.Credits });
         string catalogDataJson = JsonSerializer.Serialize(simplifiedCatalog);

@@ -8,7 +8,6 @@ namespace StudentCourseManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[EnableRateLimiting("AiSearchLimit")]
 public class AiCourseController : ControllerBase
 {
     private readonly IAiCourseService _aiCourseService;
@@ -20,6 +19,7 @@ public class AiCourseController : ControllerBase
 
     [HttpGet("search/strict")]
     [Authorize]
+    [EnableRateLimiting("AiSearchLimit")]
     public async Task<IActionResult> SearchStrict([FromQuery] string query)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -36,6 +36,7 @@ public class AiCourseController : ControllerBase
 
     [HttpGet("search/free")]
     [Authorize]
+    [EnableRateLimiting("AiSearchLimit")]
     public async Task<IActionResult> SearchFreeform([FromQuery] string query)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -47,6 +48,7 @@ public class AiCourseController : ControllerBase
 
     [HttpGet("enrollmentrequests/ai-summary")]
     [Authorize(Roles = "Admin,admin")]
+    [EnableRateLimiting("AiAdminLimit")]
     public async Task<IActionResult> GetPendingRequestsSummary()
     {
         var summary = await _aiCourseService.GetPendingRequestsSummaryAsync();

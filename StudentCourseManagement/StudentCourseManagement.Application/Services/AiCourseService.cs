@@ -23,7 +23,6 @@ public class AiCourseService : IAiCourseService
         _studentRepository = studentRepository;
     }
 
-   
     public async Task<CourseRecommendationResponseDto> SearchStrictAsync(string username, string query)
     {
         var student = await _studentRepository.GetByNameAsync(username);
@@ -32,8 +31,7 @@ public class AiCourseService : IAiCourseService
         {
             return new CourseRecommendationResponseDto
             {
-                AdvisorNote = "Could not find a student record linked to your account. " +
-                              "Please contact an administrator."
+                AdvisorNote = "Could not find a student record linked to your account. Please contact an administrator."
             };
         }
 
@@ -49,200 +47,171 @@ public class AiCourseService : IAiCourseService
 
         string enrolledDataJson = JsonSerializer.Serialize(enrolledCourses);
 
-        string prompt = @"You are a helpful, natural academic assistant for a logged-in student.
-Below is the list of courses this student is currently ENROLLED in:
+        string prompt = @"You are a helpful academic assistant. The student's enrolled courses are below.
 
 <STUDENT_ENROLLED_COURSES>
 " + enrolledDataJson + @"
 </STUDENT_ENROLLED_COURSES>
 
-RULES FOR YOUR RESPONSE:
-1. Answer the student's question directly, naturally, and conversationally.
-2. Ground your answer ONLY in <STUDENT_ENROLLED_COURSES>. Do NOT mention, recommend, or discuss any course NOT listed there.
-3. Do NOT repeat boilerplate stats unless the user explicitly asks for a summary of their total course load.
-4. If the user asks about a topic NOT in their enrolled list, naturally explain they aren't currently taking a course on that topic.
-5. Return your response strictly as a JSON object matching this schema (no markdown, no extra text):
-   {
-     ""matchedCourses"": [
-       {
-         ""id"": 1,
-         ""name"": ""Course Title"",
-         ""reason"": ""Specific answer addressing their question""
-       }
-     ],
-     ""advisorNote"": ""Direct, natural answer to the student's question""
-   }
+RULES:
+1. Answer ONLY based on <STUDENT_ENROLLED_COURSES>. Do not mention any other courses.
+2. If the list is empty, say the student is not enrolled in any courses.
+3. Reply ONLY with this JSON (no markdown, no extra text):
+{
+  ""matchedCourses"": [{ ""id"": 1, ""name"": ""Course Title"", ""reason"": ""Why relevant"" }],
+  ""advisorNote"": ""Your answer here""
+}
 
 Student Question: """ + query + @"""";
 
-        var executionSettings = new OpenAIPromptExecutionSettings
-        {
-            Temperature = 0.2,
-            MaxTokens = 800
-        };
-
+        var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.2, MaxTokens = 800 };
         var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
         var result = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
-
         return CleanAndParseJsonResponse(result.ToString());
     }
 
-    /// <summary>
-    /// FREEFORM MODE: General advice using the full available course catalog.
-    /// Higher temperature (0.7) allows more creative recommendations — contrasts with
-    /// Strict Mode's grounded, low-temperature responses for the comparison demo.
-    /// </summary>
     public async Task<CourseRecommendationResponseDto> SearchFreeformAsync(string query)
     {
         var catalogCourses = await _courseRepository.GetAvailableCoursesForStudentsAsync();
         var simplifiedCatalog = catalogCourses.Select(c => new { c.Id, c.Name, c.Credits });
         string catalogDataJson = JsonSerializer.Serialize(simplifiedCatalog);
 
-        string prompt = @"You are a general academic advisor with access to all university catalog courses listed below:
+        string prompt = @"You are a general academic advisor. Available courses are below.
 
 <UNIVERSITY_CATALOG_COURSES>
 " + catalogDataJson + @"
 </UNIVERSITY_CATALOG_COURSES>
 
 RULES:
-1. Recommend courses from <UNIVERSITY_CATALOG_COURSES> when relevant, or provide general academic guidance.
-2. Return your response strictly as a JSON object matching this schema (no markdown, no extra text):
-   {
-     ""matchedCourses"": [
-       {
-         ""id"": 0,
-         ""name"": ""Course Title"",
-         ""reason"": ""Recommendation rationale""
-       }
-     ],
-     ""advisorNote"": ""General academic advice""
-   }
+1. Recommend from <UNIVERSITY_CATALOG_COURSES> or give general academic guidance.
+2. Reply ONLY with this JSON (no markdown, no extra text):
+{
+  ""matchedCourses"": [{ ""id"": 0, ""name"": ""Course Title"", ""reason"": ""Why relevant"" }],
+  ""advisorNote"": ""Your advice here""
+}
 
 Student Query: """ + query + @"""";
 
-        var executionSettings = new OpenAIPromptExecutionSettings
-        {
-            Temperature = 0.7,
-            MaxTokens = 800
-        };
-
+        var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.7, MaxTokens = 800 };
         var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
         var result = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
-
         return CleanAndParseJsonResponse(result.ToString());
     }
 
     public async Task<EnrollmentRequestAiSummaryDto> GetPendingRequestsSummaryAsync()
     {
-   
+     
         var pendingRequests = await _courseRepository.GetPendingEnrollmentRequestsAsync();
+
         if (pendingRequests == null || pendingRequests.Count == 0)
         {
             return new EnrollmentRequestAiSummaryDto
             {
                 TotalPendingRequests = 0,
                 Categories = new List<RequestCategoryCountDto>(),
-                SummaryNote = "No pending registration or course requests found."
+                SummaryNote = "No pending registration or course requests found.",
+                IsAiGenerated = false,
+                AiStatusMessage = "No active requests to analyze."
             };
         }
 
         int realTotal = pendingRequests.Count;
-        var formattedRequests = pendingRequests.Select(r => new
-        {
-            Student = r.StudentName,
-            Type = r.RequestType,
-            Course = string.IsNullOrWhiteSpace(r.CourseName) ? "N/A" : r.CourseName,
-            Reason = string.IsNullOrWhiteSpace(r.Reason) ? "No reason specified" : r.Reason
-        }).ToList();
 
-        string requestsJson = JsonSerializer.Serialize(formattedRequests);
-        string prompt = $@"You are an administrative AI summarizer.
-Analyze these {realTotal} pending student requests:
 
-{requestsJson}
+        var categories = pendingRequests
+            .GroupBy(r => string.IsNullOrWhiteSpace(r.RequestType) ? "General Request" : r.RequestType.Trim())
+            .Select(g => new RequestCategoryCountDto { Category = g.Key, Count = g.Count() })
+            .OrderByDescending(c => c.Count)
+            .ToList();
 
-CRITICAL MANDATES:
-1. Use the EXACT value of the ""Type"" field from each request as the category name. Do NOT rename, reword, or append words like 'Request' to the category. If the type is ""Enrollment Request"", the category must be ""Enrollment Request"" — not ""Course Enrollment Request"" or ""Enrollment Request Request"".
-2. Ensure the sum of all category counts EXACTLY equals {realTotal}.
-3. Write a short 2-sentence executive summary mentioning specific student names or reason patterns.
-4. OUTPUT FORMAT: Reply ONLY with a raw JSON object. No markdown backticks, no intro text, no explanations.
+        int currentSum = categories.Sum(c => c.Count);
+        if (currentSum != realTotal)
+            categories.First().Count += (realTotal - currentSum);
 
-Use this exact schema:
-{{
-  ""totalPendingRequests"": {realTotal},
-  ""categories"": [
-    {{ ""category"": ""<exact Type value from data>"", ""count"": 1 }}
-  ],
-  ""summaryNote"": ""2-sentence executive summary here.""
-}}";
+        string categorySummaryText = string.Join(", ", categories.Select(c => $"{c.Category}: {c.Count}"));
 
-        var executionSettings = new OpenAIPromptExecutionSettings
-        {
-            Temperature = 0.1,
-            MaxTokens = 800
-        };
+        string summaryNote = $"There are {realTotal} pending requests awaiting administrative review: {categorySummaryText}.";
 
-        var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
-        var response = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
-        string rawText = response.ToString().Trim();
+        bool isAiGenerated = false;
+        string aiStatusMessage = string.Empty;
+        int retryAfterSeconds = 0;
 
-        if (rawText.StartsWith("```"))
-        {
-            int firstNewLine = rawText.IndexOf('\n');
-            if (firstNewLine != -1) rawText = rawText.Substring(firstNewLine + 1);
-            if (rawText.EndsWith("```")) rawText = rawText.Substring(0, rawText.Length - 3);
-        }
-        
-        int jsonStart = rawText.IndexOf('{');
-        int jsonEnd = rawText.LastIndexOf('}');
-        if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart)
-            rawText = rawText.Substring(jsonStart, jsonEnd - jsonStart + 1);
-
-        EnrollmentRequestAiSummaryDto summary;
         try
         {
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            summary = JsonSerializer.Deserialize<EnrollmentRequestAiSummaryDto>(rawText, options)
-                      ?? new EnrollmentRequestAiSummaryDto();
-        }
-        catch (JsonException)
-        {
+            var groupedDescriptions = pendingRequests
+                .GroupBy(r => r.RequestType?.Trim() ?? "General Request")
+                .Select(g =>
+                    $"{g.Key} ({g.Count()}): " +
+                    string.Join(", ", g.Select(r =>
+                        r.StudentName + (string.IsNullOrWhiteSpace(r.CourseName) ? "" : $" ({r.CourseName})")
+                    ).Distinct().Take(5)));
 
-            var manualCategories = pendingRequests
-                .GroupBy(r => string.IsNullOrWhiteSpace(r.RequestType) ? "General Request" : r.RequestType)
-                .Select(g => new RequestCategoryCountDto
-                {
-                    Category = g.Key, 
-                    Count = g.Count()
-                })
-                .ToList();
+            string requestsDetail = string.Join("\n", groupedDescriptions);
 
-            summary = new EnrollmentRequestAiSummaryDto
+            string prompt = $@"Output exactly 2 sentences summarizing pending university admin requests. Nothing else.
+
+Example output:
+There are 5 pending requests: 3 Enrollment Requests from Alice and Bob, and 2 Registration Requests from Charlie. All items require administrative review before processing.
+
+Now write 2 sentences for:
+Total: {realTotal}
+Breakdown: {categorySummaryText}
+Detail:
+{requestsDetail}
+
+Your 2 sentences:";
+
+            var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.1, MaxTokens = 300 };
+            var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
+            var response = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
+            string rawText = response.ToString().Trim();
+
+            if (rawText.StartsWith("\"") && rawText.EndsWith("\""))
+                rawText = rawText.Substring(1, rawText.Length - 2).Trim();
+
+            bool isUnusable =
+                rawText.Length < 20 ||
+                rawText.Length > 600 ||
+                rawText.StartsWith("We need") ||
+                rawText.StartsWith("Must ") ||
+                rawText.StartsWith("I need") ||
+                rawText.StartsWith("Let me") ||
+                rawText.Contains("User Safety") ||
+                rawText.Contains("content policy") ||
+                rawText.ToLower().Contains("i cannot") ||
+                rawText.ToLower().Contains("as an ai");
+
+            if (!string.IsNullOrWhiteSpace(rawText) && !isUnusable)
             {
-                TotalPendingRequests = realTotal,
-                Categories = manualCategories,
-                SummaryNote = $"There are {realTotal} pending requests awaiting administrative review."
-            };
+                summaryNote = rawText;
+                isAiGenerated = true;
+                aiStatusMessage = "AI summary generated successfully via Qwen model.";
+            }
         }
-
-        summary.TotalPendingRequests = realTotal;
-
-        if (summary.Categories == null || !summary.Categories.Any())
+        catch (Exception ex)
         {
-            summary.Categories = new List<RequestCategoryCountDto>
+            isAiGenerated = false;
+
+            if (ex.Message.Contains("429") || ex.Message.ToLower().Contains("rate limit") || ex.Message.ToLower().Contains("quota"))
             {
-                new RequestCategoryCountDto { Category = "Pending Review", Count = realTotal }
-            };
+                retryAfterSeconds = 60;
+                aiStatusMessage = "OpenRouter AI model rate limit reached (Free Plan). Displaying database fallback summary.";
+            }
+            else
+            {
+                aiStatusMessage = "AI model temporarily unavailable. Displaying database fallback summary.";
+            }
         }
 
-        int currentSum = summary.Categories.Sum(c => c.Count);
-        if (currentSum != realTotal)
+        return new EnrollmentRequestAiSummaryDto
         {
-            int diff = realTotal - currentSum;
-            summary.Categories.First().Count += diff;
-        }
-
-        return summary;
+            TotalPendingRequests = realTotal,
+            Categories = categories,
+            SummaryNote = summaryNote,
+            IsAiGenerated = isAiGenerated,
+            AiStatusMessage = aiStatusMessage,
+            RetryAfterSeconds = retryAfterSeconds
+        };
     }
 
     private CourseRecommendationResponseDto CleanAndParseJsonResponse(string rawResponse)

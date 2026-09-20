@@ -23,6 +23,9 @@ export interface EnrollmentRequestAiSummary {
   totalPendingRequests: number;
   categories: RequestCategoryCount[];
   summaryNote: string;
+  isAiGenerated?: boolean;
+  aiStatusMessage?: string;
+  retryAfterSeconds?: number;
 }
 
 @Injectable({

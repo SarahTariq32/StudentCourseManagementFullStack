@@ -28,7 +28,6 @@
           <span>Dashboard Overview</span>
         </button>
 
-        <!-- DEDICATED AI REQUESTS SUMMARIZER TAB -->
         <button 
           [class.bg-slate-800]="activeView() === 'ai-summary'" 
           [class.text-white]="activeView() === 'ai-summary'"
@@ -166,52 +165,53 @@
               <p class="text-xs text-slate-400">Grounded analysis of all active pending registration & course requests ({{ totalPendingRequestsCount() }} total)</p>
             </div>
           </div>
+
           <button 
             (click)="loadAiSummary()" 
-            [disabled]="isSummaryLoading()" 
-            class="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-2 rounded-lg cursor-pointer"
+            [disabled]="isSummaryLoading() || rateLimitSeconds() > 0" 
+            class="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-2 rounded-lg cursor-pointer disabled:opacity-50"
           >
             <lucide-icon [img]="RefreshCwIcon" class="w-3.5 h-3.5"></lucide-icon>
-            <span>Re-Generate Summary</span>
+            <span>{{ rateLimitSeconds() > 0 ? 'Wait ' + rateLimitSeconds() + 's' : 'Re-Generate Summary' }}</span>
           </button>
         </div>
 
-        <!-- Styled Dark Mode Skeleton Loading Placeholder -->
+        <!-- Skeleton Loading Placeholder -->
         <div *ngIf="isSummaryLoading()" class="space-y-4 py-4">
-          <p-skeleton 
-            width="100%" 
-            height="2.5rem" 
-            styleClass="!bg-slate-800/80 !border !border-slate-700/50"
-          ></p-skeleton>
-          
+          <p-skeleton width="100%" height="2.5rem" styleClass="!bg-slate-800/80 !border !border-slate-700/50"></p-skeleton>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <p-skeleton 
-              height="4rem" 
-              borderRadius="12px" 
-              styleClass="!bg-slate-800/80 !border !border-slate-700/50"
-            ></p-skeleton>
-            <p-skeleton 
-              height="4rem" 
-              borderRadius="12px" 
-              styleClass="!bg-slate-800/80 !border !border-slate-700/50"
-            ></p-skeleton>
-            <p-skeleton 
-              height="4rem" 
-              borderRadius="12px" 
-              styleClass="!bg-slate-800/80 !border !border-slate-700/50"
-            ></p-skeleton>
+            <p-skeleton height="4rem" borderRadius="12px" styleClass="!bg-slate-800/80 !border !border-slate-700/50"></p-skeleton>
+            <p-skeleton height="4rem" borderRadius="12px" styleClass="!bg-slate-800/80 !border !border-slate-700/50"></p-skeleton>
+            <p-skeleton height="4rem" borderRadius="12px" styleClass="!bg-slate-800/80 !border !border-slate-700/50"></p-skeleton>
           </div>
         </div>
 
-        <!-- Error State -->
-        <div *ngIf="!isSummaryLoading() && summaryError()" class="bg-rose-500/10 text-rose-400 border border-rose-500/20 p-4 rounded-xl text-xs font-medium my-4">
-          {{ summaryError() }}
+        <!-- Status Banner for Rate Limits or Provider Outages -->
+        <div *ngIf="!isSummaryLoading() && aiSummary() && !aiSummary()?.isAiGenerated" class="bg-amber-500/10 text-amber-400 border border-amber-500/30 p-4 rounded-xl text-xs font-semibold my-4 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-amber-400 shrink-0"></lucide-icon>
+            <span>{{ aiSummary()?.aiStatusMessage }}</span>
+          </div>
+          <span *ngIf="rateLimitSeconds() > 0" class="bg-amber-500/20 px-2.5 py-1 rounded-md text-[11px]">
+            Retry available in {{ rateLimitSeconds() }}s
+          </span>
         </div>
 
         <!-- AI Executive Content -->
         <div *ngIf="!isSummaryLoading() && aiSummary()" class="space-y-6">
           <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700/50">
-            <span class="text-brand-400 font-bold block mb-1 uppercase tracking-wider text-[10px]">Executive Note</span>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-brand-400 font-bold uppercase tracking-wider text-[10px]">Executive Note</span>
+              <span 
+                [class.bg-emerald-500\/20]="aiSummary()?.isAiGenerated"
+                [class.text-emerald-400]="aiSummary()?.isAiGenerated"
+                [class.bg-amber-500\/20]="!aiSummary()?.isAiGenerated"
+                [class.text-amber-400]="!aiSummary()?.isAiGenerated"
+                class="text-[10px] px-2 py-0.5 rounded font-semibold"
+              >
+                {{ aiSummary()?.isAiGenerated ? 'Qwen AI Generated' : 'Database Fallback' }}
+              </span>
+            </div>
             <p class="text-sm text-slate-200 leading-relaxed m-0">{{ aiSummary()?.summaryNote }}</p>
           </div>
 
@@ -364,25 +364,27 @@
       <div *ngIf="searchedStudent()" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
         <div class="flex justify-between items-start mb-3">
           <div>
-            <h4 class="text-base font-bold text-brand-600">{{ searchedStudent().name }}</h4>
-            <span class="text-xs text-slate-500 font-semibold">Student ID: #{{ searchedStudent().id }}</span>
+            <h4 class="text-base font-bold text-brand-600">{{ searchedStudent()?.name }}</h4>
+            <span class="text-xs text-slate-500 font-semibold">Student ID: #{{ searchedStudent()?.id }}</span>
           </div>
-          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">Age: {{ searchedStudent().age }}</span>
+          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">Age: {{ searchedStudent()?.age }}</span>
         </div>
 
-        <p class="text-sm text-slate-700 my-1"><strong>Email Address:</strong> {{ searchedStudent().email }}</p>
-        <p class="text-sm text-slate-700 my-1"><strong>Enrolled Courses:</strong> {{ searchedStudent().enrolledCourses?.join(', ') || 'None' }}</p>
+        <p class="text-sm text-slate-700 my-1"><strong>Email Address:</strong> {{ searchedStudent()?.email }}</p>
+        <p class="text-sm text-slate-700 my-1"><strong>Enrolled Courses:</strong> {{ searchedStudent()?.enrolledCourses?.join(', ') || 'None' }}</p>
         
         <div class="flex gap-3 mt-5 pt-3 border-t border-slate-200">
           <button 
-            (click)="openEditStudent(searchedStudent())" 
+            *ngIf="searchedStudent() as s"
+            (click)="openEditStudent(s)" 
             class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
           >
             <lucide-icon [img]="EditIcon" class="w-3.5 h-3.5"></lucide-icon>
             <span>Update Profile</span>
           </button>
           <button 
-            (click)="onDeleteStudent(searchedStudent().id)" 
+            *ngIf="searchedStudent() as s"
+            (click)="onDeleteStudent(s.id)" 
             class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
           >
             <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>
@@ -553,24 +555,26 @@
       <div *ngIf="searchedCourse()" class="bg-slate-50 p-6 rounded-xl border border-slate-200">
         <div class="flex justify-between items-start mb-3">
           <div>
-            <h4 class="text-base font-bold text-brand-600">{{ searchedCourse().name }}</h4>
-            <span class="text-xs text-slate-500 font-semibold">Course ID: #{{ searchedCourse().id }}</span>
+            <h4 class="text-base font-bold text-brand-600">{{ searchedCourse()?.name }}</h4>
+            <span class="text-xs text-slate-500 font-semibold">Course ID: #{{ searchedCourse()?.id }}</span>
           </div>
-          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">{{ searchedCourse().credits }} Credits</span>
+          <span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-1 rounded-md font-semibold">{{ searchedCourse()?.credits }} Credits</span>
         </div>
 
-        <p class="text-sm text-slate-700 my-1"><strong>Capacity Status:</strong> {{ searchedCourse().enrolledStudentsCount || 0 }}/50 Seats Enrolled</p>
+        <p class="text-sm text-slate-700 my-1"><strong>Capacity Status:</strong> {{ searchedCourse()?.enrolledStudentsCount || 0 }}/50 Seats Enrolled</p>
         
         <div class="flex gap-3 mt-5 pt-3 border-t border-slate-200">
           <button 
-            (click)="openEditCourse(searchedCourse())" 
+            *ngIf="searchedCourse() as c"
+            (click)="openEditCourse(c)" 
             class="bg-dark-900 hover:bg-slate-800 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
           >
             <lucide-icon [img]="EditIcon" class="w-3.5 h-3.5"></lucide-icon>
             <span>Update Course</span>
           </button>
           <button 
-            (click)="onDeleteCourse(searchedCourse().id)" 
+            *ngIf="searchedCourse() as c"
+            (click)="onDeleteCourse(c.id)" 
             class="bg-accent-rose hover:bg-rose-700 text-white text-xs font-medium border-none px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
           >
             <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>

@@ -13,20 +13,8 @@ import { ConfirmationService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
 import { 
   LucideAngularModule, 
-  LogOut, 
-  Search, 
-  Trash2, 
-  Edit, 
-  UserPlus, 
-  BookPlus, 
-  Users, 
-  BookOpen, 
-  UserCheck, 
-  Check, 
-  X,
-  ArrowRight,
-  Sparkles,
-  RefreshCw
+  LogOut, Search, Trash2, Edit, UserPlus, BookPlus, Users, BookOpen,
+  UserCheck, Check, X, ArrowRight, Sparkles, RefreshCw, AlertTriangle, Clock
 } from 'lucide-angular';
 
 import { AdminService, QueryParameters } from '../../services/admin';
@@ -84,6 +72,8 @@ export class AdminDashboardComponent implements OnInit {
   readonly ArrowRightIcon = ArrowRight;
   readonly SparklesIcon = Sparkles;
   readonly RefreshCwIcon = RefreshCw;
+  readonly AlertTriangleIcon = AlertTriangle;
+  readonly ClockIcon = Clock;
 
   activeView = signal<AdminView>('overview');
   
@@ -111,10 +101,14 @@ export class AdminDashboardComponent implements OnInit {
   statusMessage = signal<string>('');
   errorMessage = signal<string>('');
 
-  // --- AI Summary State Signals ---
+  // AI Summary state
   aiSummary = signal<EnrollmentRequestAiSummary | null>(null);
   isSummaryLoading = signal<boolean>(false);
   summaryError = signal<string>('');
+
+  // Rate limit countdown state
+  rateLimitSeconds = signal<number>(0);
+  private rateLimitInterval: any = null;
 
   studentEditForm: FormGroup;
   courseForm: FormGroup;
@@ -150,9 +144,13 @@ export class AdminDashboardComponent implements OnInit {
       this.studentSearchControl.reset('', { emitEvent: false });
       this.courseSearchControl.reset('', { emitEvent: false });
 
-      // Automatically fetch AI summary ONLY when user specifically selects the AI Summary view
-      if (currentView === 'ai-summary' && !this.aiSummary() && !this.isSummaryLoading()) {
-        this.loadAiSummary();
+      if (currentView === 'ai-summary') {
+        if (this.summaryError() !== 'rate_limit') {
+          this.summaryError.set('');
+        }
+        if (!this.aiSummary() && !this.isSummaryLoading()) {
+          this.loadAiSummary();
+        }
       }
     }, { allowSignalWrites: true });
   }
@@ -170,13 +168,11 @@ export class AdminDashboardComponent implements OnInit {
       switchMap((val) => {
         const rawVal = val !== null && val !== undefined ? String(val).trim() : '';
         const id = parseInt(rawVal, 10);
-
         if (isNaN(id) || id <= 0) {
           this.searchedStudent.set(null);
           this.errorMessage.set('');
           return of(null);
         }
-        
         return this.adminService.getStudentById(id).pipe(
           catchError((err: HttpErrorResponse) => {
             this.searchedStudent.set(null);
@@ -199,13 +195,11 @@ export class AdminDashboardComponent implements OnInit {
       switchMap((val) => {
         const rawVal = val !== null && val !== undefined ? String(val).trim() : '';
         const id = parseInt(rawVal, 10);
-
         if (isNaN(id) || id <= 0) {
           this.searchedCourse.set(null);
           this.errorMessage.set('');
           return of(null);
         }
-
         return this.adminService.getCourseById(id).pipe(
           catchError((err: HttpErrorResponse) => {
             this.searchedCourse.set(null);
@@ -227,23 +221,42 @@ export class AdminDashboardComponent implements OnInit {
     this.activeView.set(view);
   }
 
-  // --- Load AI Summary for Pending Requests ---
+  private startRateLimitCountdown(seconds: number): void {
+    if (this.rateLimitInterval) clearInterval(this.rateLimitInterval);
+    this.rateLimitSeconds.set(seconds);
+
+    this.rateLimitInterval = setInterval(() => {
+      const current = this.rateLimitSeconds();
+      if (current <= 1) {
+        clearInterval(this.rateLimitInterval);
+        this.rateLimitSeconds.set(0);
+      } else {
+        this.rateLimitSeconds.set(current - 1);
+      }
+    }, 1000);
+  }
+
   loadAiSummary(): void {
+    if (this.rateLimitSeconds() > 0) return;
+
     this.isSummaryLoading.set(true);
     this.summaryError.set('');
 
     this.aiCourseService.getPendingRequestsSummary().pipe(
       catchError((err: HttpErrorResponse) => {
-        this.summaryError.set(extractErrorMessage(err, 'Failed to generate AI executive summary.'));
         this.isSummaryLoading.set(false);
+        this.summaryError.set(extractErrorMessage(err, 'Failed to fetch requests summary.'));
         return of(null);
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((res) => {
+      this.isSummaryLoading.set(false);
       if (res) {
         this.aiSummary.set(res);
+        if (!res.isAiGenerated && res.retryAfterSeconds && res.retryAfterSeconds > 0) {
+          this.startRateLimitCountdown(res.retryAfterSeconds);
+        }
       }
-      this.isSummaryLoading.set(false);
     });
   }
 
@@ -268,34 +281,25 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   reloadStudentTable(): void {
-    if (this.dtStudents) {
-      this.dtStudents.reset();
-    } else {
-      this.refreshOverviewCounts();
-    }
+    if (this.dtStudents) this.dtStudents.reset();
+    else this.refreshOverviewCounts();
   }
 
   reloadCourseTable(): void {
-    if (this.dtCourses) {
-      this.dtCourses.reset();
-    } else {
-      this.refreshOverviewCounts();
-    }
+    if (this.dtCourses) this.dtCourses.reset();
+    else this.refreshOverviewCounts();
   }
 
   onLazyLoadStudents(event: TableLazyLoadEvent): void {
     setTimeout(() => {
       this.studentsLoading.set(true);
-
       const first = event.first ?? 0;
       const rows = event.rows ?? 5;
       const pageIndex = Math.floor(first / rows) + 1;
       const pageSize = rows;
-
       const searchTerm = typeof event.globalFilter === 'string' ? event.globalFilter.trim() : '';
       const sortBy = typeof event.sortField === 'string' ? event.sortField : 'Name';
       const isDescending = event.sortOrder === -1;
-
       const queryParams: QueryParameters = { pageIndex, pageSize, searchTerm, sortBy, isDescending };
 
       this.adminService.getStudents(queryParams)
@@ -326,16 +330,13 @@ export class AdminDashboardComponent implements OnInit {
   onLazyLoadCourses(event: TableLazyLoadEvent): void {
     setTimeout(() => {
       this.coursesLoading.set(true);
-
       const first = event.first ?? 0;
       const rows = event.rows ?? 5;
       const pageIndex = Math.floor(first / rows) + 1;
       const pageSize = rows;
-
       const searchTerm = typeof event.globalFilter === 'string' ? event.globalFilter.trim() : '';
       const sortBy = typeof event.sortField === 'string' ? event.sortField : 'Name';
       const isDescending = event.sortOrder === -1;
-
       const queryParams: QueryParameters = { pageIndex, pageSize, searchTerm, sortBy, isDescending };
 
       this.adminService.getCourses(queryParams)
@@ -369,12 +370,10 @@ export class AdminDashboardComponent implements OnInit {
       .subscribe({
         next: (requests: PendingRequest[]) => {
           const allReqs = requests || [];
-
           this.registrationRequests.set(allReqs.filter(r => 
             r.requestType?.toLowerCase().includes('register') || 
             r.reason?.includes('ACCOUNT_CREATION_REQUEST')
           ));
-
           this.courseRequests.set(allReqs.filter(r => 
             r.requestType?.toLowerCase().includes('enroll') || 
             r.requestType?.toLowerCase().includes('unenroll')
@@ -446,7 +445,6 @@ export class AdminDashboardComponent implements OnInit {
       this.studentEditForm.markAllAsTouched();
       return;
     }
-
     this.adminService.updateStudent(studentId, this.studentEditForm.value)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -471,9 +469,7 @@ export class AdminDashboardComponent implements OnInit {
       this.courseForm.markAllAsTouched();
       return;
     }
-
     const courseId = this.selectedCourseId();
-
     if (courseId) {
       this.adminService.updateCourse(courseId, this.courseForm.value)
         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -511,6 +507,7 @@ export class AdminDashboardComponent implements OnInit {
           this.refreshPendingRequests();
           this.reloadStudentTable();
           this.reloadCourseTable();
+          if (this.aiSummary()) this.loadAiSummary();
         },
         error: (err: HttpErrorResponse) => this.errorMessage.set(extractErrorMessage(err, 'Processing failed.'))
       });

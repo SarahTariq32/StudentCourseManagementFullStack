@@ -17,4 +17,7 @@ public class EnrollmentRequestAiSummaryDto
     public int TotalPendingRequests { get; set; }
     public List<RequestCategoryCountDto> Categories { get; set; } = new();
     public string SummaryNote { get; set; } = string.Empty;
+    public bool IsAiGenerated { get; set; } = true;
+    public string AiStatusMessage { get; set; } = string.Empty;
+    public int RetryAfterSeconds { get; set; } = 0;
 }

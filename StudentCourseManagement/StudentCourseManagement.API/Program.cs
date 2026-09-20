@@ -21,7 +21,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
 builder.Services.AddFluentValidationAutoValidation();
@@ -72,20 +73,20 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAiCourseService, AiCourseService>();
 
-// --- HTTP CLIENT FOR OPENROUTER ---
 builder.Services.AddHttpClient("OpenRouterClient", client =>
 {
     client.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:4200");
     client.DefaultRequestHeaders.Add("X-Title", "Student Course Management");
 });
 
-// --- SEMANTIC KERNEL & OPENROUTER AI CONFIGURATION ---
 var openRouterKey = builder.Configuration["OpenRouter:ApiKey"]
-    ?? throw new InvalidOperationException("OpenRouter API Key 'OpenRouter:ApiKey' is not configured. Run 'dotnet user-secrets set OpenRouter:ApiKey <key>' in StudentCourseManagement.API.");
+    ?? throw new InvalidOperationException(
+        "OpenRouter API Key 'OpenRouter:ApiKey' is not configured. " +
+        "Run 'dotnet user-secrets set OpenRouter:ApiKey <key>' in StudentCourseManagement.API.");
 
-string modelId = "openrouter/free";
+string modelId = "qwen/qwen-2.5-72b-instruct:free";
 
-builder.Services.AddScoped<Kernel>(sp =>
+builder.Services.AddSingleton<Kernel>(sp =>
 {
     var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
     var httpClient = httpClientFactory.CreateClient("OpenRouterClient");
@@ -103,7 +104,9 @@ builder.Services.AddScoped<Kernel>(sp =>
 
 // --- JWT AUTHENTICATION CONFIGURATION ---
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("JWT Secret Key 'Jwt:Key' is not configured. Please define it in appsettings.json or as an environment variable.");
+    ?? throw new InvalidOperationException(
+        "JWT Secret Key 'Jwt:Key' is not configured. " +
+        "Please define it in appsettings.json or as an environment variable.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -128,7 +131,7 @@ builder.Services.AddCors(options =>
          .AllowAnyMethod()
          .AllowAnyHeader()));
 
-// --- FIXED WINDOW RATE LIMITING (5 REQUESTS / 1 MINUTE) ---
+// --- RATE LIMITING ---
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -139,12 +142,29 @@ builder.Services.AddRateLimiter(options =>
                        ?? httpContext.Connection.RemoteIpAddress?.ToString()
                        ?? "anonymous";
 
-        return RateLimitPartition.GetFixedWindowLimiter(username, _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 5,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
-        });
+        return RateLimitPartition.GetFixedWindowLimiter(username, _ =>
+            new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            });
+    });
+
+    options.AddPolicy("AiAdminLimit", httpContext =>
+    {
+        var username = httpContext.User.Identity?.Name
+                       ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                       ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter($"admin_{username}", _ =>
+            new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 2,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            });
     });
 });
 

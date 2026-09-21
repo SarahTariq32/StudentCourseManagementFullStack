@@ -1,9 +1,10 @@
-﻿using System.Text.Json;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using StudentCourseManagement.Application.DTOs;
 using StudentCourseManagement.Application.Interfaces;
+using System.Text.Json;
 
 namespace StudentCourseManagement.Application.Services;
 
@@ -12,15 +13,21 @@ public class AiCourseService : IAiCourseService
     private readonly Kernel _kernel;
     private readonly ICourseRepository _courseRepository;
     private readonly IStudentRepository _studentRepository;
+    private readonly IMemoryCache _cache;
+
+    private const string SummaryCacheKey = "PendingRequests_AiSummary_CacheKey";
+    private static readonly SemaphoreSlim _summaryCacheLock = new SemaphoreSlim(1, 1);
 
     public AiCourseService(
         Kernel kernel,
         ICourseRepository courseRepository,
-        IStudentRepository studentRepository)
+        IStudentRepository studentRepository,
+        IMemoryCache cache)
     {
         _kernel = kernel;
         _courseRepository = courseRepository;
         _studentRepository = studentRepository;
+        _cache = cache;
     }
 
     public async Task<CourseRecommendationResponseDto> SearchStrictAsync(string username, string query)
@@ -117,8 +124,38 @@ Student Query: """ + query + @"""";
             };
         }
     }
-
     public async Task<EnrollmentRequestAiSummaryDto> GetPendingRequestsSummaryAsync()
+    {
+        if (_cache.TryGetValue(SummaryCacheKey, out EnrollmentRequestAiSummaryDto? cachedSummary) && cachedSummary != null)
+        {
+            return cachedSummary;
+        }
+        await _summaryCacheLock.WaitAsync();
+        try
+        {
+
+            if (_cache.TryGetValue(SummaryCacheKey, out cachedSummary) && cachedSummary != null)
+            {
+                return cachedSummary;
+            }
+
+            var freshSummary = await GenerateSummaryInternalAsync();
+            _cache.Set(SummaryCacheKey, freshSummary, TimeSpan.FromSeconds(60));
+
+            return freshSummary;
+        }
+        finally
+        {
+            _summaryCacheLock.Release();
+        }
+    }
+
+    public void InvalidatePendingRequestsSummaryCache()
+    {
+        _cache.Remove(SummaryCacheKey);
+    }
+
+    private async Task<EnrollmentRequestAiSummaryDto> GenerateSummaryInternalAsync()
     {
         var pendingRequests = await _courseRepository.GetPendingEnrollmentRequestsAsync();
 
@@ -146,9 +183,10 @@ Student Query: """ + query + @"""";
         if (currentSum != realTotal)
             categories.First().Count += (realTotal - currentSum);
 
+        string categoryCountsText = string.Join(", ", categories.Select(c => $"{c.Count} {c.Category}s"));
         string categorySummaryText = string.Join(", ", categories.Select(c => $"{c.Category}: {c.Count}"));
 
-        string summaryNote = $"There are {realTotal} pending requests awaiting administrative review: {categorySummaryText}.";
+        string summaryNote = $"There are {realTotal} pending requests awaiting administrative review ({categoryCountsText}).";
 
         bool isAiGenerated = false;
         string aiStatusMessage = string.Empty;
@@ -159,31 +197,37 @@ Student Query: """ + query + @"""";
             var groupedDescriptions = pendingRequests
                 .GroupBy(r => r.RequestType?.Trim() ?? "General Request")
                 .Select(g =>
-                    $"{g.Key} ({g.Count()}): " +
-                    string.Join(", ", g.Select(r =>
-                        r.StudentName + (string.IsNullOrWhiteSpace(r.CourseName) ? "" : $" ({r.CourseName})")
-                    ).Distinct().Take(5)));
+                    $"Category '{g.Key}' ({g.Count()} requests):\n" +
+                    string.Join("\n", g.Select(r =>
+                        $"  - Student: {r.StudentName}, Course: {r.CourseName ?? "N/A"}, Reason: '{r.Reason ?? "No reason provided"}'"
+                    ).Take(10)));
 
-            string requestsDetail = string.Join("\n", groupedDescriptions);
+            string requestsDetail = string.Join("\n\n", groupedDescriptions);
+            string prompt = $@"You are an executive university administrative assistant.
+Analyze the following pending student requests and summarize them following the EXACT TEMPLATE below.
 
-            string prompt = $@"Output exactly 2 sentences summarizing pending university admin requests. Nothing else.
+<PENDING_REQUESTS>
+Total Pending: {realTotal}
+Counts Breakdown: {categoryCountsText}
 
-Example output:
-There are 5 pending requests: 3 Enrollment Requests from Alice and Bob, and 2 Registration Requests from Charlie. All items require administrative review before processing.
-
-Now write 2 sentences for:
-Total: {realTotal}
-Breakdown: {categorySummaryText}
-Detail:
+Details by Category:
 {requestsDetail}
+</PENDING_REQUESTS>
 
-Your 2 sentences:";
+EXACT TEMPLATE TO FOLLOW:
+""There are currently {realTotal} pending requests ({categoryCountsText}). Enrollment requests are generally because of [summarize enrollment reasons]. Unenrollment requests are generally because of [summarize unenrollment reasons]. Registration requests are generally because of [summarize registration reasons].""
+
+RULES:
+1. Start sentence 1 with the exact total and the explicit breakdown numbers in parentheses: ({categoryCountsText}).
+2. Explain the reasons for each category based on the student notes provided in <PENDING_REQUESTS>.
+3. Output ONLY the completed text paragraph following the template structure. No quotes, no markdown blocks, no extra intro.";
 
             var executionSettings = new OpenAIPromptExecutionSettings
             {
                 Temperature = 0.1,
                 MaxTokens = 2000
             };
+
             var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
             var response = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
             string rawText = response.ToString().Trim();
@@ -193,11 +237,8 @@ Your 2 sentences:";
 
             bool isUnusable =
                 rawText.Length < 20 ||
-                rawText.Length > 600 ||
                 rawText.StartsWith("We need") ||
                 rawText.StartsWith("Must ") ||
-                rawText.StartsWith("I need") ||
-                rawText.StartsWith("Let me") ||
                 rawText.Contains("User Safety") ||
                 rawText.Contains("content policy") ||
                 rawText.ToLower().Contains("i cannot") ||

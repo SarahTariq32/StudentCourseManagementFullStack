@@ -9,4 +9,5 @@ public interface IAiCourseService
 
     Task<CourseRecommendationResponseDto> SearchFreeformAsync(string query);
     Task<EnrollmentRequestAiSummaryDto> GetPendingRequestsSummaryAsync();
+    void InvalidatePendingRequestsSummaryCache();
 }

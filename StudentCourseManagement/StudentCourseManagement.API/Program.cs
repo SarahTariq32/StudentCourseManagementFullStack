@@ -27,6 +27,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
+builder.Services.AddMemoryCache();
 
 // --- SWAGGER / OPENAPI CONFIGURATION ---
 builder.Services.AddEndpointsApiExplorer();

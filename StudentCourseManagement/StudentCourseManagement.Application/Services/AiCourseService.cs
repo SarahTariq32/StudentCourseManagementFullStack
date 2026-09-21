@@ -64,10 +64,20 @@ RULES:
 
 Student Question: """ + query + @"""";
 
-        var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.2, MaxTokens = 800 };
-        var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
-        var result = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
-        return CleanAndParseJsonResponse(result.ToString());
+        try
+        {
+            var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.2, MaxTokens = 800 };
+            var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
+            var result = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
+            return CleanAndParseJsonResponse(result.ToString());
+        }
+        catch (Exception ex)
+        {
+            return new CourseRecommendationResponseDto
+            {
+                AdvisorNote = $"AI Service Error: {(ex.InnerException != null ? ex.InnerException.Message : ex.Message)}"
+            };
+        }
     }
 
     public async Task<CourseRecommendationResponseDto> SearchFreeformAsync(string query)
@@ -92,15 +102,24 @@ RULES:
 
 Student Query: """ + query + @"""";
 
-        var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.7, MaxTokens = 800 };
-        var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
-        var result = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
-        return CleanAndParseJsonResponse(result.ToString());
+        try
+        {
+            var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.7, MaxTokens = 800 };
+            var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
+            var result = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
+            return CleanAndParseJsonResponse(result.ToString());
+        }
+        catch (Exception ex)
+        {
+            return new CourseRecommendationResponseDto
+            {
+                AdvisorNote = $"AI Service Error: {(ex.InnerException != null ? ex.InnerException.Message : ex.Message)}"
+            };
+        }
     }
 
     public async Task<EnrollmentRequestAiSummaryDto> GetPendingRequestsSummaryAsync()
     {
-     
         var pendingRequests = await _courseRepository.GetPendingEnrollmentRequestsAsync();
 
         if (pendingRequests == null || pendingRequests.Count == 0)
@@ -116,7 +135,6 @@ Student Query: """ + query + @"""";
         }
 
         int realTotal = pendingRequests.Count;
-
 
         var categories = pendingRequests
             .GroupBy(r => string.IsNullOrWhiteSpace(r.RequestType) ? "General Request" : r.RequestType.Trim())
@@ -161,7 +179,11 @@ Detail:
 
 Your 2 sentences:";
 
-            var executionSettings = new OpenAIPromptExecutionSettings { Temperature = 0.1, MaxTokens = 300 };
+            var executionSettings = new OpenAIPromptExecutionSettings
+            {
+                Temperature = 0.1,
+                MaxTokens = 2000
+            };
             var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
             var response = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
             string rawText = response.ToString().Trim();
@@ -187,20 +209,16 @@ Your 2 sentences:";
                 isAiGenerated = true;
                 aiStatusMessage = "AI summary generated successfully via Qwen model.";
             }
+            else
+            {
+                aiStatusMessage = $"Model output was unusable: '{rawText}'";
+            }
         }
         catch (Exception ex)
         {
             isAiGenerated = false;
-
-            if (ex.Message.Contains("429") || ex.Message.ToLower().Contains("rate limit") || ex.Message.ToLower().Contains("quota"))
-            {
-                retryAfterSeconds = 60;
-                aiStatusMessage = "OpenRouter AI model rate limit reached (Free Plan). Displaying database fallback summary.";
-            }
-            else
-            {
-                aiStatusMessage = "AI model temporarily unavailable. Displaying database fallback summary.";
-            }
+            string details = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            aiStatusMessage = $"EXACT ERROR: {ex.GetType().Name} - {details}";
         }
 
         return new EnrollmentRequestAiSummaryDto

@@ -75,6 +75,7 @@ builder.Services.AddScoped<IAiCourseService, AiCourseService>();
 
 builder.Services.AddHttpClient("OpenRouterClient", client =>
 {
+    client.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
     client.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:4200");
     client.DefaultRequestHeaders.Add("X-Title", "Student Course Management");
 });
@@ -84,7 +85,7 @@ var openRouterKey = builder.Configuration["OpenRouter:ApiKey"]
         "OpenRouter API Key 'OpenRouter:ApiKey' is not configured. " +
         "Run 'dotnet user-secrets set OpenRouter:ApiKey <key>' in StudentCourseManagement.API.");
 
-string modelId = "qwen/qwen-2.5-72b-instruct:free";
+string modelId = "openrouter/free";
 
 builder.Services.AddSingleton<Kernel>(sp =>
 {
@@ -92,10 +93,12 @@ builder.Services.AddSingleton<Kernel>(sp =>
     var httpClient = httpClientFactory.CreateClient("OpenRouterClient");
 
     var kernelBuilder = Kernel.CreateBuilder();
+
+    // Pass "https://openrouter.ai/api/v1/" WITH a trailing slash
     kernelBuilder.AddOpenAIChatCompletion(
         modelId: modelId,
         apiKey: openRouterKey,
-        endpoint: new Uri("https://openrouter.ai/api/v1", UriKind.Absolute),
+        endpoint: new Uri("https://openrouter.ai/api/v1"),
         httpClient: httpClient
     );
 

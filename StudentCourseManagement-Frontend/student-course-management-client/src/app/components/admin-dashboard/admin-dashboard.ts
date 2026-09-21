@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, signal, effect, computed, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, signal, effect, computed, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,12 +14,14 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { 
   LucideAngularModule, 
   LogOut, Search, Trash2, Edit, UserPlus, BookPlus, Users, BookOpen,
-  UserCheck, Check, X, ArrowRight, Sparkles, RefreshCw, AlertTriangle, Clock
+  UserCheck, Check, X, ArrowRight, Sparkles, RefreshCw, AlertTriangle, Clock,
+  Bell, BellRing
 } from 'lucide-angular';
 
 import { AdminService, QueryParameters } from '../../services/admin';
 import { AuthService } from '../../services/auth';
 import { AiCourseService, EnrollmentRequestAiSummary } from '../../services/ai-course';
+import { SignalRService } from '../../services/signalr';
 import { PendingRequest } from '../../models/admin.model';
 import { extractErrorMessage } from '../../utils/http-error.util';
 
@@ -52,7 +54,7 @@ type AdminView =
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss'
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
   @ViewChild('dtStudents') dtStudents!: Table;
   @ViewChild('dtCourses') dtCourses!: Table;
 
@@ -74,6 +76,8 @@ export class AdminDashboardComponent implements OnInit {
   readonly RefreshCwIcon = RefreshCw;
   readonly AlertTriangleIcon = AlertTriangle;
   readonly ClockIcon = Clock;
+  readonly BellIcon = Bell;
+  readonly BellRingIcon = BellRing;
 
   activeView = signal<AdminView>('overview');
   
@@ -100,6 +104,7 @@ export class AdminDashboardComponent implements OnInit {
 
   statusMessage = signal<string>('');
   errorMessage = signal<string>('');
+  liveNotificationMessage = signal<string>('');
 
   // AI Summary state
   aiSummary = signal<EnrollmentRequestAiSummary | null>(null);
@@ -109,6 +114,7 @@ export class AdminDashboardComponent implements OnInit {
   // Rate limit countdown state
   rateLimitSeconds = signal<number>(0);
   private rateLimitInterval: any = null;
+  private notificationTimeout: any = null;
 
   studentEditForm: FormGroup;
   courseForm: FormGroup;
@@ -120,6 +126,7 @@ export class AdminDashboardComponent implements OnInit {
     private adminService: AdminService,
     private authService: AuthService,
     private aiCourseService: AiCourseService,
+    private signalRService: SignalRService,
     private confirmationService: ConfirmationService,
     private fb: FormBuilder,
     private router: Router
@@ -159,6 +166,51 @@ export class AdminDashboardComponent implements OnInit {
     this.refreshOverviewCounts();
     this.refreshPendingRequests();
     this.initRxjsSearchStreams();
+    this.initSignalR();
+  }
+
+  ngOnDestroy(): void {
+    this.signalRService.stopConnection();
+    if (this.notificationTimeout) clearTimeout(this.notificationTimeout);
+    if (this.rateLimitInterval) clearInterval(this.rateLimitInterval);
+  }
+
+  private initSignalR(): void {
+    const token = this.authService.getToken();
+    if (token) {
+      this.signalRService.startConnection(token);
+
+      // Listen for live student request submissions
+      this.signalRService.pendingRequestCreated$
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((data) => {
+          this.triggerLiveNotification(`New ${data.requestType || 'Enrollment Request'} submitted live!`);
+          this.refreshPendingRequests();
+          this.refreshOverviewCounts();
+          if (this.activeView() === 'ai-summary') {
+            this.loadAiSummary();
+          }
+        });
+
+      // Listen for processed request updates
+      this.signalRService.pendingRequestProcessed$
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          this.refreshPendingRequests();
+          this.refreshOverviewCounts();
+          if (this.activeView() === 'ai-summary') {
+            this.loadAiSummary();
+          }
+        });
+    }
+  }
+
+  private triggerLiveNotification(msg: string): void {
+    this.liveNotificationMessage.set(msg);
+    if (this.notificationTimeout) clearTimeout(this.notificationTimeout);
+    this.notificationTimeout = setTimeout(() => {
+      this.liveNotificationMessage.set('');
+    }, 6000);
   }
 
   private initRxjsSearchStreams(): void {

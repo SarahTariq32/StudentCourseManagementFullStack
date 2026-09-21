@@ -112,6 +112,20 @@
 
   <!-- MAIN CONTENT AREA -->
   <main class="flex-1 p-8 overflow-y-auto">
+    <!-- Live SignalR Notification Toast -->
+    <div *ngIf="liveNotificationMessage()" class="bg-dark-900 text-white border border-brand-500/40 p-4 rounded-xl mb-6 shadow-lg flex items-center justify-between transition-all duration-300 animate-fade-in">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center shrink-0">
+          <lucide-icon [img]="BellRingIcon" class="w-4 h-4 text-brand-400 animate-bounce"></lucide-icon>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold text-brand-400 uppercase tracking-wider">Live System Event</h4>
+          <p class="text-sm font-medium text-slate-200 m-0">{{ liveNotificationMessage() }}</p>
+        </div>
+      </div>
+      <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-1 rounded">AI Analysis Updated</span>
+    </div>
+
     <!-- Status Notifications -->
     <div *ngIf="statusMessage()" class="bg-emerald-50 text-accent-emerald border border-emerald-200 p-4 rounded-xl mb-6 text-sm font-medium">
       {{ statusMessage() }}

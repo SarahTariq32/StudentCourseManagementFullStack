@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
+using StudentCourseManagement.API.Hubs;
 using StudentCourseManagement.API.Middleware;
 using StudentCourseManagement.Application.Interfaces;
 using StudentCourseManagement.Application.Services;
@@ -17,7 +18,7 @@ using StudentCourseManagement.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- CONTROLLERS & FLUENT VALIDATION ---
+// --- CONTROLLERS, FLUENT VALIDATION & SIGNALR ---
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -28,6 +29,7 @@ builder.Services.AddControllers()
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
 builder.Services.AddMemoryCache();
+builder.Services.AddSignalR(); // Register SignalR Service
 
 // --- SWAGGER / OPENAPI CONFIGURATION ---
 builder.Services.AddEndpointsApiExplorer();
@@ -73,6 +75,7 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAiCourseService, AiCourseService>();
+builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>(); // Register Notification Service
 
 builder.Services.AddHttpClient("OpenRouterClient", client =>
 {
@@ -106,7 +109,7 @@ builder.Services.AddSingleton<Kernel>(sp =>
     return kernelBuilder.Build();
 });
 
-// --- JWT AUTHENTICATION CONFIGURATION ---
+// --- JWT AUTHENTICATION CONFIGURATION WITH SIGNALR WEBSOCKET SUPPORT ---
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException(
         "JWT Secret Key 'Jwt:Key' is not configured. " +
@@ -124,16 +127,32 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
+
+        // Extract JWT access token from query string during SignalR WebSocket handshakes
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
 
-// --- CORS CONFIGURATION ---
+// --- CORS CONFIGURATION (ALLOW CREDENTIALS FOR WEBSOCKETS) ---
 builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngularDev", p =>
         p.WithOrigins("http://localhost:4200")
          .AllowAnyMethod()
-         .AllowAnyHeader()));
+         .AllowAnyHeader()
+         .AllowCredentials())); // Required for SignalR WebSocket connections
 
 // --- RATE LIMITING ---
 builder.Services.AddRateLimiter(options =>
@@ -193,5 +212,6 @@ app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
+app.MapHub<AdminHub>("/hubs/admin"); // Map SignalR Admin Hub route
 
 app.Run();

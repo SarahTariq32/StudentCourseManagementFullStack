@@ -29,7 +29,7 @@ builder.Services.AddControllers()
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
 builder.Services.AddMemoryCache();
-builder.Services.AddSignalR(); // Register SignalR Service
+builder.Services.AddSignalR(); 
 
 // --- SWAGGER / OPENAPI CONFIGURATION ---
 builder.Services.AddEndpointsApiExplorer();
@@ -75,7 +75,7 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAiCourseService, AiCourseService>();
-builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>(); // Register Notification Service
+builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>(); 
 
 builder.Services.AddHttpClient("OpenRouterClient", client =>
 {
@@ -98,7 +98,6 @@ builder.Services.AddSingleton<Kernel>(sp =>
 
     var kernelBuilder = Kernel.CreateBuilder();
 
-    // Pass "https://openrouter.ai/api/v1/" WITH a trailing slash
     kernelBuilder.AddOpenAIChatCompletion(
         modelId: modelId,
         apiKey: openRouterKey,
@@ -128,7 +127,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
 
-        // Extract JWT access token from query string during SignalR WebSocket handshakes
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -152,7 +150,7 @@ builder.Services.AddCors(options =>
         p.WithOrigins("http://localhost:4200")
          .AllowAnyMethod()
          .AllowAnyHeader()
-         .AllowCredentials())); // Required for SignalR WebSocket connections
+         .AllowCredentials())); 
 
 // --- RATE LIMITING ---
 builder.Services.AddRateLimiter(options =>

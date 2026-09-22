@@ -10,23 +10,16 @@ export interface PendingRequestNotification {
   reason?: string;
 }
 
-export interface ProcessedRequestNotification {
-  requestId: number;
-  approve: boolean;
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class SignalRService {
   private hubConnection!: signalR.HubConnection;
 
-  // RxJS Subjects to emit live events to subscribers
+  // RxJS Subject to emit live new request submission events
   public pendingRequestCreated$ = new Subject<PendingRequestNotification>();
-  public pendingRequestProcessed$ = new Subject<ProcessedRequestNotification>();
 
   public startConnection(token: string): void {
-    // Prevent duplicate connections if already connected/connecting
     if (
       this.hubConnection &&
       (this.hubConnection.state === signalR.HubConnectionState.Connected ||
@@ -35,7 +28,6 @@ export class SignalRService {
       return;
     }
 
-    // Build WebSocket hub connection with JWT token passed via query string
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(`${environment.apiUrl.replace('/api', '')}/hubs/admin`, {
         accessTokenFactory: () => token
@@ -48,13 +40,9 @@ export class SignalRService {
       .then(() => console.log('SignalR Admin Hub connected successfully'))
       .catch((err) => console.error('Error establishing SignalR connection:', err));
 
-    // Listen for live backend events
+    // Listen for live student request submissions
     this.hubConnection.on('PendingRequestCreated', (data: PendingRequestNotification) => {
       this.pendingRequestCreated$.next(data);
-    });
-
-    this.hubConnection.on('PendingRequestProcessed', (data: ProcessedRequestNotification) => {
-      this.pendingRequestProcessed$.next(data);
     });
   }
 

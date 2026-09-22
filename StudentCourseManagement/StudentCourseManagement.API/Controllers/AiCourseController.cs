@@ -37,12 +37,16 @@ public class AiCourseController : ControllerBase
     [HttpGet("search/free")]
     [Authorize]
     [EnableRateLimiting("AiSearchLimit")]
+    [HttpGet("freeform")]
     public async Task<IActionResult> SearchFreeform([FromQuery] string query)
     {
-        if (string.IsNullOrWhiteSpace(query))
-            return BadRequest(new { message = "Query parameter is required." });
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username))
+        {
+            return Unauthorized();
+        }
 
-        var result = await _aiCourseService.SearchFreeformAsync(query);
+        var result = await _aiCourseService.SearchFreeformAsync(username, query);
         return Ok(result);
     }
 

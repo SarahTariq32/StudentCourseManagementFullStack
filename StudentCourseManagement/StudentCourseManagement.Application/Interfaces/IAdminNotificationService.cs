@@ -8,5 +8,5 @@ namespace StudentCourseManagement.Application.Interfaces;
 public interface IAdminNotificationService
 {
     Task NotifyPendingRequestCreatedAsync(int studentId, int courseId, string requestType, string? reason);
-    Task NotifyPendingRequestProcessedAsync(int requestId, bool approve);
+
 }

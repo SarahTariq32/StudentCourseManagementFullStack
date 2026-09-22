@@ -221,11 +221,9 @@ public class CourseService : ICourseService
 
         if (result.Success)
         {
-            // 1. Invalidate AI summary memory cache early
+
             _aiCourseService.InvalidatePendingRequestsSummaryCache();
 
-            // 2. Trigger real-time SignalR push notification to connected Admins
-            await _notificationService.NotifyPendingRequestProcessedAsync(requestId, approve);
         }
 
         return result;

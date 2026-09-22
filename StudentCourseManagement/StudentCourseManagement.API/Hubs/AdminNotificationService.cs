@@ -18,9 +18,4 @@ public class AdminNotificationService : IAdminNotificationService
             .SendAsync("PendingRequestCreated", new { studentId, courseId, requestType, reason });
     }
 
-    public async Task NotifyPendingRequestProcessedAsync(int requestId, bool approve)
-    {
-        await _hubContext.Clients.Group(AdminHub.AdminsGroup)
-            .SendAsync("PendingRequestProcessed", new { requestId, approve });
-    }
 }

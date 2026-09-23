@@ -213,3 +213,5 @@ app.MapControllers();
 app.MapHub<AdminHub>("/hubs/admin"); // Map SignalR Admin Hub route
 
 app.Run();
+
+public partial class Program { }

@@ -192,16 +192,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           }
         });
 
-      // Listen for processed request updates
-      this.signalRService.pendingRequestProcessed$
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => {
-          this.refreshPendingRequests();
-          this.refreshOverviewCounts();
-          if (this.activeView() === 'ai-summary') {
-            this.loadAiSummary();
-          }
-        });
+      
+      
     }
   }
 

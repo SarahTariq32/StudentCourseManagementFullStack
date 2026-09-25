@@ -15,7 +15,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            // Remove existing DbContext registration (SQL Server)
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
 
@@ -24,7 +23,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // Register In-Memory Database
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseInMemoryDatabase("IntegrationTestDb");
@@ -43,7 +41,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         var hasher = new PasswordHasher<UsersDatum>();
 
-        // 1. Seed test Admin user into UsersData using ASP.NET Core Identity PasswordHasher
         if (!db.UsersData.Any(u => u.Username == "testadmin"))
         {
             var adminUser = new UsersDatum
@@ -57,7 +54,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             db.UsersData.Add(adminUser);
         }
 
-        // 2. Seed test Student user into UsersData & Students table
         if (!db.UsersData.Any(u => u.Username == "teststudent"))
         {
             var studentUser = new UsersDatum

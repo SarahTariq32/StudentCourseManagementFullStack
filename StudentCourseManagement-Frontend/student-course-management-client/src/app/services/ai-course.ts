@@ -47,8 +47,67 @@ export class AiCourseService {
   }
 
   
-  getPendingRequestsSummary(): Observable<EnrollmentRequestAiSummary> {
-    return this.http.get<EnrollmentRequestAiSummary>(`${this.apiUrl}/enrollmentrequests/ai-summary`);
+  
+
+    streamPendingRequestsSummary(
+    token: string,
+    onMeta: (meta: { total: number; categories: RequestCategoryCount[] }) => void,
+    onChunk: (chunk: string) => void,
+    onDone: (summary: EnrollmentRequestAiSummary) => void,
+    onError: (err: any) => void
+  ): void {
+    const url = `${this.apiUrl}/enrollmentrequests/ai-summary/stream`;
+
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'text/event-stream'
+      }
+    }).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`Stream request failed: ${response.statusText}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('ReadableStream unavailable.');
+
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const rawJson = line.substring(6).trim();
+              if (!rawJson) continue;
+
+              const outer = JSON.parse(rawJson);   // undoes controller's JsonSerializer.Serialize(chunk)
+              const envelope = JSON.parse(outer);  // { type: 'meta' | 'chunk' | 'done', ... }
+
+              if (envelope.type === 'meta') {
+                onMeta({ total: envelope.total, categories: envelope.categories });
+              } else if (envelope.type === 'chunk') {
+                onChunk(envelope.text);
+              } else if (envelope.type === 'done') {
+                onDone(envelope.summary);
+              }
+            } catch (e) {
+              console.warn('Failed to parse SSE payload:', line, e);
+            }
+          }
+        }
+      }
+    }).catch((err) => {
+      onError(err);
+    });
   }
 }
 

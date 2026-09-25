@@ -47,28 +47,7 @@
         }
       }
     },
-    "/api/AiCourse/freeform": {
-      "get": {
-        "tags": [
-          "AiCourse"
-        ],
-        "parameters": [
-          {
-            "name": "query",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/AiCourse/enrollmentrequests/ai-summary": {
+    "/api/AiCourse/enrollmentrequests/ai-summary/stream": {
       "get": {
         "tags": [
           "AiCourse"

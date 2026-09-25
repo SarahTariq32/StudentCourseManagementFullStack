@@ -1,29 +1,19 @@
 [
   {
     "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
-    "Method": "GetPendingRequestsSummary",
-    "RelativePath": "api/AiCourse/enrollmentrequests/ai-summary",
+    "Method": "StreamPendingRequestsSummary",
+    "RelativePath": "api/AiCourse/enrollmentrequests/ai-summary/stream",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
-    "Method": "SearchFreeform",
-    "RelativePath": "api/AiCourse/freeform",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
+    "ReturnTypes": [
       {
-        "Name": "query",
-        "Type": "System.String",
-        "IsRequired": false
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
       }
-    ],
-    "ReturnTypes": []
+    ]
   },
   {
     "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",

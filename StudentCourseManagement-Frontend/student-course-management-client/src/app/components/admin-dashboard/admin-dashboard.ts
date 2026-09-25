@@ -111,6 +111,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   isSummaryLoading = signal<boolean>(false);
   summaryError = signal<string>('');
 
+  // AI Streaming state
+  streamedSummaryText = signal<string>('');
+  isStreaming = signal<boolean>(false);
+
   // Rate limit countdown state
   rateLimitSeconds = signal<number>(0);
   private rateLimitInterval: any = null;
@@ -191,9 +195,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             this.loadAiSummary();
           }
         });
-
-      
-      
     }
   }
 
@@ -280,28 +281,50 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  loadAiSummary(): void {
+   loadAiSummary(): void {
     if (this.rateLimitSeconds() > 0) return;
 
     this.isSummaryLoading.set(true);
+    this.isStreaming.set(false);
     this.summaryError.set('');
+    this.streamedSummaryText.set('');
 
-    this.aiCourseService.getPendingRequestsSummary().pipe(
-      catchError((err: HttpErrorResponse) => {
-        this.isSummaryLoading.set(false);
-        this.summaryError.set(extractErrorMessage(err, 'Failed to fetch requests summary.'));
-        return of(null);
-      }),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe((res) => {
+    const token = this.authService.getToken();
+    if (!token) {
       this.isSummaryLoading.set(false);
-      if (res) {
-        this.aiSummary.set(res);
-        if (!res.isAiGenerated && res.retryAfterSeconds && res.retryAfterSeconds > 0) {
-          this.startRateLimitCountdown(res.retryAfterSeconds);
-        }
+      this.summaryError.set('Not authenticated.');
+      return;
+    }
+
+    this.aiCourseService.streamPendingRequestsSummary(
+      token,
+      (meta) => {
+        // Metadata arrives first — drop the skeleton, show counts, begin streaming state
+        this.aiSummary.set({
+          totalPendingRequests: meta.total,
+          categories: meta.categories,
+          summaryNote: '',
+          isAiGenerated: false
+        });
+        this.isSummaryLoading.set(false);
+        this.isStreaming.set(true);
+      },
+      (chunk) => {
+        // Append incoming tokens dynamically
+        this.streamedSummaryText.update((curr) => curr + chunk);
+      },
+      (finalSummary) => {
+        // Stream complete — swap in the canonical cached object
+        this.isStreaming.set(false);
+        this.aiSummary.set(finalSummary);
+      },
+      (err) => {
+        console.error('SSE Stream error:', err);
+        this.isStreaming.set(false);
+        this.isSummaryLoading.set(false);
+        this.summaryError.set('Failed to generate summary.');
       }
-    });
+    );
   }
 
   refreshOverviewCounts(): void {

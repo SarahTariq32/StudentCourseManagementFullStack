@@ -182,7 +182,7 @@
 
           <button 
             (click)="loadAiSummary()" 
-            [disabled]="isSummaryLoading() || rateLimitSeconds() > 0" 
+            [disabled]="isSummaryLoading() || isStreaming() || rateLimitSeconds() > 0" 
             class="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-2 rounded-lg cursor-pointer disabled:opacity-50"
           >
             <lucide-icon [img]="RefreshCwIcon" class="w-3.5 h-3.5"></lucide-icon>
@@ -201,7 +201,7 @@
         </div>
 
         <!-- Status Banner for Rate Limits or Provider Outages -->
-        <div *ngIf="!isSummaryLoading() && aiSummary() && !aiSummary()?.isAiGenerated" class="bg-amber-500/10 text-amber-400 border border-amber-500/30 p-4 rounded-xl text-xs font-semibold my-4 flex items-center justify-between">
+        <div *ngIf="!isSummaryLoading() && !isStreaming() && aiSummary() && !aiSummary()?.isAiGenerated" class="bg-amber-500/10 text-amber-400 border border-amber-500/30 p-4 rounded-xl text-xs font-semibold my-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <lucide-icon [img]="ClockIcon" class="w-4 h-4 text-amber-400 shrink-0"></lucide-icon>
             <span>{{ aiSummary()?.aiStatusMessage }}</span>
@@ -217,16 +217,24 @@
             <div class="flex justify-between items-center mb-2">
               <span class="text-brand-400 font-bold uppercase tracking-wider text-[10px]">Executive Note</span>
               <span 
-                [class.bg-emerald-500\/20]="aiSummary()?.isAiGenerated"
-                [class.text-emerald-400]="aiSummary()?.isAiGenerated"
-                [class.bg-amber-500\/20]="!aiSummary()?.isAiGenerated"
-                [class.text-amber-400]="!aiSummary()?.isAiGenerated"
-                class="text-[10px] px-2 py-0.5 rounded font-semibold"
+                [class.bg-brand-500\/20]="isStreaming()"
+                [class.text-brand-400]="isStreaming()"
+                [class.bg-emerald-500\/20]="!isStreaming() && aiSummary()?.isAiGenerated"
+                [class.text-emerald-400]="!isStreaming() && aiSummary()?.isAiGenerated"
+                [class.bg-amber-500\/20]="!isStreaming() && !aiSummary()?.isAiGenerated"
+                [class.text-amber-400]="!isStreaming() && !aiSummary()?.isAiGenerated"
+                class="text-[10px] px-2 py-0.5 rounded font-semibold flex items-center gap-1.5"
               >
-                {{ aiSummary()?.isAiGenerated ? 'Qwen AI Generated' : 'Database Fallback' }}
+                <span *ngIf="isStreaming()" class="w-2 h-2 rounded-full bg-brand-400 animate-ping"></span>
+                {{ isStreaming() ? 'Streaming AI Tokens...' : (aiSummary()?.isAiGenerated ? 'Qwen AI Generated' : 'Database Fallback') }}
               </span>
             </div>
-            <p class="text-sm text-slate-200 leading-relaxed m-0">{{ aiSummary()?.summaryNote }}</p>
+            
+            <!-- Live Incremental Stream Rendering -->
+            <p class="text-sm text-slate-200 leading-relaxed m-0 transition-all">
+              {{ isStreaming() ? (streamedSummaryText() || 'Generating executive analysis...') : aiSummary()?.summaryNote }}
+              <span *ngIf="isStreaming()" class="inline-block w-1.5 h-4 bg-brand-400 ml-0.5 animate-pulse">|</span>
+            </p>
           </div>
 
           <div *ngIf="aiSummary()?.categories?.length">

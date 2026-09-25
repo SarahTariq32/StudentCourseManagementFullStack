@@ -345,4 +345,4 @@ C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\System.Threading.Channels.dll
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Newtonsoft.Json.dll
-C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\obj\Debug\net8.0\swae.build.ex.cache
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

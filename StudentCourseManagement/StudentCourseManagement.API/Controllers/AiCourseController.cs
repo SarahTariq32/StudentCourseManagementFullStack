@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -37,7 +38,6 @@ public class AiCourseController : ControllerBase
     [HttpGet("search/free")]
     [Authorize]
     [EnableRateLimiting("AiSearchLimit")]
-    [HttpGet("freeform")]
     public async Task<IActionResult> SearchFreeform([FromQuery] string query)
     {
         var username = User.Identity?.Name;
@@ -50,12 +50,31 @@ public class AiCourseController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("enrollmentrequests/ai-summary")]
+   
+
+
+    [HttpGet("enrollmentrequests/ai-summary/stream")]
     [Authorize(Roles = "Admin,admin")]
-    [EnableRateLimiting("AiAdminLimit")]
-    public async Task<IActionResult> GetPendingRequestsSummary()
+    public async Task StreamPendingRequestsSummary(CancellationToken cancellationToken)
     {
-        var summary = await _aiCourseService.GetPendingRequestsSummaryAsync();
-        return Ok(summary);
+        // 1. Disable response buffering & set SSE content type
+        Response.ContentType = "text/event-stream";
+        Response.Headers.Append("Cache-Control", "no-cache");
+        Response.Headers.Append("Connection", "keep-alive");
+        Response.Headers.Append("X-Accel-Buffering", "no"); // Prevents proxy buffering
+
+        // 2. Stream tokens directly to the client as they arrive from Semantic Kernel
+        await foreach (var chunk in _aiCourseService.StreamPendingRequestsSummaryTextAsync(cancellationToken))
+        {
+            if (!string.IsNullOrEmpty(chunk))
+            {
+                // Format as standard Server-Sent Event (SSE) data frame
+                var jsonChunk = JsonSerializer.Serialize(chunk);
+                await Response.WriteAsync($"data: {jsonChunk}\n\n", cancellationToken);
+
+                // 3. FORCE FLUSH: Sends token over the TCP socket immediately
+                await Response.Body.FlushAsync(cancellationToken);
+            }
+        }
     }
 }

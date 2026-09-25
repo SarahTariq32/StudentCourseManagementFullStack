@@ -19,6 +19,10 @@ public class AiCourseService : IAiCourseService
     private const string SummaryCacheKey = "PendingRequests_AiSummary_CacheKey";
     private static readonly SemaphoreSlim _summaryCacheLock = new SemaphoreSlim(1, 1);
 
+    private static readonly JsonSerializerOptions SseJsonOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
     public AiCourseService(
         Kernel kernel,
         ICourseRepository courseRepository,
@@ -142,152 +146,16 @@ Student Query: ""{query}""";
         }
     }
 
-    public async Task<EnrollmentRequestAiSummaryDto> GetPendingRequestsSummaryAsync()
-    {
-        if (_cache.TryGetValue(SummaryCacheKey, out EnrollmentRequestAiSummaryDto? cachedSummary) && cachedSummary != null)
-        {
-            return cachedSummary;
-        }
+    
 
-        await _summaryCacheLock.WaitAsync();
-        try
-        {
-            if (_cache.TryGetValue(SummaryCacheKey, out cachedSummary) && cachedSummary != null)
-            {
-                return cachedSummary;
-            }
-
-            var freshSummary = await GenerateSummaryInternalAsync();
-
-            _cache.Set(SummaryCacheKey, freshSummary, TimeSpan.FromSeconds(60));
-
-            return freshSummary;
-        }
-        finally
-        {
-            _summaryCacheLock.Release();
-        }
-    }
+   
 
     public void InvalidatePendingRequestsSummaryCache()
     {
         _cache.Remove(SummaryCacheKey);
     }
 
-    private async Task<EnrollmentRequestAiSummaryDto> GenerateSummaryInternalAsync()
-    {
-        var pendingRequests = await _courseRepository.GetPendingEnrollmentRequestsAsync();
-
-        if (pendingRequests == null || pendingRequests.Count == 0)
-        {
-            return new EnrollmentRequestAiSummaryDto
-            {
-                TotalPendingRequests = 0,
-                Categories = new List<RequestCategoryCountDto>(),
-                SummaryNote = "No pending registration or course requests found.",
-                IsAiGenerated = false,
-                AiStatusMessage = "No active requests to analyze."
-            };
-        }
-
-        int realTotal = pendingRequests.Count;
-
-        var categories = pendingRequests
-            .GroupBy(r => string.IsNullOrWhiteSpace(r.RequestType) ? "General Request" : r.RequestType.Trim())
-            .Select(g => new RequestCategoryCountDto { Category = g.Key, Count = g.Count() })
-            .OrderByDescending(c => c.Count)
-            .ToList();
-
-        int currentSum = categories.Sum(c => c.Count);
-        if (currentSum != realTotal)
-            categories.First().Count += (realTotal - currentSum);
-
-        string categoryCountsText = string.Join(", ", categories.Select(c => $"{c.Count} {c.Category}s"));
-        string summaryNote = $"There are {realTotal} pending requests awaiting administrative review ({categoryCountsText}).";
-
-        bool isAiGenerated = false;
-        string aiStatusMessage = string.Empty;
-        int retryAfterSeconds = 0;
-
-        try
-        {
-            var groupedDescriptions = pendingRequests
-                .GroupBy(r => r.RequestType?.Trim() ?? "General Request")
-                .Select(g =>
-                    $"Category '{g.Key}' ({g.Count()} requests):\n" +
-                    string.Join("\n", g.Select(r =>
-                        $"  - Student: {r.StudentName}, Course: {r.CourseName ?? "N/A"}, Reason: '{r.Reason ?? "No reason provided"}'"
-                    ).Take(10)));
-
-            string requestsDetail = string.Join("\n\n", groupedDescriptions);
-
-            string prompt = $@"You are an executive university administrative assistant.
-Summarize the following pending student requests in a clear, 3-sentence executive paragraph.
-
-<DATA>
-Total Pending: {realTotal}
-Counts: {categoryCountsText}
-
-Details by Category:
-{requestsDetail}
-</DATA>
-
-REQUIRED SENTENCE STRUCTURE:
-Sentence 1: State that there are currently {realTotal} pending requests ({categoryCountsText}).
-Sentence 2 & 3: Summarize the underlying reasons students provided for each request category (e.g. why they are enrolling, unenrolling, or registering).
-
-Write ONLY the paragraph text. Do not output markdown code blocks or quotes.";
-
-            var executionSettings = new OpenAIPromptExecutionSettings
-            {
-                Temperature = 0.3,
-                MaxTokens = 1500
-            };
-
-            var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
-            var response = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings);
-            string rawText = response.ToString().Trim();
-
-            if (rawText.StartsWith("```")) rawText = rawText.Replace("```", "").Trim();
-            if (rawText.StartsWith("\"") && rawText.EndsWith("\"") && rawText.Length > 2)
-                rawText = rawText.Substring(1, rawText.Length - 2).Trim();
-
-            bool isUnusable =
-                string.IsNullOrWhiteSpace(rawText) ||
-                rawText.Length < 25 ||
-                rawText.Contains("User Safety") ||
-                rawText.Contains("content policy") ||
-                rawText.ToLower().StartsWith("i cannot") ||
-                rawText.ToLower().StartsWith("as an ai");
-
-            if (!isUnusable)
-            {
-                summaryNote = rawText;
-                isAiGenerated = true;
-                aiStatusMessage = "AI summary generated successfully via Qwen model.";
-            }
-            else
-            {
-                aiStatusMessage = $"Model output was unusable or blank. Using database fallback.";
-            }
-        }
-        catch (Exception ex)
-        {
-            isAiGenerated = false;
-            string details = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-            aiStatusMessage = $"EXACT ERROR: {ex.GetType().Name} - {details}";
-        }
-
-        return new EnrollmentRequestAiSummaryDto
-        {
-            TotalPendingRequests = realTotal,
-            Categories = categories,
-            SummaryNote = summaryNote,
-            IsAiGenerated = isAiGenerated,
-            AiStatusMessage = aiStatusMessage,
-            RetryAfterSeconds = retryAfterSeconds
-        };
-    }
+    
 
     private CourseRecommendationResponseDto CleanAndParseJsonResponse(string rawResponse)
     {
@@ -341,4 +209,124 @@ Write ONLY the paragraph text. Do not output markdown code blocks or quotes.";
             AdvisorNote = cleaned
         };
     }
+    public async IAsyncEnumerable<string> StreamPendingRequestsSummaryTextAsync(
+[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+    
+        if (_cache.TryGetValue(SummaryCacheKey, out EnrollmentRequestAiSummaryDto? cachedSummary) && cachedSummary != null)
+        {
+            yield return JsonSerializer.Serialize(new { type = "meta", total = cachedSummary.TotalPendingRequests, categories = cachedSummary.Categories }, SseJsonOptions);
+            yield return JsonSerializer.Serialize(new { type = "chunk", text = cachedSummary.SummaryNote }, SseJsonOptions);
+            yield return JsonSerializer.Serialize(new { type = "done", summary = cachedSummary }, SseJsonOptions);
+            yield break;
+        }
+
+        var pendingRequests = await _courseRepository.GetPendingEnrollmentRequestsAsync();
+
+        if (pendingRequests == null || pendingRequests.Count == 0)
+        {
+            var emptySummary = new EnrollmentRequestAiSummaryDto
+            {
+                TotalPendingRequests = 0,
+                Categories = new List<RequestCategoryCountDto>(),
+                SummaryNote = "No pending registration or course requests found.",
+                IsAiGenerated = false,
+                AiStatusMessage = "No active requests to analyze."
+            };
+
+            yield return JsonSerializer.Serialize(new { type = "meta", total = 0, categories = emptySummary.Categories }, SseJsonOptions);
+            yield return JsonSerializer.Serialize(new { type = "chunk", text = emptySummary.SummaryNote }, SseJsonOptions);
+            yield return JsonSerializer.Serialize(new { type = "done", summary = emptySummary }, SseJsonOptions);
+            yield break;
+        }
+
+        int realTotal = pendingRequests.Count;
+
+        var categories = pendingRequests
+            .GroupBy(r => string.IsNullOrWhiteSpace(r.RequestType) ? "General Request" : r.RequestType.Trim())
+            .Select(g => new RequestCategoryCountDto { Category = g.Key, Count = g.Count() })
+            .OrderByDescending(c => c.Count)
+            .ToList();
+
+        int currentSum = categories.Sum(c => c.Count);
+        if (currentSum != realTotal)
+            categories.First().Count += (realTotal - currentSum);
+
+        yield return JsonSerializer.Serialize(new { type = "meta", total = realTotal, categories }, SseJsonOptions);
+
+        string categoryCountsText = string.Join(", ", categories.Select(c => $"{c.Count} {c.Category}s"));
+
+        var groupedDescriptions = pendingRequests
+            .GroupBy(r => r.RequestType?.Trim() ?? "General Request")
+            .Select(g =>
+                $"Category '{g.Key}' ({g.Count()} requests):\n" +
+                string.Join("\n", g.Select(r =>
+                    $"  - Student: {r.StudentName}, Course: {r.CourseName ?? "N/A"}, Reason: '{r.Reason ?? "No reason provided"}'"
+                ).Take(10)));
+
+        string requestsDetail = string.Join("\n\n", groupedDescriptions);
+
+        string prompt = $@"You are an executive university administrative assistant.
+Summarize the following pending student requests in a clear, 3-sentence executive paragraph.
+
+<DATA>
+Total Pending: {realTotal}
+Counts: {categoryCountsText}
+
+Details by Category:
+{requestsDetail}
+</DATA>
+
+REQUIRED SENTENCE STRUCTURE:
+Sentence 1: State that there are currently {realTotal} pending requests ({categoryCountsText}).
+Sentence 2 & 3: Summarize the underlying reasons students provided for each request category (e.g. why they are enrolling, unenrolling, or registering).
+
+Write ONLY the paragraph text. Do not output markdown code blocks or quotes.";
+
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            Temperature = 0.3,
+            MaxTokens = 1500
+        };
+
+        var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
+        var fullAccumulatedText = new System.Text.StringBuilder();
+        await foreach (var chunk in chatCompletion.GetStreamingChatMessageContentsAsync(prompt, executionSettings, cancellationToken: cancellationToken))
+        {
+            if (!string.IsNullOrEmpty(chunk.Content))
+            {
+                fullAccumulatedText.Append(chunk.Content);
+                yield return JsonSerializer.Serialize(new { type = "chunk", text = chunk.Content }, SseJsonOptions);
+            }
+        }
+
+        string finalText = fullAccumulatedText.ToString().Trim();
+        if (finalText.StartsWith("```")) finalText = finalText.Replace("```", "").Trim();
+        if (finalText.StartsWith("\"") && finalText.EndsWith("\"") && finalText.Length > 2)
+            finalText = finalText.Substring(1, finalText.Length - 2).Trim();
+
+        bool isUnusable =
+    string.IsNullOrWhiteSpace(finalText) ||
+    finalText.Length < 25 ||
+    finalText.Contains("User Safety") ||
+    finalText.Contains("content policy") ||
+    finalText.ToLower().StartsWith("i cannot") ||
+    finalText.ToLower().StartsWith("as an ai");
+
+        var completeSummaryObj = new EnrollmentRequestAiSummaryDto
+        {
+            TotalPendingRequests = realTotal,
+            Categories = categories,
+            SummaryNote = isUnusable
+                ? $"There are {realTotal} pending requests awaiting administrative review ({categoryCountsText})."
+                : finalText,
+            IsAiGenerated = !isUnusable,
+            AiStatusMessage = isUnusable
+                ? "Model output was unusable or blank. Using database fallback."
+                : "AI summary generated successfully via Qwen model."
+        };
+        _cache.Set(SummaryCacheKey, completeSummaryObj, TimeSpan.FromSeconds(60));
+        yield return JsonSerializer.Serialize(new { type = "done", summary = completeSummaryObj }, SseJsonOptions);
+    }
+
 }

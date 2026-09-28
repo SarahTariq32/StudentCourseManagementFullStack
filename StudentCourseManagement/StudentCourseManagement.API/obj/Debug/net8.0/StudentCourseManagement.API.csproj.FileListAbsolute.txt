@@ -346,3 +346,10 @@ C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Newtonsoft.Json.dll
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\MailKit.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Microsoft.Bcl.Cryptography.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\MimeKit.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\System.Formats.Asn1.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll

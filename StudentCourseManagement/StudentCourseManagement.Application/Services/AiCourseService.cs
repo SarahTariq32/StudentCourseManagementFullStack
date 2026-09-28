@@ -16,7 +16,7 @@ public class AiCourseService : IAiCourseService
     private readonly IStudentRepository _studentRepository;
     private readonly IMemoryCache _cache;
 
-    private const string SummaryCacheKey = "PendingRequests_AiSummary_CacheKey";
+    public const string SummaryCacheKey = "PendingRequests_AiSummary_CacheKey";
     private static readonly SemaphoreSlim _summaryCacheLock = new SemaphoreSlim(1, 1);
 
     private static readonly JsonSerializerOptions SseJsonOptions = new JsonSerializerOptions
@@ -325,7 +325,7 @@ Write ONLY the paragraph text. Do not output markdown code blocks or quotes.";
                 ? "Model output was unusable or blank. Using database fallback."
                 : "AI summary generated successfully via Qwen model."
         };
-        _cache.Set(SummaryCacheKey, completeSummaryObj, TimeSpan.FromSeconds(60));
+        _cache.Set(SummaryCacheKey, completeSummaryObj, TimeSpan.FromHours(2));
         yield return JsonSerializer.Serialize(new { type = "done", summary = completeSummaryObj }, SseJsonOptions);
     }
 

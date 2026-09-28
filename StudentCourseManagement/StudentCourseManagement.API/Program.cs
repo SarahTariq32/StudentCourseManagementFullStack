@@ -3,8 +3,12 @@ using System.Threading.RateLimiting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
@@ -27,9 +31,9 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddMemoryCache();
-builder.Services.AddSignalR(); 
+builder.Services.AddSignalR();
 
 // --- SWAGGER / OPENAPI CONFIGURATION ---
 builder.Services.AddEndpointsApiExplorer();
@@ -66,16 +70,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // --- REPOSITORIES DEPENDENCY INJECTION ---
-builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // --- APPLICATION SERVICES DEPENDENCY INJECTION ---
-builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IAiCourseService, AiCourseService>();
-builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>(); 
+builder.Services.AddScoped<IEmailDigestSender, SmtpEmailDigestSender>();
+builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>();
 
 builder.Services.AddHttpClient("OpenRouterClient", client =>
 {
@@ -91,7 +96,7 @@ var openRouterKey = builder.Configuration["OpenRouter:ApiKey"]
 
 string modelId = "openrouter/free";
 
-builder.Services.AddSingleton<Kernel>(sp =>
+builder.Services.AddSingleton(sp =>
 {
     var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
     var httpClient = httpClientFactory.CreateClient("OpenRouterClient");
@@ -150,7 +155,7 @@ builder.Services.AddCors(options =>
         p.WithOrigins("http://localhost:4200")
          .AllowAnyMethod()
          .AllowAnyHeader()
-         .AllowCredentials())); 
+         .AllowCredentials()));
 
 // --- RATE LIMITING ---
 builder.Services.AddRateLimiter(options =>
@@ -189,6 +194,8 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+builder.Services.AddHostedService<AiSummaryDigestBackgroundService>();
+
 var app = builder.Build();
 
 // --- MIDDLEWARE PIPELINE ---
@@ -210,7 +217,7 @@ app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
-app.MapHub<AdminHub>("/hubs/admin"); // Map SignalR Admin Hub route
+app.MapHub<AdminHub>("/hubs/admin");
 
 app.Run();
 

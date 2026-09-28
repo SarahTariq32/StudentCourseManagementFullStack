@@ -57,22 +57,19 @@ public class AiCourseController : ControllerBase
     [Authorize(Roles = "Admin,admin")]
     public async Task StreamPendingRequestsSummary(CancellationToken cancellationToken)
     {
-        // 1. Disable response buffering & set SSE content type
         Response.ContentType = "text/event-stream";
         Response.Headers.Append("Cache-Control", "no-cache");
         Response.Headers.Append("Connection", "keep-alive");
-        Response.Headers.Append("X-Accel-Buffering", "no"); // Prevents proxy buffering
+        Response.Headers.Append("X-Accel-Buffering", "no");
 
-        // 2. Stream tokens directly to the client as they arrive from Semantic Kernel
         await foreach (var chunk in _aiCourseService.StreamPendingRequestsSummaryTextAsync(cancellationToken))
         {
             if (!string.IsNullOrEmpty(chunk))
             {
-                // Format as standard Server-Sent Event (SSE) data frame
+
                 var jsonChunk = JsonSerializer.Serialize(chunk);
                 await Response.WriteAsync($"data: {jsonChunk}\n\n", cancellationToken);
 
-                // 3. FORCE FLUSH: Sends token over the TCP socket immediately
                 await Response.Body.FlushAsync(cancellationToken);
             }
         }

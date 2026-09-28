@@ -59,7 +59,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   @ViewChild('dtCourses') dtCourses!: Table;
 
   private destroyRef = inject(DestroyRef);
-
+  private activeAbortController: AbortController | null = null;
   readonly LogOutIcon = LogOut;
   readonly SearchIcon = Search;
   readonly TrashIcon = Trash2;
@@ -114,6 +114,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   // AI Streaming state
   streamedSummaryText = signal<string>('');
   isStreaming = signal<boolean>(false);
+  streamError = signal<string>('');
+  private streamRunId = 0;   
 
   // Rate limit countdown state
   rateLimitSeconds = signal<number>(0);
@@ -159,7 +161,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         if (this.summaryError() !== 'rate_limit') {
           this.summaryError.set('');
         }
-        if (!this.aiSummary() && !this.isSummaryLoading()) {
+        if (!this.aiSummary() && !this.isSummaryLoading() && !this.streamError()) {
           this.loadAiSummary();
         }
       }
@@ -281,25 +283,54 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-   loadAiSummary(): void {
+  loadAiSummary(): void {
     if (this.rateLimitSeconds() > 0) return;
+    
+    if (this.activeAbortController) {
+      this.activeAbortController.abort();
+      this.activeAbortController = null;
+    }
 
     this.isSummaryLoading.set(true);
     this.isStreaming.set(false);
     this.summaryError.set('');
+    this.streamError.set('');
     this.streamedSummaryText.set('');
 
     const token = this.authService.getToken();
     if (!token) {
       this.isSummaryLoading.set(false);
-      this.summaryError.set('Not authenticated.');
+      this.streamError.set('Not authenticated. Please log in again.');
       return;
     }
+
+    this.startStream(token);
+  }
+
+
+  retryStream(): void {
+    const token = this.authService.getToken();
+    if (!token) {
+      this.streamError.set('Not authenticated. Please log in again.');
+      return;
+    }
+
+    this.streamError.set('');
+    this.streamedSummaryText.set('');
+    this.isStreaming.set(true);
+    this.startStream(token);
+  }
+
+  private startStream(token: string): void {
+    const runId = ++this.streamRunId;
+    const isCurrent = () => runId === this.streamRunId;
+
+    this.activeAbortController = new AbortController();
 
     this.aiCourseService.streamPendingRequestsSummary(
       token,
       (meta) => {
-        // Metadata arrives first — drop the skeleton, show counts, begin streaming state
+        if (!isCurrent()) return;
         this.aiSummary.set({
           totalPendingRequests: meta.total,
           categories: meta.categories,
@@ -310,20 +341,24 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.isStreaming.set(true);
       },
       (chunk) => {
-        // Append incoming tokens dynamically
+        if (!isCurrent()) return;
         this.streamedSummaryText.update((curr) => curr + chunk);
       },
       (finalSummary) => {
-        // Stream complete — swap in the canonical cached object
+        if (!isCurrent()) return;
         this.isStreaming.set(false);
+        this.isSummaryLoading.set(false);
         this.aiSummary.set(finalSummary);
       },
       (err) => {
+        if (err?.name === 'AbortError') return; 
+        if (!isCurrent()) return;
         console.error('SSE Stream error:', err);
         this.isStreaming.set(false);
         this.isSummaryLoading.set(false);
-        this.summaryError.set('Failed to generate summary.');
-      }
+        this.streamError.set(err?.message ?? 'Summary generation was interrupted.');
+      },
+      this.activeAbortController.signal
     );
   }
 

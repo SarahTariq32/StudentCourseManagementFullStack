@@ -49,24 +49,56 @@ export class AiCourseService {
   
   
 
-    streamPendingRequestsSummary(
+  streamPendingRequestsSummary(
     token: string,
     onMeta: (meta: { total: number; categories: RequestCategoryCount[] }) => void,
     onChunk: (chunk: string) => void,
     onDone: (summary: EnrollmentRequestAiSummary) => void,
-    onError: (err: any) => void
+    onError: (err: any) => void,
+    signal?: AbortSignal
   ): void {
     const url = `${this.apiUrl}/enrollmentrequests/ai-summary/stream`;
+
+    let finished = false;
+
+    const handleLine = (line: string): void => {
+      if (!line.startsWith('data: ')) return;
+
+      const rawJson = line.substring(6).trim();
+      if (!rawJson) return;
+
+      let envelope: any;
+      try {
+        const outer = JSON.parse(rawJson);   // undoes controller's JsonSerializer.Serialize(chunk)
+        envelope = JSON.parse(outer);        // { type: 'meta' | 'chunk' | 'done' | 'error', ... }
+      } catch (e) {
+        console.warn('Failed to parse SSE payload:', line, e);
+        return;
+      }
+
+      if (envelope.type === 'meta') {
+        onMeta({ total: envelope.total, categories: envelope.categories });
+      } else if (envelope.type === 'chunk') {
+        onChunk(envelope.text);
+      } else if (envelope.type === 'done') {
+        finished = true;
+        onDone(envelope.summary);
+      } else if (envelope.type === 'error') {
+        finished = true;
+        onError(new Error(envelope.message ?? 'Summary generation was interrupted.'));
+      }
+    };
 
     fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'text/event-stream'
-      }
+      },
+      signal
     }).then(async (response) => {
       if (!response.ok) {
-        throw new Error(`Stream request failed: ${response.statusText}`);
+        throw new Error(`Stream request failed: ${response.status} ${response.statusText}`);
       }
 
       const reader = response.body?.getReader();
@@ -84,29 +116,24 @@ export class AiCourseService {
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const rawJson = line.substring(6).trim();
-              if (!rawJson) continue;
+          handleLine(line);
 
-              const outer = JSON.parse(rawJson);   // undoes controller's JsonSerializer.Serialize(chunk)
-              const envelope = JSON.parse(outer);  // { type: 'meta' | 'chunk' | 'done', ... }
-
-              if (envelope.type === 'meta') {
-                onMeta({ total: envelope.total, categories: envelope.categories });
-              } else if (envelope.type === 'chunk') {
-                onChunk(envelope.text);
-              } else if (envelope.type === 'done') {
-                onDone(envelope.summary);
-              }
-            } catch (e) {
-              console.warn('Failed to parse SSE payload:', line, e);
-            }
+          if (finished) {
+            await reader.cancel();   // stop reading once we have a final message
+            return;
           }
         }
       }
+
+      // The stream closed without a 'done' or 'error' message: it stopped midway
+      if (!finished) {
+        onError(new Error('The connection closed before the summary finished generating.'));
+      }
     }).catch((err) => {
-      onError(err);
+      if (!finished) {
+        finished = true;
+        onError(err);
+      }
     });
   }
 }

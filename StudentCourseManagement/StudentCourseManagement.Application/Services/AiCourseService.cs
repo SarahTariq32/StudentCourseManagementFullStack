@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using StudentCourseManagement.Application.DTOs;
 using StudentCourseManagement.Application.Interfaces;
 using StudentCourseManagement.Application.Plugins;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace StudentCourseManagement.Application.Services;
@@ -210,9 +211,8 @@ Student Query: ""{query}""";
         };
     }
     public async IAsyncEnumerable<string> StreamPendingRequestsSummaryTextAsync(
-[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-    
         if (_cache.TryGetValue(SummaryCacheKey, out EnrollmentRequestAiSummaryDto? cachedSummary) && cachedSummary != null)
         {
             yield return JsonSerializer.Serialize(new { type = "meta", total = cachedSummary.TotalPendingRequests, categories = cachedSummary.Categories }, SseJsonOptions);
@@ -240,6 +240,7 @@ Student Query: ""{query}""";
             yield break;
         }
 
+        // 3. Build category counts and send metadata first
         int realTotal = pendingRequests.Count;
 
         var categories = pendingRequests
@@ -254,6 +255,7 @@ Student Query: ""{query}""";
 
         yield return JsonSerializer.Serialize(new { type = "meta", total = realTotal, categories }, SseJsonOptions);
 
+        // 4. Build the prompt
         string categoryCountsText = string.Join(", ", categories.Select(c => $"{c.Count} {c.Category}s"));
 
         var groupedDescriptions = pendingRequests
@@ -291,9 +293,41 @@ Write ONLY the paragraph text. Do not output markdown code blocks or quotes.";
 
         var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
         var fullAccumulatedText = new System.Text.StringBuilder();
-        await foreach (var chunk in chatCompletion.GetStreamingChatMessageContentsAsync(prompt, executionSettings, cancellationToken: cancellationToken))
+
+        await using var enumerator = chatCompletion
+            .GetStreamingChatMessageContentsAsync(prompt, executionSettings, cancellationToken: cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
+
+        while (true)
         {
-            if (!string.IsNullOrEmpty(chunk.Content))
+            StreamingChatMessageContent? chunk = null;
+            string? streamError = null;
+
+            try
+            {
+                if (!await enumerator.MoveNextAsync())
+                    break;
+
+                chunk = enumerator.Current;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                streamError = ex.Message;
+            }
+
+            if (streamError != null)
+            {
+
+                yield return JsonSerializer.Serialize(new
+                {
+                    type = "error",
+                    message = $"Summary generation was interrupted: {streamError}",
+                    canRetry = true
+                }, SseJsonOptions);
+                yield break;
+            }
+
+            if (chunk != null && !string.IsNullOrEmpty(chunk.Content))
             {
                 fullAccumulatedText.Append(chunk.Content);
                 yield return JsonSerializer.Serialize(new { type = "chunk", text = chunk.Content }, SseJsonOptions);
@@ -306,12 +340,12 @@ Write ONLY the paragraph text. Do not output markdown code blocks or quotes.";
             finalText = finalText.Substring(1, finalText.Length - 2).Trim();
 
         bool isUnusable =
-    string.IsNullOrWhiteSpace(finalText) ||
-    finalText.Length < 25 ||
-    finalText.Contains("User Safety") ||
-    finalText.Contains("content policy") ||
-    finalText.ToLower().StartsWith("i cannot") ||
-    finalText.ToLower().StartsWith("as an ai");
+            string.IsNullOrWhiteSpace(finalText) ||
+            finalText.Length < 25 ||
+            finalText.Contains("User Safety") ||
+            finalText.Contains("content policy") ||
+            finalText.ToLower().StartsWith("i cannot") ||
+            finalText.ToLower().StartsWith("as an ai");
 
         var completeSummaryObj = new EnrollmentRequestAiSummaryDto
         {
@@ -325,7 +359,8 @@ Write ONLY the paragraph text. Do not output markdown code blocks or quotes.";
                 ? "Model output was unusable or blank. Using database fallback."
                 : "AI summary generated successfully via Qwen model."
         };
-        _cache.Set(SummaryCacheKey, completeSummaryObj, TimeSpan.FromHours(2));
+
+        _cache.Set(SummaryCacheKey, completeSummaryObj, TimeSpan.FromSeconds(60));
         yield return JsonSerializer.Serialize(new { type = "done", summary = completeSummaryObj }, SseJsonOptions);
     }
 

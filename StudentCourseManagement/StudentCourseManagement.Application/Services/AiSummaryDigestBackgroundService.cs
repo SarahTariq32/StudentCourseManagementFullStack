@@ -30,7 +30,7 @@ public class AiSummaryDigestBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var cacheMinutes = _configuration.GetValue("AiSummaryJob:CacheRefreshIntervalMinutes", 5);
+        var cacheMinutes = _configuration.GetValue("AiSummaryJob:CacheRefreshIntervalMinutes", 1);
         var emailMinutes = _configuration.GetValue("AiSummaryJob:EmailDigestIntervalMinutes", 60);
 
         await Task.WhenAll(

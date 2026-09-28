@@ -55,6 +55,7 @@ public class AiCourseController : ControllerBase
 
     [HttpGet("enrollmentrequests/ai-summary/stream")]
     [Authorize(Roles = "Admin,admin")]
+    [EnableRateLimiting("AiAdminLimit")]
     public async Task StreamPendingRequestsSummary(CancellationToken cancellationToken)
     {
         Response.ContentType = "text/event-stream";
@@ -69,6 +70,7 @@ public class AiCourseController : ControllerBase
 
                 var jsonChunk = JsonSerializer.Serialize(chunk);
                 await Response.WriteAsync($"data: {jsonChunk}\n\n", cancellationToken);
+
 
                 await Response.Body.FlushAsync(cancellationToken);
             }

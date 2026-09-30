@@ -28,6 +28,18 @@ export interface EnrollmentRequestAiSummary {
   retryAfterSeconds?: number;
 }
 
+export interface DocumentInfo {
+  documentName: string;
+  chunkCount: number;
+  pageCount: number;
+}
+
+export interface UploadHandbookResponse {
+  message: string;
+  chunkCount: number;
+  pageCount: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -44,6 +56,21 @@ export class AiCourseService {
   searchFreeform(query: string): Observable<CourseRecommendationResponse> {
     const params = new HttpParams().set('query', query);
     return this.http.get<CourseRecommendationResponse>(`${this.apiUrl}/search/free`, { params });
+  }
+
+  getDocuments(): Observable<DocumentInfo[]> {
+    return this.http.get<DocumentInfo[]>(`${this.apiUrl}/documents`);
+  }
+
+  uploadHandbook(file: File): Observable<UploadHandbookResponse> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post<UploadHandbookResponse>(`${this.apiUrl}/upload-handbook`, formData);
+  }
+
+  deleteDocument(documentName: string): Observable<{ message: string }> {
+    const encodedName = encodeURIComponent(documentName);
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/documents/${encodedName}`);
   }
 
   

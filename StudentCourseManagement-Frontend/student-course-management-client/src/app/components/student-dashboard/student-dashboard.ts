@@ -26,7 +26,12 @@ import {
   Sparkles,
   Compass,
   HelpCircle,
-  Trash2
+  Trash2,
+  Bookmark,
+  FileText,
+  AlertCircle,
+  ExternalLink,
+  ShieldAlert
 } from 'lucide-angular';
 
 import { CourseService } from '../../services/course';
@@ -46,6 +51,11 @@ export interface ChatMessage {
   timestamp: Date;
   mode: 'strict' | 'freeform';
   data?: CourseRecommendationResponse;
+}
+
+export interface CitationInfo {
+  document: string;
+  page: string;
 }
 
 @Component({
@@ -85,6 +95,11 @@ export class StudentDashboardComponent implements OnInit {
   readonly CompassIcon = Compass;
   readonly HelpCircleIcon = HelpCircle;
   readonly Trash2Icon = Trash2;
+  readonly BookmarkIcon = Bookmark;
+  readonly FileTextIcon = FileText;
+  readonly AlertCircleIcon = AlertCircle;
+  readonly ExternalLinkIcon = ExternalLink;
+  readonly ShieldAlertIcon = ShieldAlert;
 
   activeView = signal<StudentView>('overview');
   
@@ -218,6 +233,39 @@ export class StudentDashboardComponent implements OnInit {
   clearChatHistory(): void {
     this.chatHistory.set([]);
     this.aiErrorMessage.set('');
+  }
+
+  isRefusalMessage(text?: string): boolean {
+    if (!text) return false;
+    return text.toLowerCase().includes('not found in the documents');
+  }
+
+  getCitations(text?: string): CitationInfo[] {
+    if (!text) return [];
+    const regex = /\[Source:\s*([^,\]]+),\s*Page:\s*(\d+)\]/gi;
+    const citations: CitationInfo[] = [];
+    const seen = new Set<string>();
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const document = match[1].trim();
+      const page = match[2].trim();
+      const key = `${document}:${page}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        citations.push({ document, page });
+      }
+    }
+    return citations;
+  }
+
+  isAiServiceError(text?: string): boolean {
+    if (!text) return false;
+    return text.startsWith('AI Service Error:') || text.includes('429') || text.includes('rate-limited') || text.includes('Too Many Requests');
+  }
+
+  getCleanAdvisorNote(text?: string): string {
+    if (!text) return '';
+    return text.replace(/\[Source:\s*([^,\]]+),\s*Page:\s*(\d+)\]/gi, '').trim();
   }
 
   checkVerificationAndLoadData(): void {

@@ -47,10 +47,88 @@
         }
       }
     },
+    "/api/AiCourse/documents": {
+      "get": {
+        "tags": [
+          "AiCourse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/AiCourse/enrollmentrequests/ai-summary": {
+      "get": {
+        "tags": [
+          "AiCourse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/AiCourse/enrollmentrequests/ai-summary/stream": {
       "get": {
         "tags": [
           "AiCourse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/AiCourse/upload-handbook": {
+      "post": {
+        "tags": [
+          "AiCourse"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/AiCourse/documents/{documentName}": {
+      "delete": {
+        "tags": [
+          "AiCourse"
+        ],
+        "parameters": [
+          {
+            "name": "documentName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {

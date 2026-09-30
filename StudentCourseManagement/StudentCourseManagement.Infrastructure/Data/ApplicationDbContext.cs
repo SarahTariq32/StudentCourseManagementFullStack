@@ -20,6 +20,7 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<StudentCourse> StudentCourses { get; set; }
     public virtual DbSet<EnrollmentRequest> EnrollmentRequests { get; set; }
+    public virtual DbSet<DocumentChunk> DocumentChunks { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<StudentCourse>(entity =>
@@ -93,6 +94,13 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => d.CourseId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+        modelBuilder.Entity<DocumentChunk>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DocumentName).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.TextContent).IsRequired();
+            entity.Property(e => e.EmbeddingJson).IsRequired();
         });
         OnModelCreatingPartial(modelBuilder);
     }

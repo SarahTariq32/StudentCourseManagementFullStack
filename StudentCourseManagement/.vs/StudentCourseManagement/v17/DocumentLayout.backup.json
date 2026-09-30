@@ -7,6 +7,50 @@
       "RelativeMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|solutionrelative:studentcoursemanagement.api\\controllers\\aicoursecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.application\\services\\aicourseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|solutionrelative:studentcoursemanagement.application\\services\\aicourseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|solutionrelative:studentcoursemanagement.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|solutionrelative:studentcoursemanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.infrastructure\\repositories\\ollamaembeddingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|solutionrelative:studentcoursemanagement.infrastructure\\repositories\\ollamaembeddingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.infrastructure\\repositories\\vectorstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|solutionrelative:studentcoursemanagement.infrastructure\\repositories\\vectorstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.infrastructure\\repositories\\openrouterembeddingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|solutionrelative:studentcoursemanagement.infrastructure\\repositories\\openrouterembeddingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.application\\interfaces\\iembeddingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|solutionrelative:studentcoursemanagement.application\\interfaces\\iembeddingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.application\\interfaces\\ivectorstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|solutionrelative:studentcoursemanagement.application\\interfaces\\ivectorstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.application\\dtos\\vectorsearchresultdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|solutionrelative:studentcoursemanagement.application\\dtos\\vectorsearchresultdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.infrastructure\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|solutionrelative:studentcoursemanagement.infrastructure\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.infrastructure\\entities\\documentchunk.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{45BFBB79-4045-4311-8FAD-6638C8D75C36}|StudentCourseManagement.Infrastructure\\StudentCourseManagement.Infrastructure.csproj|solutionrelative:studentcoursemanagement.infrastructure\\entities\\documentchunk.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|solutionrelative:studentcoursemanagement.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
@@ -15,20 +59,12 @@
       "RelativeMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|solutionrelative:studentcoursemanagement.application\\services\\aisummarydigestbackgroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.application\\services\\aicourseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|solutionrelative:studentcoursemanagement.application\\services\\aicourseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{61F23BE4-C62F-4EDE-9123-C39BDB6FCE84}|StudentCourseManagement.Tests\\StudentCourseManagement.Tests.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.tests\\integrationtests\\aisummaryintegrationtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{61F23BE4-C62F-4EDE-9123-C39BDB6FCE84}|StudentCourseManagement.Tests\\StudentCourseManagement.Tests.csproj|solutionrelative:studentcoursemanagement.tests\\integrationtests\\aisummaryintegrationtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.application\\interfaces\\iadminnotificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{11B80670-AF07-4F0E-9577-486B9E3C87B4}|StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj|solutionrelative:studentcoursemanagement.application\\interfaces\\iadminnotificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|solutionrelative:studentcoursemanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{840D2531-815D-45AD-97BF-DC748D14CFE8}|StudentCourseManagement.API\\StudentCourseManagement.API.csproj|c:\\users\\sarah\\onedrive\\desktop\\studentcoursemanagement\\studentcoursemanagement\\studentcoursemanagement.api\\hubs\\adminhub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -42,11 +78,120 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 11,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "StudentCourseManagement.API\\appsettings.Development.json",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\appsettings.Development.json",
+              "RelativeToolTip": "StudentCourseManagement.API\\appsettings.Development.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-09-30T03:54:08.668Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "OllamaEmbeddingService.cs",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Repositories\\OllamaEmbeddingService.cs",
+              "RelativeDocumentMoniker": "StudentCourseManagement.Infrastructure\\Repositories\\OllamaEmbeddingService.cs",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Repositories\\OllamaEmbeddingService.cs",
+              "RelativeToolTip": "StudentCourseManagement.Infrastructure\\Repositories\\OllamaEmbeddingService.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAQwA4AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T13:18:57.233Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "VectorStore.cs",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Repositories\\VectorStore.cs",
+              "RelativeDocumentMoniker": "StudentCourseManagement.Infrastructure\\Repositories\\VectorStore.cs",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Repositories\\VectorStore.cs",
+              "RelativeToolTip": "StudentCourseManagement.Infrastructure\\Repositories\\VectorStore.cs",
+              "ViewState": "AgIAAA8BAAAAAAAAAAAuwDMBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T15:23:35.741Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "OpenRouterEmbeddingService.cs",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Repositories\\OpenRouterEmbeddingService.cs",
+              "RelativeDocumentMoniker": "StudentCourseManagement.Infrastructure\\Repositories\\OpenRouterEmbeddingService.cs",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Repositories\\OpenRouterEmbeddingService.cs",
+              "RelativeToolTip": "StudentCourseManagement.Infrastructure\\Repositories\\OpenRouterEmbeddingService.cs",
+              "ViewState": "AgIAAEAAAAAAAAAAAAAiwFoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T15:22:29.497Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "IEmbeddingService.cs",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\Interfaces\\IEmbeddingService.cs",
+              "RelativeDocumentMoniker": "StudentCourseManagement.Application\\Interfaces\\IEmbeddingService.cs",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\Interfaces\\IEmbeddingService.cs",
+              "RelativeToolTip": "StudentCourseManagement.Application\\Interfaces\\IEmbeddingService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T15:21:34.865Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "VectorSearchResultDto.cs",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\DTOs\\VectorSearchResultDto.cs",
+              "RelativeDocumentMoniker": "StudentCourseManagement.Application\\DTOs\\VectorSearchResultDto.cs",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\DTOs\\VectorSearchResultDto.cs",
+              "RelativeToolTip": "StudentCourseManagement.Application\\DTOs\\VectorSearchResultDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T15:02:38.796Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "IVectorStore.cs",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\Interfaces\\IVectorStore.cs",
+              "RelativeDocumentMoniker": "StudentCourseManagement.Application\\Interfaces\\IVectorStore.cs",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\Interfaces\\IVectorStore.cs",
+              "RelativeToolTip": "StudentCourseManagement.Application\\Interfaces\\IVectorStore.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T14:50:15.268Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "StudentCourseManagement.Infrastructure\\Data\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "StudentCourseManagement.Infrastructure\\Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAFAAAAAAAAAAAAAAwGEAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T14:41:18.77Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "DocumentChunk.cs",
+              "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Entities\\DocumentChunk.cs",
+              "RelativeDocumentMoniker": "StudentCourseManagement.Infrastructure\\Entities\\DocumentChunk.cs",
+              "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Infrastructure\\Entities\\DocumentChunk.cs",
+              "RelativeToolTip": "StudentCourseManagement.Infrastructure\\Entities\\DocumentChunk.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-28T14:43:04.455Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\appsettings.json",
               "RelativeDocumentMoniker": "StudentCourseManagement.API\\appsettings.json",
@@ -54,12 +199,11 @@
               "RelativeToolTip": "StudentCourseManagement.API\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-09-28T13:23:36.283Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-28T13:23:36.283Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 13,
               "Title": "AiSummaryDigestBackgroundService.cs",
               "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\Services\\AiSummaryDigestBackgroundService.cs",
               "RelativeDocumentMoniker": "StudentCourseManagement.Application\\Services\\AiSummaryDigestBackgroundService.cs",
@@ -67,8 +211,7 @@
               "RelativeToolTip": "StudentCourseManagement.Application\\Services\\AiSummaryDigestBackgroundService.cs",
               "ViewState": "AgIAACEAAAAAAAAAAAAowCIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-28T13:21:21.462Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-28T13:21:21.462Z"
             },
             {
               "$type": "Document",
@@ -78,14 +221,14 @@
               "RelativeDocumentMoniker": "StudentCourseManagement.API\\Controllers\\AiCourseController.cs",
               "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\Controllers\\AiCourseController.cs",
               "RelativeToolTip": "StudentCourseManagement.API\\Controllers\\AiCourseController.cs",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAqwDkAAAAoAAAAAAAAAA==",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAIwHYAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-09-15T20:39:43.506Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 14,
               "Title": "AiSummaryIntegrationTests.cs",
               "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Tests\\IntegrationTests\\AiSummaryIntegrationTests.cs",
               "RelativeDocumentMoniker": "StudentCourseManagement.Tests\\IntegrationTests\\AiSummaryIntegrationTests.cs",
@@ -93,12 +236,11 @@
               "RelativeToolTip": "StudentCourseManagement.Tests\\IntegrationTests\\AiSummaryIntegrationTests.cs",
               "ViewState": "AgIAABsAAAAAAAAAAAAowGcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-23T18:48:12.123Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-23T18:48:12.123Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 15,
               "Title": "IAdminNotificationService.cs",
               "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\Interfaces\\IAdminNotificationService.cs",
               "RelativeDocumentMoniker": "StudentCourseManagement.Application\\Interfaces\\IAdminNotificationService.cs",
@@ -106,12 +248,11 @@
               "RelativeToolTip": "StudentCourseManagement.Application\\Interfaces\\IAdminNotificationService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-21T16:16:44.556Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-21T16:16:44.556Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 16,
               "Title": "AdminHub.cs",
               "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\Hubs\\AdminHub.cs",
               "RelativeDocumentMoniker": "StudentCourseManagement.API\\Hubs\\AdminHub.cs",
@@ -123,28 +264,29 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "AiCourseService.cs",
               "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\Services\\AiCourseService.cs",
               "RelativeDocumentMoniker": "StudentCourseManagement.Application\\Services\\AiCourseService.cs",
               "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\Services\\AiCourseService.cs",
               "RelativeToolTip": "StudentCourseManagement.Application\\Services\\AiCourseService.cs",
-              "ViewState": "AgIAAFoBAAAAAAAAAAAqwGoBAABSAAAAAAAAAA==",
+              "ViewState": "AgIAAGkCAAAAAAAAAAAIwHUCAABPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-09-15T20:38:17.229Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\Program.cs",
               "RelativeDocumentMoniker": "StudentCourseManagement.API\\Program.cs",
               "ToolTip": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.API\\Program.cs",
               "RelativeToolTip": "StudentCourseManagement.API\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAN8AAAAgAAAAAAAAAA==",
+              "ViewState": "AgIAAL8AAAAAAAAAAAAuwMEAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-15T14:16:02.548Z"
+              "WhenOpened": "2026-09-15T14:16:02.548Z",
+              "EditorCaption": ""
             }
           ]
         }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "unumM1woxuM=",
+  "dgSpecHash": "ZgbwXvqupSg=",
   "success": true,
   "projectFilePath": "C:\\Users\\sarah\\OneDrive\\Desktop\\StudentCourseManagement\\StudentCourseManagement\\StudentCourseManagement.Application\\StudentCourseManagement.Application.csproj",
   "expectedPackageFiles": [
@@ -64,7 +64,12 @@
     "C:\\Users\\sarah\\.nuget\\packages\\system.security.cryptography.pkcs\\10.0.0\\system.security.cryptography.pkcs.10.0.0.nupkg.sha512",
     "C:\\Users\\sarah\\.nuget\\packages\\system.text.encodings.web\\10.0.6\\system.text.encodings.web.10.0.6.nupkg.sha512",
     "C:\\Users\\sarah\\.nuget\\packages\\system.text.json\\10.0.6\\system.text.json.10.0.6.nupkg.sha512",
-    "C:\\Users\\sarah\\.nuget\\packages\\system.threading.channels\\10.0.6\\system.threading.channels.10.0.6.nupkg.sha512"
+    "C:\\Users\\sarah\\.nuget\\packages\\system.threading.channels\\10.0.6\\system.threading.channels.10.0.6.nupkg.sha512",
+    "C:\\Users\\sarah\\.nuget\\packages\\uglytoad.pdfpig\\1.7.0-custom-5\\uglytoad.pdfpig.1.7.0-custom-5.nupkg.sha512",
+    "C:\\Users\\sarah\\.nuget\\packages\\uglytoad.pdfpig.core\\1.7.0-custom-5\\uglytoad.pdfpig.core.1.7.0-custom-5.nupkg.sha512",
+    "C:\\Users\\sarah\\.nuget\\packages\\uglytoad.pdfpig.fonts\\1.7.0-custom-5\\uglytoad.pdfpig.fonts.1.7.0-custom-5.nupkg.sha512",
+    "C:\\Users\\sarah\\.nuget\\packages\\uglytoad.pdfpig.tokenization\\1.7.0-custom-5\\uglytoad.pdfpig.tokenization.1.7.0-custom-5.nupkg.sha512",
+    "C:\\Users\\sarah\\.nuget\\packages\\uglytoad.pdfpig.tokens\\1.7.0-custom-5\\uglytoad.pdfpig.tokens.1.7.0-custom-5.nupkg.sha512"
   ],
   "logs": []
 }

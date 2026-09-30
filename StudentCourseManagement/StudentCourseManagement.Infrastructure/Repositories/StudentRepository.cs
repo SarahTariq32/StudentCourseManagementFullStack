@@ -159,11 +159,35 @@ public class StudentRepository : IStudentRepository
     }
     public async Task<StudentCourseManagement.Domain.Entities.Student?> GetByNameAsync(string name)
     {
+        if (string.IsNullOrWhiteSpace(name)) return null;
+
         var trimmedName = name.Trim().ToLower();
         var entity = await _context.Students
+            .AsNoTracking()
             .Include(s => s.StudentCourses)
                 .ThenInclude(sc => sc.Course)
             .FirstOrDefaultAsync(s => s.Name.ToLower() == trimmedName || s.Email.ToLower() == trimmedName);
+
+        if (entity == null)
+        {
+            var user = await _context.UsersData
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Username.ToLower() == trimmedName || u.Email.ToLower() == trimmedName);
+
+            if (user != null)
+            {
+                var userEmail = user.Email?.Trim().ToLower();
+                var userFullName = user.FullName?.Trim().ToLower();
+
+                entity = await _context.Students
+                    .AsNoTracking()
+                    .Include(s => s.StudentCourses)
+                        .ThenInclude(sc => sc.Course)
+                    .FirstOrDefaultAsync(s => 
+                        (!string.IsNullOrEmpty(userEmail) && s.Email.ToLower() == userEmail) ||
+                        (!string.IsNullOrEmpty(userFullName) && s.Name.ToLower() == userFullName));
+            }
+        }
 
         if (entity == null) return null;
         return entity.ToDomain();

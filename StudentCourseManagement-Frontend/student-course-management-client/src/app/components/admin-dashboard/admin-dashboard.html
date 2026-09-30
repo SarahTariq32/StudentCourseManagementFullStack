@@ -36,7 +36,18 @@
         >
           <lucide-icon [img]="SparklesIcon" class="w-4 h-4 text-brand-400"></lucide-icon>
           <span>AI Requests Summarizer</span>
-          <span class="ml-auto bg-brand-500/20 text-brand-400 text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
+          <span class="ml-auto bg-brand-500/20 text-brand-400 text-[10px] font-bold px-1.5 py-0.5 rounded">STREAM</span>
+        </button>
+
+        <button 
+          [class.bg-slate-800]="activeView() === 'handbook-management'" 
+          [class.text-white]="activeView() === 'handbook-management'"
+          class="w-full text-left px-4 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition font-medium flex items-center gap-2.5 cursor-pointer"
+          (click)="setView('handbook-management')"
+        >
+          <lucide-icon [img]="FileUpIcon" class="w-4 h-4 text-emerald-400"></lucide-icon>
+          <span>Handbook & Policy RAG</span>
+          <span class="ml-auto bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-1.5 py-0.5 rounded">RAG</span>
         </button>
 
         <div class="text-[11px] uppercase tracking-wider text-slate-500 font-bold mt-6 mb-2 px-4">Students</div>
@@ -257,6 +268,228 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.5 HANDBOOK & POLICY RAG DOCUMENT MANAGEMENT -->
+    <section *ngIf="activeView() === 'handbook-management'" class="max-w-5xl mx-auto space-y-6">
+      
+      <!-- HEADER & INFO CARD -->
+      <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+              <lucide-icon [img]="FileUpIcon" class="w-5 h-5"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                Policy & Handbook Ingestion (RAG Knowledge Base)
+                <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">Active</span>
+              </h3>
+              <p class="text-xs text-slate-400">Upload official academic policies, university rules, and course handbooks in PDF or TXT format for semantic vector search.</p>
+            </div>
+          </div>
+
+          <button 
+            (click)="loadDocuments()" 
+            [disabled]="isDocumentsLoading()" 
+            class="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-2 rounded-lg cursor-pointer disabled:opacity-50"
+          >
+            <lucide-icon [img]="RefreshCwIcon" class="w-3.5 h-3.5"></lucide-icon>
+            <span>Refresh Index</span>
+          </button>
+        </div>
+
+        <!-- System Architecture Notice -->
+        <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50 flex items-center gap-3 text-xs text-slate-300">
+          <lucide-icon [img]="DatabaseIcon" class="w-4 h-4 text-brand-400 shrink-0"></lucide-icon>
+          <span>
+            Uploaded documents are parsed (PdfPig / form-feed), chunked into <strong>2,000 chars (200 overlap)</strong>, embedded with <strong>nomic-embed-text</strong>, and indexed with atomic rollback in SQL Server.
+          </span>
+        </div>
+      </div>
+
+      <!-- UPLOAD COMPONENT CARD -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm">
+        <h4 class="text-sm font-bold text-dark-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <lucide-icon [img]="UploadIcon" class="w-4 h-4 text-emerald-600"></lucide-icon>
+          Upload New Document / Handbook
+        </h4>
+
+        <!-- NOTIFICATIONS -->
+        <div *ngIf="handbookUploadSuccess()" class="bg-emerald-50 text-emerald-800 border border-emerald-200 p-4 rounded-xl text-xs font-semibold mb-4 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <lucide-icon [img]="CheckIcon" class="w-4 h-4 text-emerald-600"></lucide-icon>
+            <span>{{ handbookUploadSuccess() }}</span>
+          </div>
+          <button (click)="handbookUploadSuccess.set('')" class="text-emerald-700 hover:text-emerald-900 cursor-pointer border-none bg-transparent">
+            <lucide-icon [img]="XIcon" class="w-3.5 h-3.5"></lucide-icon>
+          </button>
+        </div>
+
+        <div *ngIf="handbookUploadError()" class="bg-rose-50 text-rose-800 border border-rose-200 p-4 rounded-xl text-xs font-semibold mb-4 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-rose-600 shrink-0"></lucide-icon>
+            <span>{{ handbookUploadError() }}</span>
+          </div>
+          <button (click)="handbookUploadError.set('')" class="text-rose-700 hover:text-rose-900 cursor-pointer border-none bg-transparent">
+            <lucide-icon [img]="XIcon" class="w-3.5 h-3.5"></lucide-icon>
+          </button>
+        </div>
+
+        <!-- DRAG AND DROP ZONE -->
+        <div 
+          (dragover)="onDragOver($event)" 
+          (dragleave)="onDragLeave($event)" 
+          (drop)="onFileDropped($event)"
+          [class.border-emerald-500]="isDraggingOver()"
+          [class.bg-emerald-50\/40]="isDraggingOver()"
+          [class.border-slate-300]="!isDraggingOver()"
+          class="border-2 border-dashed rounded-2xl p-8 text-center transition-all bg-slate-50/50 hover:bg-slate-50 relative"
+        >
+          <input 
+            #fileInput 
+            type="file" 
+            accept=".pdf,.txt,application/pdf,text/plain" 
+            class="hidden" 
+            (change)="onFileSelected($event)" 
+          />
+
+          <div *ngIf="!selectedHandbookFile()">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mx-auto mb-3">
+              <lucide-icon [img]="FileUpIcon" class="w-7 h-7"></lucide-icon>
+            </div>
+            <p class="text-sm font-bold text-dark-900 mb-1">Drag and drop your handbook file here, or click to browse</p>
+            <p class="text-xs text-slate-500 mb-4">Supports PDF files (.pdf) and Plain Text (.txt) up to 20MB</p>
+            <button 
+              type="button" 
+              (click)="fileInput.click()" 
+              class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer border-none inline-flex items-center gap-2 shadow-xs"
+            >
+              <lucide-icon [img]="UploadIcon" class="w-3.5 h-3.5"></lucide-icon>
+              <span>Select File</span>
+            </button>
+          </div>
+
+          <!-- SELECTED FILE PREVIEW -->
+          <div *ngIf="selectedHandbookFile()" class="max-w-md mx-auto bg-white border border-slate-200 rounded-xl p-4 text-left shadow-xs">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3 overflow-hidden">
+                <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <lucide-icon [img]="FileTextIcon" class="w-5 h-5"></lucide-icon>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-dark-900 truncate mb-0.5">{{ selectedHandbookFile()?.name }}</p>
+                  <p class="text-[11px] text-slate-500 mb-0 font-mono">{{ (selectedHandbookFile()!.size / 1024).toFixed(1) }} KB</p>
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                (click)="clearSelectedFile(); fileInput.value = ''" 
+                [disabled]="isUploadingHandbook()" 
+                class="text-slate-400 hover:text-rose-500 cursor-pointer border-none bg-transparent p-1"
+              >
+                <lucide-icon [img]="XIcon" class="w-4 h-4"></lucide-icon>
+              </button>
+            </div>
+
+            <!-- UPLOAD ACTION BUTTON -->
+            <div class="mt-4 flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button 
+                type="button" 
+                (click)="clearSelectedFile(); fileInput.value = ''" 
+                [disabled]="isUploadingHandbook()" 
+                class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer border-none"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                (click)="onUploadHandbook()" 
+                [disabled]="isUploadingHandbook()" 
+                class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-1.5 rounded-lg transition cursor-pointer border-none inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+              >
+                <lucide-icon *ngIf="isUploadingHandbook()" [img]="RefreshCwIcon" class="w-3.5 h-3.5 animate-spin"></lucide-icon>
+                <lucide-icon *ngIf="!isUploadingHandbook()" [img]="UploadIcon" class="w-3.5 h-3.5"></lucide-icon>
+                <span>{{ isUploadingHandbook() ? 'Processing & Embedding Chunks...' : 'Upload & Index' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INDEXED DOCUMENTS TABLE -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-sm font-bold text-dark-900 uppercase tracking-wider mb-0 flex items-center gap-2">
+              <lucide-icon [img]="DatabaseIcon" class="w-4 h-4 text-brand-500"></lucide-icon>
+              Indexed Documents & Policies ({{ documents().length }})
+            </h4>
+            <p class="text-xs text-slate-500 mt-1">These documents power the AI strict/free search responses and citation grounding.</p>
+          </div>
+        </div>
+
+        <!-- SKELETON LOADING -->
+        <div *ngIf="isDocumentsLoading()" class="space-y-3 py-2">
+          <p-skeleton width="100%" height="3rem" styleClass="!bg-slate-100"></p-skeleton>
+          <p-skeleton width="100%" height="3rem" styleClass="!bg-slate-100"></p-skeleton>
+        </div>
+
+        <!-- DOCUMENTS LIST TABLE -->
+        <div *ngIf="!isDocumentsLoading() && documents().length" class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600 border-collapse">
+            <thead class="bg-slate-50 text-dark-900 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Document Name</th>
+                <th class="py-3 px-4">Indexed Chunks</th>
+                <th class="py-3 px-4">Pages</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let doc of documents()" class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-dark-900 flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <lucide-icon [img]="FileTextIcon" class="w-4 h-4"></lucide-icon>
+                  </div>
+                  <span class="truncate max-w-sm">{{ doc.documentName }}</span>
+                </td>
+                <td class="py-3.5 px-4 font-mono font-semibold text-slate-700">
+                  <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono font-bold">{{ doc.chunkCount }} chunks</span>
+                </td>
+                <td class="py-3.5 px-4 font-mono font-semibold text-slate-700">
+                  {{ doc.pageCount }} {{ doc.pageCount === 1 ? 'page' : 'pages' }}
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="bg-emerald-50 text-accent-emerald text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+                    Vector Indexed
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <button 
+                    (click)="onDeleteDocument(doc.documentName)"
+                    class="p-button-danger p-button-sm p-button-outlined text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg transition cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <lucide-icon [img]="TrashIcon" class="w-3.5 h-3.5"></lucide-icon>
+                    <span>Delete</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div *ngIf="!isDocumentsLoading() && !documents().length" class="text-center py-10 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+          <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3 text-slate-400">
+            <lucide-icon [img]="FileTextIcon" class="w-6 h-6"></lucide-icon>
+          </div>
+          <h5 class="text-sm font-bold text-dark-900 mb-1">No Handbook Documents Indexed Yet</h5>
+          <p class="text-xs text-slate-500 max-w-md mx-auto mb-3">Upload your course catalog or academic policies above so the AI Assistant can answer policy questions with citations.</p>
         </div>
       </div>
     </section>

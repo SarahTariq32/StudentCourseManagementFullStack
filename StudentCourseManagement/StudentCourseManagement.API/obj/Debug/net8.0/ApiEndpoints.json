@@ -1,6 +1,42 @@
 [
   {
     "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
+    "Method": "GetDocuments",
+    "RelativePath": "api/AiCourse/documents",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
+    "Method": "DeleteDocument",
+    "RelativePath": "api/AiCourse/documents/{documentName}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "documentName",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
+    "Method": "GetPendingRequestsSummary",
+    "RelativePath": "api/AiCourse/enrollmentrequests/ai-summary",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
     "Method": "StreamPendingRequestsSummary",
     "RelativePath": "api/AiCourse/enrollmentrequests/ai-summary/stream",
     "HttpMethod": "GET",
@@ -42,6 +78,22 @@
       {
         "Name": "query",
         "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
+    "Method": "UploadHandbook",
+    "RelativePath": "api/AiCourse/upload-handbook",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
       }
     ],

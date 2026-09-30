@@ -74,6 +74,10 @@ builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+// --- DOCUMENT INGESTION (RAG) ---
+builder.Services.AddSingleton<DocumentChunker>();
+builder.Services.AddScoped<IDocumentIngestionService, DocumentIngestionService>();
+
 // --- APPLICATION SERVICES DEPENDENCY INJECTION ---
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
@@ -94,7 +98,15 @@ var openRouterKey = builder.Configuration["OpenRouter:ApiKey"]
         "OpenRouter API Key 'OpenRouter:ApiKey' is not configured. " +
         "Run 'dotnet user-secrets set OpenRouter:ApiKey <key>' in StudentCourseManagement.API.");
 
-string modelId = "openrouter/free";
+string modelId = builder.Configuration["OpenRouter:ModelId"] ?? "openrouter/free";
+
+builder.Services.AddScoped<IVectorStore, VectorStore>();
+
+builder.Services.AddHttpClient<IEmbeddingService, OllamaEmbeddingService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:11434/");
+    client.Timeout = TimeSpan.FromMinutes(2);
+});
 
 builder.Services.AddSingleton(sp =>
 {
@@ -164,31 +176,42 @@ builder.Services.AddRateLimiter(options =>
 
     options.AddPolicy("AiSearchLimit", httpContext =>
     {
-        var username = httpContext.User.Identity?.Name
+        var username = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                       ?? httpContext.User.FindFirst("unique_name")?.Value
+                       ?? httpContext.User.FindFirst("name")?.Value
+                       ?? httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                       ?? httpContext.User.FindFirst("sub")?.Value
+                       ?? httpContext.User.Identity?.Name
                        ?? httpContext.Connection.RemoteIpAddress?.ToString()
                        ?? "anonymous";
 
         return RateLimitPartition.GetFixedWindowLimiter(username, _ =>
             new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 5,
+                PermitLimit = 60,
                 Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0
+                QueueLimit = 10,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
             });
     });
 
     options.AddPolicy("AiAdminLimit", httpContext =>
     {
-        var username = httpContext.User.Identity?.Name
+        var username = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                       ?? httpContext.User.FindFirst("unique_name")?.Value
+                       ?? httpContext.User.FindFirst("name")?.Value
+                       ?? httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                       ?? httpContext.User.FindFirst("sub")?.Value
+                       ?? httpContext.User.Identity?.Name
                        ?? httpContext.Connection.RemoteIpAddress?.ToString()
                        ?? "anonymous";
 
         return RateLimitPartition.GetFixedWindowLimiter($"admin_{username}", _ =>
             new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
+                PermitLimit = 60,
                 Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 2,
+                QueueLimit = 10,
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst
             });
     });

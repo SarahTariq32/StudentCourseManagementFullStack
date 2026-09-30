@@ -217,19 +217,25 @@
         <div #chatContainer class="flex-1 p-6 overflow-y-auto space-y-6 bg-slate-50/50">
           
           <!-- EMPTY WELCOME STATE -->
-          <div *ngIf="!chatHistory().length && !isAiThinking()" class="text-center py-12 px-4">
+          <div *ngIf="!chatHistory().length && !isAiThinking()" class="text-center py-10 px-4">
             <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-brand-500">
               <lucide-icon [img]="SparklesIcon" class="w-8 h-8"></lucide-icon>
             </div>
             <h4 class="font-bold text-dark-900 text-base mb-1">How can I assist your academic journey?</h4>
-            <p class="text-xs text-slate-500 max-w-md mx-auto mb-6">Select a search mode above and ask any question regarding your active classes or future catalog options.</p>
+            <p class="text-xs text-slate-500 max-w-md mx-auto mb-6">Select a search mode above and ask any question regarding course requirements, university policies, or your enrolled schedule.</p>
             
-            <div class="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-              <button (click)="aiQuery.set('What courses am I currently enrolled in?'); setAiMode(true); onAskAi()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">
-                "What courses am I currently enrolled in?"
+            <div class="flex flex-wrap justify-center gap-2 max-w-xl mx-auto">
+              <button (click)="aiQuery.set('How many courses can I drop after week two?'); setAiMode(true); onAskAi()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">
+                "How many courses can I drop after week two?"
               </button>
-              <button (click)="aiQuery.set('What skills do I need to learn Web Development?'); setAiMode(false); onAskAi()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">
-                "How to learn Web Development?"
+              <button (click)="aiQuery.set('What are the four core ideas of object-oriented programming?'); setAiMode(true); onAskAi()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">
+                "What are the core OOP concepts?"
+              </button>
+              <button (click)="aiQuery.set('What courses am I currently enrolled in?'); setAiMode(true); onAskAi()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">
+                "What courses am I taking?"
+              </button>
+              <button (click)="aiQuery.set('Recommend courses in Machine Learning and Cloud Computing'); setAiMode(false); onAskAi()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition cursor-pointer">
+                "Recommend ML & Cloud courses"
               </button>
             </div>
           </div>
@@ -253,15 +259,63 @@
               <!-- AI RESPONSE CARD THREAD -->
               <div *ngIf="msg.sender === 'ai'" class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs text-sm text-slate-800 space-y-4">
                 
+                <!-- SERVICE ERROR / RATE LIMIT BANNER -->
+                <div *ngIf="isAiServiceError(msg.data?.advisorNote)" class="bg-rose-500/10 border border-rose-500/30 text-rose-300 p-4 rounded-xl text-xs flex items-start gap-3">
+                  <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4 text-rose-400 shrink-0 mt-0.5"></lucide-icon>
+                  <div class="flex-1">
+                    <span class="text-rose-400 font-bold block uppercase tracking-wider text-[10px] mb-1">AI Provider Rate Limited</span>
+                    <p class="mb-2 text-slate-200 leading-relaxed">{{ msg.data?.advisorNote }}</p>
+                    <button 
+                      (click)="aiQuery.set(msg.text); onAskAi()" 
+                      [disabled]="isAiThinking()" 
+                      class="bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold px-3 py-1 rounded-md transition cursor-pointer border border-slate-700 inline-flex items-center gap-1.5"
+                    >
+                      <lucide-icon [img]="SparklesIcon" class="w-3 h-3 text-brand-400"></lucide-icon>
+                      <span>Retry Question</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- REFUSAL BANNER (When query is outside knowledge base) -->
+                <div *ngIf="!isAiServiceError(msg.data?.advisorNote) && isRefusalMessage(msg.data?.advisorNote)" class="bg-amber-500/10 border border-amber-500/30 text-amber-300 p-4 rounded-xl text-xs flex items-start gap-3">
+                  <lucide-icon [img]="AlertCircleIcon" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></lucide-icon>
+                  <div>
+                    <span class="text-amber-400 font-bold block uppercase tracking-wider text-[10px] mb-1">Handbook Refusal Policy</span>
+                    <p class="mb-0 text-slate-200 leading-relaxed">The requested policy information was <strong>not found in the indexed university documents</strong>. Speculative or ungrounded answers are strictly prevented.</p>
+                  </div>
+                </div>
+
                 <!-- ADVISOR SUMMARY NOTE -->
-                <div class="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs leading-relaxed border border-slate-800">
-                  <span class="text-brand-400 font-bold block mb-1 uppercase tracking-wider text-[10px]">Advisor Summary</span>
-                  {{ msg.data?.advisorNote }}
+                <div *ngIf="!isAiServiceError(msg.data?.advisorNote) && !isRefusalMessage(msg.data?.advisorNote)" class="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs leading-relaxed border border-slate-800">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-brand-400 font-bold uppercase tracking-wider text-[10px]">Academic Advisor Note</span>
+                    <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                      <lucide-icon [img]="BookmarkIcon" class="w-3 h-3"></lucide-icon>
+                      RAG Grounded
+                    </span>
+                  </div>
+                  
+                  <p class="mb-0 text-slate-200 whitespace-pre-line">{{ getCleanAdvisorNote(msg.data?.advisorNote) }}</p>
+
+                  <!-- CITATIONS PILLS -->
+                  <div *ngIf="getCitations(msg.data?.advisorNote).length" class="mt-3 pt-3 border-t border-slate-700/50">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-2 flex items-center gap-1.5">
+                      <lucide-icon [img]="BookmarkIcon" class="w-3 h-3 text-emerald-400"></lucide-icon>
+                      Verified Handbook Sources ({{ getCitations(msg.data?.advisorNote).length }})
+                    </span>
+                    <div class="flex flex-wrap gap-2">
+                      <span *ngFor="let citation of getCitations(msg.data?.advisorNote)" class="inline-flex items-center gap-1.5 bg-slate-800 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-[11px] font-mono shadow-xs">
+                        <lucide-icon [img]="FileTextIcon" class="w-3 h-3 text-emerald-400"></lucide-icon>
+                        <strong class="text-white">{{ citation.document }}</strong>
+                        <span class="text-slate-400">· Page {{ citation.page }}</span>
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- MATCHED COURSES CARDS -->
                 <div *ngIf="msg.data?.matchedCourses?.length">
-                  <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 block mb-2">Recommendations</span>
+                  <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 block mb-2">Course Recommendations</span>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div *ngFor="let course of msg.data?.matchedCourses" class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                       <div class="flex justify-between items-center mb-1">

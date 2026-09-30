@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using StudentCourseManagement.Application.DTOs;
@@ -93,7 +93,7 @@ public class AiSummaryIntegrationTests : IClassFixture<CustomWebApplicationFacto
     {
         string adminToken = await GetJwtTokenAsync("testadmin", "AdminPass123!");
 
-        var tasks = Enumerable.Range(0, 20).Select(_ =>
+        var tasks = Enumerable.Range(0, 80).Select(_ =>
         {
             var request = new HttpRequestMessage(HttpMethod.Get, SummaryEndpoint);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);

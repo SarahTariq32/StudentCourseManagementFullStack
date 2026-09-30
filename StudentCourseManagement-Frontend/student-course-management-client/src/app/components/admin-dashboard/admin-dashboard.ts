@@ -15,12 +15,12 @@ import {
   LucideAngularModule, 
   LogOut, Search, Trash2, Edit, UserPlus, BookPlus, Users, BookOpen,
   UserCheck, Check, X, ArrowRight, Sparkles, RefreshCw, AlertTriangle, Clock,
-  Bell, BellRing
+  Bell, BellRing, Upload, FileText, FileUp, Database, HardDrive, Info
 } from 'lucide-angular';
 
 import { AdminService, QueryParameters } from '../../services/admin';
 import { AuthService } from '../../services/auth';
-import { AiCourseService, EnrollmentRequestAiSummary } from '../../services/ai-course';
+import { AiCourseService, EnrollmentRequestAiSummary, DocumentInfo } from '../../services/ai-course';
 import { SignalRService } from '../../services/signalr';
 import { PendingRequest } from '../../models/admin.model';
 import { extractErrorMessage } from '../../utils/http-error.util';
@@ -35,7 +35,8 @@ type AdminView =
   | 'course-form' 
   | 'registration-requests'
   | 'course-requests'
-  | 'ai-summary';
+  | 'ai-summary'
+  | 'handbook-management';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -78,6 +79,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   readonly ClockIcon = Clock;
   readonly BellIcon = Bell;
   readonly BellRingIcon = BellRing;
+  readonly UploadIcon = Upload;
+  readonly FileTextIcon = FileText;
+  readonly FileUpIcon = FileUp;
+  readonly DatabaseIcon = Database;
+  readonly HardDriveIcon = HardDrive;
+  readonly InfoIcon = Info;
 
   activeView = signal<AdminView>('overview');
   
@@ -116,6 +123,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   isStreaming = signal<boolean>(false);
   streamError = signal<string>('');
   private streamRunId = 0;   
+
+  // Handbook & RAG Document Management state
+  documents = signal<DocumentInfo[]>([]);
+  isDocumentsLoading = signal<boolean>(false);
+  isUploadingHandbook = signal<boolean>(false);
+  selectedHandbookFile = signal<File | null>(null);
+  handbookUploadError = signal<string>('');
+  handbookUploadSuccess = signal<string>('');
+  isDraggingOver = signal<boolean>(false);
 
   // Rate limit countdown state
   rateLimitSeconds = signal<number>(0);
@@ -164,6 +180,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         if (!this.aiSummary() && !this.isSummaryLoading() && !this.streamError()) {
           this.loadAiSummary();
         }
+      }
+
+      if (currentView === 'handbook-management') {
+        this.handbookUploadError.set('');
+        this.handbookUploadSuccess.set('');
+        this.selectedHandbookFile.set(null);
+        this.loadDocuments();
       }
     }, { allowSignalWrites: true });
   }
@@ -613,6 +636,135 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         },
         error: (err: HttpErrorResponse) => this.errorMessage.set(extractErrorMessage(err, 'Processing failed.'))
       });
+  }
+
+  // --- Handbook & RAG Document Management Methods ---
+  loadDocuments(): void {
+    this.isDocumentsLoading.set(true);
+    this.aiCourseService.getDocuments()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (docs) => {
+          this.documents.set(docs || []);
+          this.isDocumentsLoading.set(false);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.handbookUploadError.set(extractErrorMessage(err, 'Failed to load indexed documents.'));
+          this.isDocumentsLoading.set(false);
+        }
+      });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.validateAndSetFile(input.files[0]);
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingOver.set(true);
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingOver.set(false);
+  }
+
+  onFileDropped(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingOver.set(false);
+
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.validateAndSetFile(event.dataTransfer.files[0]);
+    }
+  }
+
+  clearSelectedFile(): void {
+    this.selectedHandbookFile.set(null);
+    this.handbookUploadError.set('');
+    this.handbookUploadSuccess.set('');
+  }
+
+  private validateAndSetFile(file: File): void {
+    this.handbookUploadError.set('');
+    this.handbookUploadSuccess.set('');
+
+    const ext = file.name.toLowerCase();
+    if (!ext.endsWith('.pdf') && !ext.endsWith('.txt')) {
+      this.handbookUploadError.set('Unsupported file format. Please upload a .pdf or .txt document.');
+      this.selectedHandbookFile.set(null);
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      this.handbookUploadError.set('File is too large. Maximum supported document size is 20MB.');
+      this.selectedHandbookFile.set(null);
+      return;
+    }
+
+    this.selectedHandbookFile.set(file);
+  }
+
+  onUploadHandbook(): void {
+    const file = this.selectedHandbookFile();
+    if (!file) {
+      this.handbookUploadError.set('Please choose or drag a .pdf or .txt file first.');
+      return;
+    }
+
+    this.isUploadingHandbook.set(true);
+    this.handbookUploadError.set('');
+    this.handbookUploadSuccess.set('');
+
+    this.aiCourseService.uploadHandbook(file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isUploadingHandbook.set(false);
+          this.handbookUploadSuccess.set(res.message || `Document "${file.name}" indexed successfully (${res.chunkCount} chunks across ${res.pageCount} page(s)).`);
+          this.selectedHandbookFile.set(null);
+          this.loadDocuments();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.isUploadingHandbook.set(false);
+          if (err.status === 502) {
+            this.handbookUploadError.set(
+              'Embedding provider (Ollama) is offline or unreachable at http://localhost:11434. Please ensure Ollama is running with "nomic-embed-text".'
+            );
+          } else {
+            this.handbookUploadError.set(extractErrorMessage(err, `Failed to upload and index document "${file.name}".`));
+          }
+        }
+      });
+  }
+
+  onDeleteDocument(docName: string): void {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete "${docName}" and all its indexed vector chunks? This cannot be undone.`,
+      header: 'Confirm Document Deletion',
+      acceptLabel: 'Delete Document',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger p-button-sm',
+      rejectButtonStyleClass: 'p-button-outlined p-button-secondary p-button-sm',
+      accept: () => {
+        this.aiCourseService.deleteDocument(docName)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (res) => {
+              this.statusMessage.set(res.message || `Document "${docName}" deleted successfully.`);
+              this.loadDocuments();
+            },
+            error: (err: HttpErrorResponse) => {
+              this.errorMessage.set(extractErrorMessage(err, `Failed to delete document "${docName}".`));
+            }
+          });
+      }
+    });
   }
 
   onLogout(): void {

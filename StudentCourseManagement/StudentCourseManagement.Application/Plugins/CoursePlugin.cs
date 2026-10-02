@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using StudentCourseManagement.Application.Interfaces;
 
@@ -16,7 +16,7 @@ public class CoursePlugin
     }
 
     [KernelFunction, Description("Gets the minimal list of courses (id, name, credits) that the authenticated student is currently enrolled in.")]
-    public async Task<List<object>> GetEnrolledCoursesAsync()
+    public async Task<string> GetEnrolledCoursesAsync()
     {
         var allCourses = await _courseRepository.GetAllAsync();
         var enrolledList = new List<object>();
@@ -35,11 +35,11 @@ public class CoursePlugin
             }
         }
 
-        return enrolledList;
+        return System.Text.Json.JsonSerializer.Serialize(enrolledList);
     }
 
     [KernelFunction, Description("Searches and returns up to 5 available catalog courses matching a keyword or topic. Never returns the full catalog.")]
-    public async Task<List<object>> GetSimilarAvailableCoursesAsync(
+    public async Task<string> GetSimilarAvailableCoursesAsync(
         [Description("Keyword or topic to filter available catalog courses by (e.g. 'Database', 'Math', 'AI').")] string keyword)
     {
         var availableCourses = await _courseRepository.GetAvailableCoursesForStudentsAsync(_authenticatedStudentId);
@@ -57,11 +57,13 @@ public class CoursePlugin
             matched = availableCourses.Take(5).ToList();
         }
 
-        return matched.Select(c => new
+        var resultList = matched.Select(c => new
         {
             id = c.Id,
             name = c.Name,
             credits = c.Credits
-        }).ToList<object>();
+        }).ToList();
+        
+        return System.Text.Json.JsonSerializer.Serialize(resultList);
     }
 }

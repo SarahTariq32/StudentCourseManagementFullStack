@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Caching.Memory;
@@ -42,11 +42,20 @@ public class AiSummaryDigestBackgroundService : BackgroundService
     private async Task RunCacheRefreshLoopAsync(TimeSpan interval, CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(interval);
-        await RegenerateSummaryAsync(stoppingToken);
-
-        while (await timer.WaitForNextTickAsync(stoppingToken))
+        
+        try
         {
             await RegenerateSummaryAsync(stoppingToken);
+            while (await timer.WaitForNextTickAsync(stoppingToken))
+            {
+                await RegenerateSummaryAsync(stoppingToken);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AiSummaryJob] Error during summary generation loop.");
         }
     }
 
@@ -54,9 +63,18 @@ public class AiSummaryDigestBackgroundService : BackgroundService
     {
         using var timer = new PeriodicTimer(interval);
 
-        while (await timer.WaitForNextTickAsync(stoppingToken))
+        try
         {
-            await SendDigestIfChangedAsync(stoppingToken);
+            while (await timer.WaitForNextTickAsync(stoppingToken))
+            {
+                await SendDigestIfChangedAsync(stoppingToken);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AiSummaryJob] Error during email digest loop.");
         }
     }
 

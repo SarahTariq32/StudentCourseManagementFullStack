@@ -85,6 +85,16 @@
   },
   {
     "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
+    "Method": "TriggerTestError",
+    "RelativePath": "api/AiCourse/test-error",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudentCourseManagement.API.Controllers.AiCourseController",
     "Method": "UploadHandbook",
     "RelativePath": "api/AiCourse/upload-handbook",
     "HttpMethod": "POST",

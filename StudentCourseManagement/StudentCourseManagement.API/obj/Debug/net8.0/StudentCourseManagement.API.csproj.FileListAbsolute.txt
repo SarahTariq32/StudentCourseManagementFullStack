@@ -357,4 +357,14 @@ C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\UglyToad.PdfPig.Fonts.dll
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\UglyToad.PdfPig.Tokenization.dll
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\UglyToad.PdfPig.Tokens.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.AspNetCore.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.Extensions.Hosting.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.Extensions.Logging.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.Formatting.Compact.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.Settings.Configuration.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.Sinks.Console.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.Sinks.Debug.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Serilog.Sinks.File.dll
+C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\bin\Debug\net8.0\Logs\app-20261002.json
 C:\Users\sarah\OneDrive\Desktop\StudentCourseManagement\StudentCourseManagement\StudentCourseManagement.API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

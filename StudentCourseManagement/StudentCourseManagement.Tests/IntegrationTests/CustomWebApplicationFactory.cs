@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using StudentCourseManagement.Application.Interfaces;
@@ -11,6 +12,9 @@ using StudentCourseManagement.Infrastructure.AuthEntities;
 using StudentCourseManagement.Infrastructure.Data;
 using StudentCourseManagement.Infrastructure.Entities;
 using StudentCourseManagement.Tests.TestDoubles;
+
+using Serilog;
+using Serilog.Events;
 
 namespace StudentCourseManagement.Tests.IntegrationTests;
 
@@ -22,10 +26,32 @@ namespace StudentCourseManagement.Tests.IntegrationTests;
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     public FakeChatCompletionService FakeChat { get; } = new();
+    public TestLogEventSink LogSink { get; } = new();
 
-    // Unique per factory instance: the EF InMemory store is shared process-wide by database
-    // name, so a fixed name would leak documents between test classes.
     private readonly string _databaseName = $"IntegrationTestDb_{Guid.NewGuid():N}";
+
+    public IReadOnlyList<LogEvent> GetLogsByCorrelationId(string correlationId) =>
+        LogSink.GetLogsByCorrelationId(correlationId);
+
+    public IReadOnlyList<string> GetFormattedLogs(string correlationId) =>
+        LogSink.GetFormattedLogs(correlationId);
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        builder.UseSerilog((context, services, configuration) =>
+        {
+            configuration
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .WriteTo.Sink(LogSink)
+                .WriteTo.Console();
+        });
+
+        return base.CreateHost(builder);
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

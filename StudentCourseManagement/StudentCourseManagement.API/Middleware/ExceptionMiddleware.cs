@@ -26,14 +26,18 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred: {Message}. Path: {Path}, Method: {Method}", 
-                ex.Message, context.Request.Path, context.Request.Method);
+            var correlationId = context.Items["CorrelationId"]?.ToString() 
+                ?? context.Response.Headers["X-Correlation-ID"].ToString() 
+                ?? Guid.NewGuid().ToString();
 
-            await HandleExceptionAsync(context, ex);
+            _logger.LogError(ex, "An unhandled exception occurred: {ErrorMessage}. Path: {Path}, Method: {Method}, CorrelationId: {CorrelationId}", 
+                ex.Message, context.Request.Path, context.Request.Method, correlationId);
+
+            await HandleExceptionAsync(context, ex, correlationId);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception ex)
+    private static Task HandleExceptionAsync(HttpContext context, Exception ex, string correlationId)
     {
         context.Response.ContentType = "application/json";
 
@@ -72,7 +76,8 @@ public class ExceptionMiddleware
         var response = new
         {
             statusCode = (int)statusCode,
-            message = message
+            message = message,
+            correlationId = correlationId
         };
 
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };

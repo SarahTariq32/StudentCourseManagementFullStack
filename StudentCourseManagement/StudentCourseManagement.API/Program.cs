@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text;
 using System.Threading.RateLimiting;
 using FluentValidation;
@@ -12,6 +13,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
 using StudentCourseManagement.API.Hubs;
 using StudentCourseManagement.API.Middleware;
 using StudentCourseManagement.Application.Interfaces;
@@ -21,6 +25,35 @@ using StudentCourseManagement.Infrastructure.Data;
 using StudentCourseManagement.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// --- SERILOG STRUCTURED LOGGING CONFIGURATION ---
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    var logsDirectory = Path.Combine(AppContext.BaseDirectory, "Logs");
+    if (!Directory.Exists(logsDirectory))
+    {
+        Directory.CreateDirectory(logsDirectory);
+    }
+
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+        .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{CorrelationId}] [{UserId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
+        .WriteTo.File(
+            formatter: new CompactJsonFormatter(),
+            path: Path.Combine(logsDirectory, "app-.json"),
+            rollingInterval: RollingInterval.Day,
+            fileSizeLimitBytes: 10 * 1024 * 1024,
+            rollOnFileSizeLimit: true,
+            retainedFileCountLimit: null,
+            retainedFileTimeLimit: TimeSpan.FromDays(3));
+});
 
 // --- CONTROLLERS, FLUENT VALIDATION & SIGNALR ---
 builder.Services.AddControllers()
@@ -222,7 +255,32 @@ builder.Services.AddHostedService<AiSummaryDigestBackgroundService>();
 var app = builder.Build();
 
 // --- MIDDLEWARE PIPELINE ---
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        var correlationId = httpContext.Items["CorrelationId"]?.ToString() 
+            ?? httpContext.Response.Headers[CorrelationIdMiddleware.CorrelationIdHeaderName].ToString();
+        diagnosticContext.Set("CorrelationId", correlationId ?? "unknown");
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+        diagnosticContext.Set("ClientIp", httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+
+        if (httpContext.User?.Identity?.IsAuthenticated == true)
+        {
+            var internalId = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                ?? httpContext.User.FindFirst("sub")?.Value;
+            if (!string.IsNullOrEmpty(internalId))
+            {
+                diagnosticContext.Set("AuthenticatedUser", internalId);
+            }
+        }
+    };
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -236,6 +294,24 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                 ?? context.User?.FindFirst("sub")?.Value;
+
+    if (!string.IsNullOrEmpty(userId))
+    {
+        using (Serilog.Context.LogContext.PushProperty("UserId", userId))
+        {
+            await next(context);
+        }
+    }
+    else
+    {
+        await next(context);
+    }
+});
 
 app.UseRateLimiter();
 

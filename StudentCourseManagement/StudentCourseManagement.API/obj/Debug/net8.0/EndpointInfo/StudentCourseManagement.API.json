@@ -137,6 +137,18 @@
         }
       }
     },
+    "/api/AiCourse/test-error": {
+      "get": {
+        "tags": [
+          "AiCourse"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Auth/register": {
       "post": {
         "tags": [

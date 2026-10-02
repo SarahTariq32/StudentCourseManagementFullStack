@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using StudentCourseManagement.Application.DTOs;
 using StudentCourseManagement.Application.Interfaces;
 using StudentCourseManagement.Infrastructure.Data;
@@ -39,11 +40,16 @@ public class VectorStore : IVectorStore
 
     private readonly ApplicationDbContext _db;
     private readonly IEmbeddingService _embeddingService;
+    private readonly Microsoft.Extensions.Logging.ILogger<VectorStore>? _logger;
 
-    public VectorStore(ApplicationDbContext db, IEmbeddingService embeddingService)
+    public VectorStore(
+        ApplicationDbContext db, 
+        IEmbeddingService embeddingService, 
+        Microsoft.Extensions.Logging.ILogger<VectorStore>? logger = null)
     {
         _db = db;
         _embeddingService = embeddingService;
+        _logger = logger;
     }
 
     public async Task ProcessAndStoreDocumentAsync(string documentName, List<(int PageNumber, int ChunkIndex, string Text)> chunks)
@@ -101,6 +107,10 @@ public class VectorStore : IVectorStore
         if (string.IsNullOrWhiteSpace(query) || topK <= 0)
             return empty;
 
+        _logger?.LogInformation(
+            "RAG vector search initiated. QueryLength: {QueryLength}, TopK: {TopK}, MinScore: {MinScore}, Mode: {SearchMode}", 
+            query.Length, topK, minScore, mode);
+
         var queryVector = await _embeddingService.GenerateEmbeddingAsync(query);
         var keywords = ExtractKeywords(query);
         var allChunks = await _db.DocumentChunks.AsNoTracking().ToListAsync();
@@ -129,14 +139,38 @@ public class VectorStore : IVectorStore
             candidates.Add(new ScoredChunk(chunk, score, CountKeywordHits(chunk.TextContent, keywords)));
         }
 
+        _logger?.LogInformation(
+            "RAG candidate evaluation completed. Total chunks evaluated: {TotalChunks}, Candidates meeting minScore ({MinScore}): {CandidateCount}",
+            allChunks.Count, minScore, candidates.Count);
+
         if (candidates.Count == 0)
+        {
+            _logger?.LogWarning(
+                "RAG retrieval returned 0 matching candidates above minScore {MinScore}.",
+                minScore);
             return empty;
+        }
 
         if (mode == VectorSearchMode.VectorOnly)
         {
-            return candidates
+            var vectorOnlyResults = candidates
                 .OrderByDescending(c => c.VectorScore)
                 .Take(topK)
+                .ToList();
+
+            var vectorOnlySummaries = vectorOnlyResults.Select(r => new
+            {
+                r.Chunk.DocumentName,
+                r.Chunk.PageNumber,
+                r.Chunk.ChunkIndex,
+                VectorScore = Math.Round(r.VectorScore, 4)
+            }).ToList();
+
+            _logger?.LogInformation(
+                "RAG retrieval (VectorOnly) returning {ResultCount} chunks. Chunks: {@RetrievedChunks}",
+                vectorOnlyResults.Count, vectorOnlySummaries);
+
+            return vectorOnlyResults
                 .Select(ToDto)
                 .ToList();
         }
@@ -185,6 +219,10 @@ public class VectorStore : IVectorStore
                 survivors.Add(candidate);
         }
 
+        _logger?.LogInformation(
+            "RAG quality filter processed {PoolCount} candidates. Survivors after keyword coverage & threshold check: {SurvivorCount}",
+            pool.Count, survivors.Count);
+
         var reranked = survivors
             .OrderByDescending(c => RerankVectorWeight * c.VectorScore + RerankCoverageWeight * c.KeywordCoverage)
             .ThenByDescending(c => c.VectorScore);
@@ -206,6 +244,22 @@ public class VectorStore : IVectorStore
             if (results.Count == topK)
                 break;
         }
+
+        var retrievedChunksSummaries = results.Select(r => new
+        {
+            r.Chunk.DocumentName,
+            r.Chunk.PageNumber,
+            r.Chunk.ChunkIndex,
+            VectorScore = Math.Round(r.VectorScore, 4),
+            KeywordCoverage = Math.Round(r.KeywordCoverage, 4),
+            KeywordHits = r.KeywordHits,
+            RrfScore = Math.Round(r.RrfScore, 4),
+            BlendedScore = Math.Round(RerankVectorWeight * r.VectorScore + RerankCoverageWeight * r.KeywordCoverage, 4)
+        }).ToList();
+
+        _logger?.LogInformation(
+            "RAG retrieval completed. Returning {ResultCount} chunks. Retrieved Chunks: {@RetrievedChunks}",
+            results.Count, retrievedChunksSummaries);
 
         return results
             .Select(ToDto)

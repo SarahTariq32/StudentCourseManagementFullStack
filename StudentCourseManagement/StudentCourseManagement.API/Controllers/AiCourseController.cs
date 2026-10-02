@@ -176,4 +176,13 @@ public class AiCourseController : ControllerBase
 
         return Ok(new { message = $"Document '{documentName}' and all its indexed chunks were deleted." });
     }
+
+#if DEBUG
+    [HttpGet("test-error")]
+    [AllowAnonymous]
+    public IActionResult TriggerTestError()
+    {
+        throw new InvalidOperationException("Deliberately triggered test error for structured logging verification.");
+    }
+#endif
 }

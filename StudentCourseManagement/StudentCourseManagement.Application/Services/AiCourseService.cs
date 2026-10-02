@@ -12,6 +12,10 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using StudentCourseManagement.Application.DTOs;
 using StudentCourseManagement.Application.Interfaces;
 using StudentCourseManagement.Application.Plugins;
+using Microsoft.Extensions.Logging;
+
+#pragma warning disable SKEXP0001
+#pragma warning disable SKEXP0004
 
 
 namespace StudentCourseManagement.Application.Services;
@@ -23,6 +27,7 @@ public class AiCourseService : IAiCourseService
     private readonly IStudentRepository _studentRepository;
     private readonly IMemoryCache _cache;
     private readonly IVectorStore _vectorStore;
+    private readonly ILogger<AiCourseService>? _logger;
 
     public const string SummaryCacheKey = "PendingRequests_AiSummary_CacheKey";
     private static readonly SemaphoreSlim _summaryCacheLock = new SemaphoreSlim(1, 1);
@@ -40,25 +45,65 @@ public class AiCourseService : IAiCourseService
         ICourseRepository courseRepository,
         IStudentRepository studentRepository,
         IMemoryCache cache, 
-        IVectorStore vectorStore)
+        IVectorStore vectorStore,
+        ILogger<AiCourseService>? logger = null)
     {
         _kernel = kernel;
         _courseRepository = courseRepository;
         _studentRepository = studentRepository;
         _cache = cache;
         _vectorStore = vectorStore;
+        _logger = logger;
+    }
+
+    private string ComputeSha256Hash(string rawData)
+    {
+        using (var sha256Hash = System.Security.Cryptography.SHA256.Create())
+        {
+            byte[] bytes = sha256Hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(rawData ?? ""));
+            var builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
     }
 
     private async Task<string> BuildReferenceDataAsync(string query)
     {
+        var queryHash = ComputeSha256Hash(query);
         try
         {
-            var results = await _vectorStore.SearchAsync(query, topK: 5, minScore: 0.25);
+            var allResults = await _vectorStore.SearchAsync(query, topK: 5, minScore: 0.0);
+            var results = allResults.Where(r => r.Score >= 0.25).ToList();
+            var topScore = allResults.Count > 0 ? allResults.Max(r => r.Score) : 0.0;
+            if (topScore == 0.0)
+            {
+                var rawResults = await _vectorStore.SearchAsync(query, topK: 1, minScore: 0.0, mode: VectorSearchMode.VectorOnly);
+                topScore = rawResults.Count > 0 ? rawResults.Max(r => r.Score) : 0.0;
+            }
 
             if (results == null || results.Count == 0)
+            {
+                _logger?.LogInformation(
+                    "RAG reference data builder: No matching handbook passages found. " +
+                    "QueryLength: {QueryLength}, QueryHash: {QueryHash}, Threshold: {Threshold}, RefusalReason: {RefusalReason}, TopScore: {TopScore}", 
+                    query?.Length ?? 0, queryHash, 0.25, "No results above threshold", topScore);
+
                 return "<documents>\n(No relevant handbook passages were found for this question. " +
                        "If the student's question is about university policy, rules, or procedures, " +
                        "reply exactly: 'not found in the documents'.)\n</documents>";
+            }
+
+            var chunkIds = string.Join(",", results.Select(r => $"{r.DocumentName}_{r.ChunkIndex}"));
+            var scores = string.Join(",", results.Select(r => r.Score.ToString("F3")));
+
+            _logger?.LogInformation(
+                "RAG reference data builder: Successfully retrieved chunks. " +
+                "QueryLength: {QueryLength}, QueryHash: {QueryHash}, ChunkCount: {ChunkCount}, " +
+                "ChunkIds: {ChunkIds}, RelevanceScores: {RelevanceScores}, Threshold: {Threshold}", 
+                query?.Length ?? 0, queryHash, results.Count, chunkIds, scores, 0.25);
 
             var sb = new StringBuilder("<documents>\n");
             foreach (var res in results)
@@ -66,29 +111,56 @@ public class AiCourseService : IAiCourseService
             sb.AppendLine("</documents>");
             return sb.ToString();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger?.LogError(ex, "RAG reference data builder: Error searching vector store. QueryLength: {QueryLength}, QueryHash: {QueryHash}", query?.Length ?? 0, queryHash);
             return "<documents>\n(Handbook search is temporarily unavailable.)\n</documents>";
         }
     }
 
+    private bool RequiresRag(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query)) return false;
+        var lower = query.ToLowerInvariant();
+        
+        // Skip RAG for simple greetings
+        if (lower == "hi" || lower == "hii" || lower == "hello" || lower == "hey" || lower == "greetings" || lower == "sup")
+            return false;
+            
+        // Skip RAG if strictly asking about their own courses
+        if (lower.Contains("my courses") || lower.Contains("am i taking") || lower.Contains("what am i enrolled in") || lower.Contains("my schedule"))
+            return false;
+
+        return true;
+    }
+
     public async Task<CourseRecommendationResponseDto> SearchStrictAsync(string username, string query)
     {
+        _logger?.LogInformation("AI strict search request received. QueryLength: {QueryLength}", query?.Length ?? 0);
+
         var student = await _studentRepository.GetByNameAsync(username);
 
         if (student == null)
         {
+            _logger?.LogWarning("AI strict search failed: Student record not found.");
             return new CourseRecommendationResponseDto
             {
                 AdvisorNote = "Could not find a student record linked to your account. Please contact an administrator."
             };
         }
 
-        string referenceData = await BuildReferenceDataAsync(query);
+        string referenceData = "";
+        if (RequiresRag(query))
+        {
+            referenceData = await BuildReferenceDataAsync(query);
+        }
 
         var scopedKernel = _kernel.Clone();
         var plugin = new CoursePlugin(_courseRepository, student.Id);
         scopedKernel.Plugins.AddFromObject(plugin, "CoursePlugin");
+
+        var functionFilter = new FunctionLoggingFilter();
+        scopedKernel.FunctionInvocationFilters.Add(functionFilter);
 
         string prompt = $@"You are a friendly, professional academic advisor assisting a student.
 
@@ -124,9 +196,31 @@ Student Query: ""{query}""";
                     ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
                 };
 
+                _logger?.LogDebug("Calling AI chat completion (Strict mode). Attempt: {Attempt}/{MaxRetries}", i + 1, maxRetries);
+
                 var chatCompletion = scopedKernel.GetRequiredService<IChatCompletionService>();
+                var sw = System.Diagnostics.Stopwatch.StartNew();
                 var result = await GetChatWithRetryAsync(chatCompletion, prompt, executionSettings, scopedKernel);
-                return CleanAndParseJsonResponse(result.ToString());
+                sw.Stop();
+
+                var parsed = CleanAndParseJsonResponse(result.ToString());
+                
+                bool isRefusal = parsed.AdvisorNote != null && parsed.AdvisorNote.Contains("not found in the documents", StringComparison.OrdinalIgnoreCase);
+                
+                string modelName = result.ModelId ?? "unknown";
+                string finishReason = result.Metadata?.ContainsKey("FinishReason") == true ? result.Metadata["FinishReason"]?.ToString() ?? "unknown" : "unknown";
+                int tokenCount = 0;
+                if (result.Metadata?.ContainsKey("Usage") == true)
+                {
+                    try { tokenCount = ((dynamic)result.Metadata["Usage"]).TotalTokens; } catch { }
+                }
+
+                string functionsCalled = functionFilter.CalledFunctions.Count > 0 ? string.Join(", ", functionFilter.CalledFunctions) : "none";
+
+                _logger?.LogInformation("AI final result. Model: {ModelName}, LatencyMs: {LatencyMs}, Tokens: {TokenCount}, FinishReason: {FinishReason}, ResponseLength: {ResponseLength}, IsRefusal: {IsRefusal}, FunctionsCalled: {FunctionsCalled}", 
+                    modelName, sw.ElapsedMilliseconds, tokenCount, finishReason, result.ToString().Length, isRefusal, functionsCalled);
+                
+                return parsed;
             }
             catch (Exception ex)
             {
@@ -141,12 +235,14 @@ Student Query: ""{query}""";
 
                 if (isRateLimit)
                 {
+                    _logger?.LogError("AI strict search failed due to upstream rate limit.");
                     return new CourseRecommendationResponseDto
                     {
                         AdvisorNote = "AI Service Error: The upstream AI model is currently rate-limited by OpenRouter. Please wait a few seconds and try again."
                     };
                 }
 
+                _logger?.LogError(ex, "AI strict search failed with unhandled exception. Message: {ErrorMessage}", msg);
                 return new CourseRecommendationResponseDto
                 {
                     AdvisorNote = $"AI Service Error: {msg}"
@@ -154,6 +250,7 @@ Student Query: ""{query}""";
             }
         }
 
+        _logger?.LogError("AI strict search exceeded max retries.");
         return new CourseRecommendationResponseDto
         {
             AdvisorNote = "AI Service Error: Unknown error during execution."
@@ -162,21 +259,31 @@ Student Query: ""{query}""";
 
     public async Task<CourseRecommendationResponseDto> SearchFreeformAsync(string username, string query)
     {
+        _logger?.LogInformation("AI freeform search request received. QueryLength: {QueryLength}", query?.Length ?? 0);
+
         var student = await _studentRepository.GetByNameAsync(username);
 
         if (student == null)
         {
+            _logger?.LogWarning("AI freeform search failed: Student record not found.");
             return new CourseRecommendationResponseDto
             {
                 AdvisorNote = "Could not find a student record linked to your account. Please contact an administrator."
             };
         }
 
-        string referenceData = await BuildReferenceDataAsync(query);
+        string referenceData = "";
+        if (RequiresRag(query))
+        {
+            referenceData = await BuildReferenceDataAsync(query);
+        }
 
         var scopedKernel = _kernel.Clone();
         var plugin = new CoursePlugin(_courseRepository, student.Id);
         scopedKernel.Plugins.AddFromObject(plugin, "CoursePlugin");
+
+        var functionFilter = new FunctionLoggingFilter();
+        scopedKernel.FunctionInvocationFilters.Add(functionFilter);
 
         string prompt = $@"You are a creative, proactive academic advisor assisting a student with course discovery and handbook guidance.
 
@@ -211,9 +318,31 @@ Student Query: ""{query}""";
                     ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
                 };
 
+                _logger?.LogDebug("Calling AI chat completion (Freeform mode). Attempt: {Attempt}/{MaxRetries}", i + 1, maxRetries);
+
                 var chatCompletion = scopedKernel.GetRequiredService<IChatCompletionService>();
+                var sw = System.Diagnostics.Stopwatch.StartNew();
                 var result = await GetChatWithRetryAsync(chatCompletion, prompt, executionSettings, scopedKernel);
-                return CleanAndParseJsonResponse(result.ToString());
+                sw.Stop();
+
+                var parsed = CleanAndParseJsonResponse(result.ToString());
+                
+                bool isRefusal = parsed.AdvisorNote != null && parsed.AdvisorNote.Contains("not found in the documents", StringComparison.OrdinalIgnoreCase);
+                
+                string modelName = result.ModelId ?? "unknown";
+                string finishReason = result.Metadata?.ContainsKey("FinishReason") == true ? result.Metadata["FinishReason"]?.ToString() ?? "unknown" : "unknown";
+                int tokenCount = 0;
+                if (result.Metadata?.ContainsKey("Usage") == true)
+                {
+                    try { tokenCount = ((dynamic)result.Metadata["Usage"]).TotalTokens; } catch { }
+                }
+
+                string functionsCalled = functionFilter.CalledFunctions.Count > 0 ? string.Join(", ", functionFilter.CalledFunctions) : "none";
+
+                _logger?.LogInformation("AI final result. Model: {ModelName}, LatencyMs: {LatencyMs}, Tokens: {TokenCount}, FinishReason: {FinishReason}, ResponseLength: {ResponseLength}, IsRefusal: {IsRefusal}, FunctionsCalled: {FunctionsCalled}", 
+                    modelName, sw.ElapsedMilliseconds, tokenCount, finishReason, result.ToString().Length, isRefusal, functionsCalled);
+                
+                return parsed;
             }
             catch (Exception ex)
             {
@@ -228,12 +357,14 @@ Student Query: ""{query}""";
 
                 if (isRateLimit)
                 {
+                    _logger?.LogError("AI freeform search failed due to upstream rate limit.");
                     return new CourseRecommendationResponseDto
                     {
                         AdvisorNote = "AI Service Error: The upstream AI model is currently rate-limited by OpenRouter. Please wait a few seconds and try again."
                     };
                 }
 
+                _logger?.LogError(ex, "AI freeform search failed with unhandled exception. Message: {ErrorMessage}", msg);
                 return new CourseRecommendationResponseDto
                 {
                     AdvisorNote = $"AI Service Error: {msg}"
@@ -241,6 +372,7 @@ Student Query: ""{query}""";
             }
         }
 
+        _logger?.LogError("AI freeform search exceeded max retries.");
         return new CourseRecommendationResponseDto
         {
             AdvisorNote = "AI Service Error: Unknown error during execution."
@@ -652,5 +784,24 @@ Write ONLY the paragraph text. Do not output markdown code blocks or quotes.";
             }
         }
         return await chatCompletion.GetChatMessageContentAsync(prompt, settings, kernel);
+    }
+}
+
+public class FunctionLoggingFilter : IFunctionInvocationFilter
+{
+    public List<string> CalledFunctions { get; } = new();
+
+    public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+    {
+        try
+        {
+            await next(context);
+            CalledFunctions.Add($"{context.Function.Name}(success)");
+        }
+        catch
+        {
+            CalledFunctions.Add($"{context.Function.Name}(failure)");
+            throw;
+        }
     }
 }
